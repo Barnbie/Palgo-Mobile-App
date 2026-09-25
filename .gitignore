@@ -1,0 +1,13 @@
+# Expo local state and export output
+.expo/
+.expo
+.expo-*/
+
+# Dependencies and local logs
+node_modules/
+.pnpm-store/
+*.log
+
+# Build artifacts
+dist/
+web-build/
