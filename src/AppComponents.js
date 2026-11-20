@@ -196,13 +196,53 @@ function PalCompleteWaiting({ errand, onBack }) {
   );
 }
 
-function Notifications({ onBack }) {
+function Notifications({ onBack, load, onSeen }) {
+  const [items, setItems] = React.useState(null);
+  React.useEffect(() => {
+    let active = true;
+    Promise.resolve(load?.())
+      .then((rows) => {
+        if (!active) return;
+        setItems(rows || []);
+        onSeen?.();
+      })
+      .catch(() => active && setItems([]));
+    return () => {
+      active = false;
+    };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   return (
     <Shell back={onBack}>
       <Header eyebrow="UPDATES" title="Notifications." />
-      <Text style={{ textAlign: 'center', color: C.muted, marginTop: 32 }}>
-        You have no notifications yet.
-      </Text>
+      {items === null ? (
+        <Text style={{ textAlign: 'center', color: C.muted, marginTop: 32 }}>Loading…</Text>
+      ) : items.length ? (
+        items.map((item) => (
+          <View
+            key={item.id}
+            style={{
+              backgroundColor: C.paper,
+              borderRadius: 16,
+              padding: 14,
+              marginBottom: 10,
+              borderLeftWidth: item.read_at ? 0 : 4,
+              borderLeftColor: C.mint,
+            }}
+          >
+            <Text style={{ fontSize: 14, fontWeight: '800' }}>{item.title}</Text>
+            <Text style={{ fontSize: 12, color: C.muted, marginTop: 4, lineHeight: 18 }}>
+              {item.body}
+            </Text>
+            <Text style={{ fontSize: 10, color: C.muted, marginTop: 6 }}>
+              {new Date(item.created_at).toLocaleString()}
+            </Text>
+          </View>
+        ))
+      ) : (
+        <Text style={{ textAlign: 'center', color: C.muted, marginTop: 32 }}>
+          You have no notifications yet.
+        </Text>
+      )}
     </Shell>
   );
 }

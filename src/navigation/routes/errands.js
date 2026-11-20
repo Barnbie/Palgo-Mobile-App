@@ -1,4 +1,5 @@
 import React from 'react';
+import { fetchNotifications, markNotificationsRead } from '../../lib/api/notifications';
 import { Alert } from 'react-native';
 import { CompletionConfirm, Notifications, PalCompleteWaiting, Success } from '../../AppComponents';
 import { CreateCategoryFinal, CreateErrandFormFinal } from '../../features/auth/screens';
@@ -228,6 +229,15 @@ export const errandRoutes = {
 
   notifications: (c) => {
     const back = () => c.go('home');
-    return { back, view: <Notifications onBack={back} /> };
+    return {
+      back,
+      view: (
+        <Notifications
+          onBack={back}
+          load={() => fetchNotifications(c.role)}
+          onSeen={() => markNotificationsRead(c.role).catch(() => {})}
+        />
+      ),
+    };
   },
 };

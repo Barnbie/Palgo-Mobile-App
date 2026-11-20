@@ -25,6 +25,7 @@ import {
   uploadProfilePhoto,
 } from '../lib/api/profile';
 import { getProfileRating } from '../lib/api/errands';
+import { registerForPush } from '../lib/pushNotifications';
 import { palProfileFromRow, palVerificationFromRow, profileDetailsFromRow } from '../lib/mappers';
 
 export const REMEMBER_KEY = 'palgo.remember-me';
@@ -198,6 +199,12 @@ export function useAccount({ go, notify, screen, screenRef }) {
       appStateSubscription.remove();
     };
   }, [go, loadAccount, notify, resetAccountState, screenRef]);
+
+  // Register this phone for push notifications once signed in (if push is switched on).
+  useEffect(() => {
+    if (!authUserId || profileDetails.pushEnabled === false) return;
+    registerForPush(authUserId);
+  }, [authUserId, profileDetails.pushEnabled]);
 
   // Rating shown on the profile screen.
   useEffect(() => {

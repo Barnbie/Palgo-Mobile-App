@@ -22,6 +22,7 @@ import {
 } from '../../components/glyphs';
 import { colors as C } from '../../theme';
 import { uiPlaceholders } from '../../assets';
+import { ReceiptIcon } from '../../components/icons';
 import { Raised3D, RaisedField, RaisedTextInput } from '../../components/Input3D';
 import {
   money,
@@ -380,7 +381,7 @@ function PalWalletLatest({
           style={{
             height: 40,
             borderRadius: 20,
-            backgroundColor: C.paper,
+            backgroundColor: '#FFFFFF',
             alignSelf: 'flex-end',
             paddingHorizontal: 16,
             marginTop: 16,
@@ -412,41 +413,55 @@ function PalWalletLatest({
           <Text style={{ fontSize: 12, color: C.blue, fontWeight: '800' }}>View all</Text>
         </TouchableOpacity>
       </View>
-      {transactions.length ? (
-        transactions.slice(0, 4).map((row, index) => (
-          <TouchableOpacity
-            key={row.id || row.reference || index}
-            onPress={() => onOpenTransaction(row)}
-            style={{
-              minHeight: 61,
-              borderRadius: 31,
-              backgroundColor: C.paper,
-              paddingHorizontal: 13,
-              marginBottom: 9,
-              flexDirection: 'row',
-              alignItems: 'center',
-            }}
-          >
-            <Banknote size={19} color={C.blue} />
-            <View style={{ marginLeft: 10, flex: 1 }}>
-              <Text style={{ fontSize: 13, fontWeight: '800', color: C.ink }}>{row.name}</Text>
-              <Text style={{ fontSize: 10, color: C.muted, marginTop: 3 }}>{row.meta}</Text>
-            </View>
-            <View style={{ alignItems: 'flex-end' }}>
-              <Text style={{ fontSize: 13, fontWeight: '800', color: row.color || C.ink }}>
-                {row.amount}
-              </Text>
-              <Text style={{ fontSize: 9, color: row.color || C.ink, marginTop: 3 }}>
-                {row.status}
-              </Text>
-            </View>
-          </TouchableOpacity>
-        ))
-      ) : (
-        <Text style={{ textAlign: 'center', color: C.muted, marginTop: 12 }}>
-          No transactions yet.
-        </Text>
-      )}
+      <View
+        style={{
+          backgroundColor: C.paper,
+          borderRadius: 23,
+          paddingHorizontal: 12,
+          paddingVertical: 14,
+          minHeight: 150,
+          justifyContent: 'center',
+        }}
+      >
+        {transactions.length ? (
+          transactions.slice(0, 4).map((row, index) => (
+            <TouchableOpacity
+              key={row.id || row.reference || index}
+              onPress={() => onOpenTransaction(row)}
+              style={{
+                minHeight: 61,
+                borderRadius: 31,
+                backgroundColor: C.canvas,
+                paddingHorizontal: 13,
+                marginBottom: 9,
+                flexDirection: 'row',
+                alignItems: 'center',
+              }}
+            >
+              <Banknote size={19} color={C.blue} />
+              <View style={{ marginLeft: 10, flex: 1 }}>
+                <Text style={{ fontSize: 13, fontWeight: '800', color: C.ink }}>{row.name}</Text>
+                <Text style={{ fontSize: 10, color: C.muted, marginTop: 3 }}>{row.meta}</Text>
+              </View>
+              <View style={{ alignItems: 'flex-end' }}>
+                <Text style={{ fontSize: 13, fontWeight: '800', color: row.color || C.ink }}>
+                  {row.amount}
+                </Text>
+                <Text style={{ fontSize: 9, color: row.color || C.ink, marginTop: 3 }}>
+                  {row.status}
+                </Text>
+              </View>
+            </TouchableOpacity>
+          ))
+        ) : (
+          <View style={{ alignItems: 'center', paddingVertical: 14 }}>
+            <ReceiptIcon size={46} />
+            <Text style={{ textAlign: 'center', color: C.muted, marginTop: 10, fontSize: 13 }}>
+              No transactions yet.
+            </Text>
+          </View>
+        )}
+      </View>
       <AssetBackground
         source={uiPlaceholders.walletPromoCard}
         placeholderLabel="WALLET AD IMAGE (ADD YOUR AD IMAGE)"

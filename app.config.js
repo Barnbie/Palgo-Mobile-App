@@ -5,6 +5,7 @@ export default ({ config }) => {
     ...(config.plugins || []),
     '@react-native-community/datetimepicker',
     'expo-splash-screen',
+    'expo-notifications',
   ];
 
   // This configures Maps in a custom native build. Expo Go already bundles
@@ -28,6 +29,10 @@ export default ({ config }) => {
       ...config.android,
       package: config.android?.package || 'com.palgo.prototype',
       adaptiveIcon: { ...config.android?.adaptiveIcon },
+      // Firebase file for Android push; on EAS set GOOGLE_SERVICES_JSON as a file variable.
+      ...(process.env.GOOGLE_SERVICES_JSON
+        ? { googleServicesFile: process.env.GOOGLE_SERVICES_JSON }
+        : {}),
       ...(androidMapsKey
         ? {
             config: {

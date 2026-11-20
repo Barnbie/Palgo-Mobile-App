@@ -76,3 +76,8 @@ Unused chat, payment, receipt and counter-offer screens and the `commissionRate`
 - App language (English, Yoruba, Igbo, Hausa, Pidgin) in `src/i18n/index.js`; strings not in the list stay English.
 - Password change now checks the current password. `delete-account` edge function is deployed.
 - Not done yet: real push/email delivery (needs Firebase and a Brevo API key), phone verification, Pal ID review.
+
+## Notifications (20 Nov 2026)
+- In-app feed: `notifications` table, shown on the bell screen. Errand status changes create rows through a database trigger.
+- Delivery: each new row calls the `send-notification` edge function, which sends an Expo push (to tokens in `push_tokens`) and a Brevo email, depending on the person's switches.
+- To finish setup: add `BREVO_API_KEY` and `MAIL_FROM_EMAIL` as Supabase Edge Function secrets; for Android push add a Firebase `google-services.json` (EAS file variable `GOOGLE_SERVICES_JSON`) and upload the FCM credentials with `eas credentials`; then make a new EAS development build (adds `expo-notifications`).
