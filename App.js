@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { BackHandler, Text, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { PalGoBottomTabs, s } from './src/AppComponents';
-import { resolveRoute, TAB_SCREENS, tabFor } from './src/navigation';
+import { PalGoBottomTabs, rebuildStyles, s } from './src/AppComponents';
+import { applyColorScheme, colors } from './src/theme';
+import { isAuthScreen, resolveRoute, TAB_SCREENS, tabFor } from './src/navigation';
 import { REMEMBERED_EMAIL_KEY, useAccount } from './src/state/useAccount';
 import { preferences as storedPreferences } from './src/lib/secureStorage';
 import { useErrands } from './src/state/useErrands';
@@ -18,6 +19,7 @@ export default function App() {
   const { screen, screenRef, go } = useRouter('splash');
   const preferences = usePreferences();
   const [toast, setToast] = useState('');
+  const activeScheme = useRef('light');
   const [selectedTransaction, setSelectedTransaction] = useState(null);
 
   const notify = useCallback((text) => {
@@ -61,6 +63,13 @@ export default function App() {
       userId: errands.errand?.palUserId,
     },
   };
+  // Dark mode applies inside the app; login, sign-up and onboarding stay light.
+  const scheme = isAuthScreen(screen) ? 'light' : preferences.effectiveScheme;
+  if (activeScheme.current !== scheme) {
+    activeScheme.current = scheme;
+    applyColorScheme(scheme);
+    rebuildStyles();
+  }
   const route = resolveRoute(screen, context);
 
   // Android's back button follows the same route as the on-screen back arrow.
@@ -76,8 +85,8 @@ export default function App() {
   }, []);
 
   return (
-    <View style={s.safe}>
-      <StatusBar style={preferences.effectiveScheme === 'dark' ? 'light' : 'dark'} />
+    <View style={[s.safe, { backgroundColor: colors.canvas }]}>
+      <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
       {route.view}
       {account.role && TAB_SCREENS.includes(screen) && (
         <PalGoBottomTabs role={account.role} screen={tabFor(screen)} go={go} />

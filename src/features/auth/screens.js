@@ -29,12 +29,21 @@ import {
   Trash2,
   Wrench,
   X,
-} from 'lucide-react-native';
+} from '../../components/glyphs';
 import * as Shared from '../../AppComponents';
 import DateTimePicker, { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
 import * as ImagePicker from 'expo-image-picker';
 import { colors as C } from '../../theme';
 import { onboardingSlideImages, palgoBackgrounds } from '../../assets';
+import {
+  CameraIcon,
+  EyeIcon,
+  EyeOffIcon,
+  LockIcon,
+  MailIcon,
+  SuccessBadge,
+} from '../../components/icons';
+import { RaisedField, RaisedTextInput } from '../../components/Input3D';
 
 const {
   Logo,
@@ -92,8 +101,33 @@ function Splash({ onStart }) {
     </View>
   );
 }
-function AuthInput({ Icon, label, value, onChangeText, secure }) {
+function AuthInput({ Icon, label, value, onChangeText, secure, raised = false }) {
   const [show, setShow] = useState(false);
+  if (raised) {
+    const Leading = secure ? LockIcon : MailIcon;
+    const EyeShape = show ? EyeIcon : EyeOffIcon;
+    return (
+      <RaisedField>
+        <Leading size={20} color="#4A5563" />
+        <RaisedTextInput
+          value={value}
+          onChangeText={onChangeText}
+          secureTextEntry={secure && !show}
+          placeholder={label}
+          autoCapitalize="none"
+          style={{ marginLeft: 8 }}
+        />
+        {secure && (
+          <TouchableOpacity
+            accessibilityLabel="Show or hide password"
+            onPress={() => setShow(!show)}
+          >
+            <EyeShape size={20} color="#4A5563" />
+          </TouchableOpacity>
+        )}
+      </RaisedField>
+    );
+  }
   return (
     <View style={a.authField}>
       <Icon size={17} color={C.muted} />
@@ -154,8 +188,15 @@ function Login({ role, onBack, onLogin, initialEmail = '' }) {
             keyboardDismissMode="on-drag"
             automaticallyAdjustKeyboardInsets
           >
-            <AuthInput Icon={Mail} label="Email Address" value={email} onChangeText={setEmail} />
             <AuthInput
+              raised
+              Icon={Mail}
+              label="Email Address"
+              value={email}
+              onChangeText={setEmail}
+            />
+            <AuthInput
+              raised
               Icon={LockKeyhole}
               label="Password"
               value={password}
@@ -365,39 +406,16 @@ function FlowField({
   autoCapitalize,
 }) {
   const box = (
-    <View
-      style={{
-        minHeight: multiline ? 110 : 48,
-        borderRadius: 24,
-        backgroundColor: C.white,
-        paddingHorizontal: 16,
-        flexDirection: 'row',
-        alignItems: multiline ? 'flex-start' : 'center',
-        paddingTop: multiline ? 14 : 0,
-        shadowColor: '#8592B1',
-        shadowOpacity: 0.12,
-        shadowRadius: 5,
-        elevation: 1,
-      }}
-    >
-      <TextInput
+    <RaisedField multiline={multiline} style={{ marginBottom: 0 }}>
+      <RaisedTextInput
         value={value}
         onChangeText={onChange}
         placeholder={placeholder || label}
-        placeholderTextColor={C.muted}
         multiline={multiline}
         secureTextEntry={secure && !showSecureText}
         keyboardType={keyboardType}
         autoCapitalize={autoCapitalize || 'sentences'}
         autoCorrect={false}
-        style={{
-          flex: 1,
-          minHeight: multiline ? 82 : 46,
-          fontSize: 14,
-          color: C.ink,
-          padding: 0,
-          textAlignVertical: multiline ? 'top' : 'center',
-        }}
       />
       {secure && (
         <TouchableOpacity
@@ -408,13 +426,13 @@ function FlowField({
           style={{ padding: 8, marginRight: -8 }}
         >
           {showSecureText ? (
-            <EyeOff size={19} color={C.muted} />
+            <EyeOffIcon size={20} color="#4A5563" />
           ) : (
             <Eye size={19} color={C.muted} />
           )}
         </TouchableOpacity>
       )}
-    </View>
+    </RaisedField>
   );
   return (
     <View style={{ width: '100%', marginBottom: 15 }}>
@@ -840,7 +858,7 @@ function UserEmailVerified({ onContinue }) {
   return (
     <AuthBackground variant="authentication">
       <View style={[a.authScreen, { flex: 1, justifyContent: 'center', paddingTop: 70 }]}>
-        <ImagePlaceholder size={92} label="SUCCESS IMAGE" />
+        <SuccessBadge size={92} />
         <Text style={[a.authTitle, { marginTop: 22 }]}>Email verified</Text>
         <Text style={[a.authCopy, { marginBottom: 28 }]}>
           Your email address is confirmed. Your account is ready.
@@ -955,7 +973,7 @@ function PalVerification({ onBack, onNext, initialValue = {} }) {
             borderStyle: 'dashed',
           }}
         >
-          <ImagePlaceholder size={profile ? 72 : 38} profile={profile} label="UPLOAD" />
+          {profile ? <ImagePlaceholder size={72} profile /> : <CameraIcon size={38} />}
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 7, marginTop: 10 }}>
             <ImagePlus size={17} color={C.blue} />
             <Text style={{ fontSize: 13, fontWeight: '800', color: C.blue }}>{title}</Text>

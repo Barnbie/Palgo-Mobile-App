@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Alert, Image, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, Image, Text, TouchableOpacity, View } from 'react-native';
 import {
   Banknote,
   Bell,
@@ -12,10 +12,11 @@ import {
   Search,
   Star,
   UserRound,
-} from 'lucide-react-native';
+} from '../../components/glyphs';
 import * as Shared from '../../AppComponents';
 import { colors as C } from '../../theme';
 import { homeActionImages } from '../../assets';
+import { RaisedField, RaisedTextInput } from '../../components/Input3D';
 
 const {
   s,
@@ -99,7 +100,7 @@ function CompletedErrandDetail({ errand = {}, pal, role, onBack, onChat, onRate 
   const completedAt = errand.completed_at ? new Date(errand.completed_at) : null;
   return (
     <Shell back={onBack}>
-      <Text style={{ fontSize: 23, fontWeight: '800', color: '#53545B', marginBottom: 24 }}>
+      <Text style={{ fontSize: 23, fontWeight: '800', color: C.muted, marginBottom: 24 }}>
         Completed errand
       </Text>
       <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 24 }}>
@@ -168,7 +169,7 @@ function PendingErrandDetail({ errand = {}, role = 'user', onBack, onAccept }) {
   };
   return (
     <Shell back={onBack}>
-      <Text style={{ fontSize: 23, fontWeight: '800', color: '#53545B', marginBottom: 24 }}>
+      <Text style={{ fontSize: 23, fontWeight: '800', color: C.muted, marginBottom: 24 }}>
         Errand details
       </Text>
       {!!errand.person && (
@@ -445,10 +446,10 @@ function PalTrackingHomeLatest({ errand, onProfile, onChat, onStart, onComplete 
 function PalDetailFinal({ errand, onBack, onAccept, onCounter }) {
   return (
     <Shell back={onBack}>
-      <Text style={{ fontSize: 23, fontWeight: '800', color: '#53545B', marginBottom: 22 }}>
+      <Text style={{ fontSize: 23, fontWeight: '800', color: C.muted, marginBottom: 22 }}>
         Errand details
       </Text>
-      <View style={{ backgroundColor: C.white, borderRadius: 18, padding: 17 }}>
+      <View style={{ backgroundColor: C.paper, borderRadius: 18, padding: 17 }}>
         <Text style={{ fontSize: 17, fontWeight: '800' }}>{errand.title}</Text>
         <Text style={{ fontSize: 14, lineHeight: 22, marginTop: 15 }}>
           {errand.description || 'Please help with this errand.'}
@@ -535,31 +536,10 @@ function ErrandsCardsUpdated({ role, errands = [], onBack, onOpen, onFilter }) {
           );
         })}
       </View>
-      <View
-        style={{
-          height: 46,
-          borderRadius: 23,
-          backgroundColor: C.white,
-          flexDirection: 'row',
-          alignItems: 'center',
-          paddingHorizontal: 15,
-          marginBottom: 19,
-          shadowColor: '#8592B1',
-          shadowOpacity: 0.1,
-          shadowRadius: 6,
-          shadowOffset: { width: 0, height: 2 },
-          elevation: 1,
-        }}
-      >
-        <Search size={17} color={C.muted} />
-        <TextInput
-          value={query}
-          onChangeText={setQuery}
-          placeholder="Search errands"
-          placeholderTextColor={C.muted}
-          style={{ flex: 1, fontSize: 13, color: C.ink, paddingHorizontal: 9 }}
-        />
-      </View>
+      <RaisedField style={{ marginBottom: 14 }}>
+        <Search size={18} color="#4A5563" />
+        <RaisedTextInput value={query} onChangeText={setQuery} placeholder="Search errands" />
+      </RaisedField>
       <TouchableOpacity
         onPress={onFilter}
         style={{
@@ -567,7 +547,7 @@ function ErrandsCardsUpdated({ role, errands = [], onBack, onOpen, onFilter }) {
           height: 31,
           paddingHorizontal: 13,
           borderRadius: 16,
-          backgroundColor: C.white,
+          backgroundColor: C.paper,
           justifyContent: 'center',
           marginBottom: 13,
         }}
@@ -586,7 +566,7 @@ function ErrandsCardsUpdated({ role, errands = [], onBack, onOpen, onFilter }) {
           return (
             <View
               key={item.id}
-              style={{ backgroundColor: C.white, borderRadius: 18, padding: 15, marginBottom: 12 }}
+              style={{ backgroundColor: C.paper, borderRadius: 18, padding: 15, marginBottom: 12 }}
             >
               <View
                 style={{

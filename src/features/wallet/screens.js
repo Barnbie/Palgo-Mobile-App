@@ -7,7 +7,6 @@ import {
   ScrollView,
   Share,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
@@ -20,9 +19,10 @@ import {
   Eye,
   EyeOff,
   Search,
-} from 'lucide-react-native';
+} from '../../components/glyphs';
 import { colors as C } from '../../theme';
 import { uiPlaceholders, homeActionImages } from '../../assets';
+import { RaisedField, RaisedTextInput } from '../../components/Input3D';
 import {
   money,
   Shell,
@@ -45,25 +45,10 @@ function WalletTransactions({ onBack, onFilter, onOpen, transactions = [] }) {
   return (
     <Shell back={onBack}>
       <Header title="Transactions" />
-      <View
-        style={{
-          height: 44,
-          borderRadius: 22,
-          backgroundColor: C.white,
-          flexDirection: 'row',
-          alignItems: 'center',
-          paddingHorizontal: 14,
-        }}
-      >
-        <Search size={17} color={C.muted} />
-        <TextInput
-          value={query}
-          onChangeText={setQuery}
-          placeholder="Search"
-          placeholderTextColor={C.muted}
-          style={{ flex: 1, paddingHorizontal: 9, fontSize: 13 }}
-        />
-      </View>
+      <RaisedField style={{ marginBottom: 14 }}>
+        <Search size={18} color="#4A5563" />
+        <RaisedTextInput value={query} onChangeText={setQuery} placeholder="Search" />
+      </RaisedField>
       <TouchableOpacity
         onPress={onFilter}
         style={{ alignSelf: 'flex-start', padding: 12, marginTop: 5, marginBottom: 4 }}
@@ -77,7 +62,7 @@ function WalletTransactions({ onBack, onFilter, onOpen, transactions = [] }) {
             onPress={() => onOpen(row)}
             style={{
               minHeight: 72,
-              backgroundColor: C.white,
+              backgroundColor: C.paper,
               borderRadius: 36,
               marginBottom: 10,
               paddingHorizontal: 14,
@@ -140,7 +125,7 @@ function TransactionDetails({ transaction, onBack }) {
       <Header title="Transaction details" />
       <View
         style={{
-          backgroundColor: C.white,
+          backgroundColor: C.paper,
           borderRadius: 20,
           padding: 22,
           alignItems: 'center',
@@ -152,7 +137,7 @@ function TransactionDetails({ transaction, onBack }) {
             height: 54,
             width: 54,
             borderRadius: 27,
-            backgroundColor: '#DDFBF1',
+            backgroundColor: C.mintSoft,
             alignItems: 'center',
             justifyContent: 'center',
           }}
@@ -255,7 +240,7 @@ function DateFilter({ title, onBack }) {
             style={{
               height: 52,
               borderRadius: 18,
-              backgroundColor: C.white,
+              backgroundColor: C.paper,
               paddingHorizontal: 16,
               justifyContent: 'center',
             }}
@@ -284,7 +269,7 @@ function DateFilter({ title, onBack }) {
         <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,.35)' }}>
           <View
             style={{
-              backgroundColor: C.white,
+              backgroundColor: C.paper,
               borderTopLeftRadius: 24,
               borderTopRightRadius: 24,
               padding: 18,
@@ -340,7 +325,7 @@ function PalWalletLatest({
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 18 }}>
         <AssetBackground
           source={uiPlaceholders.walletHelloBackground}
-          placeholderLabel="WALLET HEADER BACKGROUND PLACEHOLDER"
+          art="walletHeader"
           style={{
             height: 60,
             flex: 1,
@@ -389,7 +374,7 @@ function PalWalletLatest({
       </View>
       <AssetBackground
         source={uiPlaceholders.walletBalanceBackground}
-        placeholderLabel="WALLET BALANCE BACKGROUND PLACEHOLDER"
+        art="walletBalance"
         style={{ backgroundColor: C.blue, borderRadius: 23, padding: 20, overflow: 'hidden' }}
       >
         <Text style={{ fontSize: 12, color: C.white }}>Wallet balance</Text>
@@ -407,7 +392,7 @@ function PalWalletLatest({
           style={{
             height: 40,
             borderRadius: 20,
-            backgroundColor: C.white,
+            backgroundColor: C.paper,
             alignSelf: 'flex-end',
             paddingHorizontal: 16,
             marginTop: 16,
@@ -447,7 +432,7 @@ function PalWalletLatest({
             style={{
               minHeight: 61,
               borderRadius: 31,
-              backgroundColor: C.white,
+              backgroundColor: C.paper,
               paddingHorizontal: 13,
               marginBottom: 9,
               flexDirection: 'row',
@@ -476,7 +461,7 @@ function PalWalletLatest({
       )}
       <AssetBackground
         source={uiPlaceholders.walletPromoCard}
-        placeholderLabel="WALLET PROMOTION CARD PLACEHOLDER"
+        art="walletPromo"
         style={{
           height: 94,
           backgroundColor: '#15A877',

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Alert } from 'react-native';
+import { submitSupportRequest } from '../../lib/api/support';
 import {
   PalIdVerification,
   PalMultiSelect,
@@ -98,12 +99,25 @@ export const profileRoutes = {
 
   'profile-support': (c) => {
     const back = toProfile(c);
-    return { back, view: <ProfileSupportLatest onBack={back} /> };
+    return {
+      back,
+      view: <ProfileSupportLatest onBack={back} onReport={() => c.go('profile-report')} />,
+    };
   },
 
   'profile-report': (c) => {
     const back = toProfile(c);
-    return { back, view: <ReportProblem onBack={back} /> };
+    return {
+      back,
+      view: (
+        <ReportProblem
+          onBack={back}
+          defaultName={c.profileDetails?.name || ''}
+          defaultEmail={c.profileDetails?.email || ''}
+          onSubmit={(details) => submitSupportRequest({ ...details, role: c.role })}
+        />
+      ),
+    };
   },
 
   'profile-terms': (c) => {

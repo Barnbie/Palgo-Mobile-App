@@ -8,7 +8,14 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
-import { Bell, ChevronDown, ChevronRight, ShieldCheck, UserRound, X } from 'lucide-react-native';
+import {
+  Bell,
+  ChevronDown,
+  ChevronRight,
+  ShieldCheck,
+  UserRound,
+  X,
+} from '../../components/glyphs';
 import * as Shared from '../../AppComponents';
 import { colors as C } from '../../theme';
 import { homeActionImages } from '../../assets';
@@ -146,7 +153,7 @@ function RecentErrandCard({ errand, onPress }) {
       onPress={onPress}
       style={{
         height: 62,
-        backgroundColor: C.white,
+        backgroundColor: C.paper,
         borderRadius: 31,
         paddingHorizontal: 17,
         marginBottom: 10,
@@ -203,7 +210,7 @@ function VerificationStatusNotice({ verification = {}, dismissed, onDismiss, onR
           zIndex: 9,
           minHeight: 54,
           borderRadius: 15,
-          backgroundColor: C.white,
+          backgroundColor: C.paper,
           paddingHorizontal: 13,
           paddingVertical: 10,
           flexDirection: 'row',
@@ -241,7 +248,7 @@ function VerificationStatusNotice({ verification = {}, dismissed, onDismiss, onR
             backgroundColor: 'rgba(15,23,42,.28)',
           }}
         >
-          <View style={{ backgroundColor: C.white, borderRadius: 18, padding: 18, elevation: 10 }}>
+          <View style={{ backgroundColor: C.paper, borderRadius: 18, padding: 18, elevation: 10 }}>
             <TouchableOpacity
               accessibilityRole="button"
               accessibilityLabel="Dismiss verification notice"
@@ -485,7 +492,7 @@ function UserHomeLatest({
                 style={{
                   minHeight: 55,
                   borderRadius: 18,
-                  backgroundColor: C.white,
+                  backgroundColor: C.paper,
                   padding: 14,
                   justifyContent: 'center',
                   marginBottom: 14,

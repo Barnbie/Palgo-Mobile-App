@@ -32,3 +32,8 @@ export function resolveRoute(screen, context) {
   if (prefixed) return prefixed[1](context);
   return homeRoute(context);
 }
+
+/** Login, sign-up and onboarding screens always keep the light look. */
+export function isAuthScreen(screen) {
+  return screen in authRoutes || screen.startsWith('onboarding');
+}

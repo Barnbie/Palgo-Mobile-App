@@ -1,22 +1,36 @@
 import { useEffect, useState } from 'react';
-import { Alert, Image, Linking, Modal, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Image, Modal, Text, TouchableOpacity, View } from 'react-native';
 import {
   CheckCircle2,
   ChevronDown,
   ChevronRight,
   ClipboardList,
-  Mail,
-  MessageCircle,
-  Phone,
   ShieldCheck,
   Star,
-  UserRound,
   X,
-} from 'lucide-react-native';
+} from '../../components/glyphs';
 import * as ImagePicker from 'expo-image-picker';
 import { colors as C } from '../../theme';
 import { uiPlaceholders } from '../../assets';
 import * as Shared from '../../AppComponents';
+import {
+  GlobeIcon,
+  MailIcon,
+  PhoneIcon,
+  IdCardIcon,
+  LockIcon,
+  LogoutIcon,
+  NotificationIcon,
+  PasswordIcon,
+  PersonIcon,
+  PrivacyIcon,
+  SupportIcon,
+  TermsIcon,
+  ThemeIcon,
+  TrashIcon,
+  WarningIcon,
+  WrenchIcon,
+} from '../../components/icons';
 const {
   s,
 
@@ -135,7 +149,36 @@ function ProfileHeader({ compact = false, editable = false, photoUrl, onPickPhot
     </View>
   );
 }
-function ProfileRow({ label, target, onNavigate, toggle = false, onToggle, Icon = UserRound }) {
+const ROW_ICONS = {
+  'Personal info': PersonIcon,
+  'Personal information': PersonIcon,
+  'Password Settings': PasswordIcon,
+  Password: PasswordIcon,
+  Themes: ThemeIcon,
+  Theme: ThemeIcon,
+  'Push Notification': NotificationIcon,
+  'Push Notifications': NotificationIcon,
+  'ID Verification': IdCardIcon,
+  'Occupation / Skills': WrenchIcon,
+  Language: GlobeIcon,
+  'PIN Settings': LockIcon,
+  'Privacy Policy': PrivacyIcon,
+  'Terms & Conditions': TermsIcon,
+  Support: SupportIcon,
+  'Report a problem': WarningIcon,
+  Logout: LogoutIcon,
+  'Log out': LogoutIcon,
+};
+function ProfileRow({
+  label,
+  target,
+  onNavigate,
+  toggle = false,
+  onToggle,
+  value = true,
+  Icon: IconProp,
+}) {
+  const Icon = IconProp || ROW_ICONS[label] || PersonIcon;
   return (
     <View style={{ height: 51, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14 }}>
       <TouchableOpacity
@@ -144,7 +187,7 @@ function ProfileRow({ label, target, onNavigate, toggle = false, onToggle, Icon 
         onPress={() => onNavigate?.(target)}
         style={{ flex: 1, height: '100%', flexDirection: 'row', alignItems: 'center' }}
       >
-        <ImagePlaceholder size={22} label="ICON" />
+        <Icon size={22} />
         <Text style={{ fontSize: 14, marginLeft: 12, flex: 1 }}>{label}</Text>
       </TouchableOpacity>
       {toggle ? (
@@ -155,12 +198,12 @@ function ProfileRow({ label, target, onNavigate, toggle = false, onToggle, Icon 
             width: 42,
             height: 24,
             borderRadius: 12,
-            backgroundColor: C.mint,
+            backgroundColor: value ? C.mint : C.line,
             padding: 3,
-            alignItems: 'flex-end',
+            alignItems: value ? 'flex-end' : 'flex-start',
           }}
         >
-          <View style={{ height: 18, width: 18, borderRadius: 9, backgroundColor: C.white }} />
+          <View style={{ height: 18, width: 18, borderRadius: 9, backgroundColor: C.paper }} />
         </TouchableOpacity>
       ) : (
         <ChevronRight size={18} color={C.ink} />
@@ -192,7 +235,7 @@ function ProfileRating({ rating = { average: 0, count: 0 } }) {
           paddingHorizontal: 10,
           height: 25,
           borderRadius: 13,
-          backgroundColor: C.white,
+          backgroundColor: C.paper,
           alignItems: 'center',
           justifyContent: 'center',
           borderWidth: 1,
@@ -227,23 +270,31 @@ function ProfileFlowFinal({
         </Text>
         <ProfileRating rating={rating} />
       </View>
-      <View style={{ backgroundColor: C.white, borderRadius: 16, paddingVertical: 3 }}>
+      <View style={{ backgroundColor: C.paper, borderRadius: 16, paddingVertical: 3 }}>
         <ProfileRow
+          Icon={PersonIcon}
           label="Personal information"
           target="profile-personal"
           onNavigate={onNavigate}
         />
-        <ProfileRow label="Password" target="profile-password" onNavigate={onNavigate} />
-        <ProfileRow label="Theme" target="profile-theme" onNavigate={onNavigate} />
         <ProfileRow
+          Icon={PasswordIcon}
+          label="Password"
+          target="profile-password"
+          onNavigate={onNavigate}
+        />
+        <ProfileRow Icon={ThemeIcon} label="Theme" target="profile-theme" onNavigate={onNavigate} />
+        <ProfileRow
+          Icon={NotificationIcon}
           label="Push Notifications"
           toggle
+          value={push}
           onToggle={() => setPush((v) => !v)}
           onNavigate={onNavigate}
         />
       </View>
       <View style={{ height: 18 }} />
-      <View style={{ backgroundColor: C.white, borderRadius: 16, paddingVertical: 3 }}>
+      <View style={{ backgroundColor: C.paper, borderRadius: 16, paddingVertical: 3 }}>
         <ProfileRow label="Terms & Conditions" target="profile-terms" onNavigate={onNavigate} />
         <ProfileRow label="Privacy Policy" target="profile-privacy" onNavigate={onNavigate} />
         <ProfileRow label="Support" target="profile-support" onNavigate={onNavigate} />
@@ -291,7 +342,7 @@ function PersonalInformation({ onBack, onEdit, profileDetails = {}, onPickPhoto 
         onPickPhoto={onPickPhoto}
       />
       <View style={{ height: 27 }} />
-      <View style={{ backgroundColor: C.white, borderRadius: 16, paddingVertical: 3 }}>
+      <View style={{ backgroundColor: C.paper, borderRadius: 16, paddingVertical: 3 }}>
         {data.map(([label, value, key]) => (
           <View
             key={key}
@@ -302,7 +353,11 @@ function PersonalInformation({ onBack, onEdit, profileDetails = {}, onPickPhoto 
               alignItems: 'center',
             }}
           >
-            <ImagePlaceholder size={22} label="ICON" />
+            {(() => {
+              const Icon =
+                { name: PersonIcon, phone: PhoneIcon, email: MailIcon }[key] || PersonIcon;
+              return <Icon size={22} />;
+            })()}
             <View style={{ marginLeft: 12, flex: 1 }}>
               <Text style={{ fontSize: 11, color: C.muted }}>{label}</Text>
               <Text style={{ fontSize: 14, marginTop: 3 }}>{value || 'Not provided'}</Text>
@@ -417,61 +472,49 @@ function ProfileTheme({ onBack, mode = 'system', onChange }) {
     </Shell>
   );
 }
-function ProfileSupportLatest({ onBack }) {
-  const row = (label, time, detail, Icon, action) => (
-    <View style={{ backgroundColor: C.white, borderRadius: 17, padding: 14, marginTop: 9 }}>
-      <Text style={{ fontSize: 10, color: C.muted }}>Avg. Response time: {time}</Text>
-      <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 11 }}>
-        <Icon size={18} color={C.mint} />
-        <Text style={{ fontSize: 12, marginLeft: 9, flex: 1 }}>{detail}</Text>
-        {action && (
-          <TouchableOpacity
-            onPress={action}
-            style={{
-              height: 28,
-              paddingHorizontal: 10,
-              borderRadius: 14,
-              backgroundColor: '#DDFBF1',
-              justifyContent: 'center',
-            }}
-          >
-            <Text style={{ color: C.mint, fontSize: 11, fontWeight: '800' }}>{label}</Text>
-          </TouchableOpacity>
-        )}
-      </View>
-    </View>
-  );
+function ProfileSupportLatest({ onBack, onReport }) {
   return (
     <Shell back={onBack}>
       <Header title="Support Center" />
-      <Text style={{ fontSize: 14, fontWeight: '800', marginTop: 8 }}>Chat</Text>
-      {row('WhatsApp', '1 min', 'Start a conversation on WhatsApp', MessageCircle, () =>
-        Linking.openURL('https://wa.me/2342012345678'),
-      )}
-      <Text style={{ fontSize: 14, fontWeight: '800', marginTop: 22 }}>Call</Text>
-      {row('Call', '2 min', '+234 201 234 5678', Phone, () =>
-        Linking.openURL('tel:+2342012345678'),
-      )}
-      <Text style={{ fontSize: 14, fontWeight: '800', marginTop: 22 }}>Email</Text>
-      {row('Email', '12 hrs', 'support@palgo.com', Mail, () =>
-        Linking.openURL('mailto:support@palgo.com'),
-      )}
+      <View style={{ backgroundColor: C.paper, borderRadius: 17, padding: 16, marginTop: 12 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <SupportIcon size={26} />
+          <Text style={{ fontSize: 15, fontWeight: '800', marginLeft: 12, color: C.ink }}>
+            We are here to help
+          </Text>
+        </View>
+        <Text style={{ fontSize: 12, color: C.muted, marginTop: 10, lineHeight: 18 }}>
+          Send us a message about your account, an errand or a payment. Our team reads every message
+          and replies to the email address you give us.
+        </Text>
+      </View>
+      <View style={{ marginTop: 30 }}>
+        <Button title="Message support" onPress={onReport} />
+      </View>
     </Shell>
   );
 }
-function ReportProblem({ onBack }) {
-  const [name, setName] = useState(''),
-    [email, setEmail] = useState(''),
-    [issue, setIssue] = useState('');
-  const submit = () => {
+function ReportProblem({ onBack, onSubmit, defaultName = '', defaultEmail = '' }) {
+  const [name, setName] = useState(defaultName),
+    [email, setEmail] = useState(defaultEmail),
+    [issue, setIssue] = useState(''),
+    [busy, setBusy] = useState(false);
+  const submit = async () => {
     if (!name.trim() || !email.trim() || !issue.trim()) {
       Alert.alert('Complete the form', 'Enter your name, email and issue.');
       return;
     }
-    Alert.alert(
-      'Support email not connected',
-      'Your report has not been sent yet. Support email delivery will be connected when the support inbox is set up.',
-    );
+    setBusy(true);
+    try {
+      await onSubmit?.({ name, email, message: issue });
+      Alert.alert('Message sent', 'Thanks. Our support team will get back to you by email.', [
+        { text: 'Done', onPress: onBack },
+      ]);
+    } catch (error) {
+      Alert.alert('Could not send', error?.message || 'Check your connection and try again.');
+    } finally {
+      setBusy(false);
+    }
   };
   return (
     <Shell back={onBack}>
@@ -492,7 +535,7 @@ function ReportProblem({ onBack }) {
         multiline
       />
       <View style={{ marginTop: 40 }}>
-        <Button title="Continue" onPress={submit} />
+        <Button title={busy ? 'Sending…' : 'Send'} onPress={submit} />
       </View>
     </Shell>
   );
@@ -586,12 +629,12 @@ function ProfileDeleteLatest({ onBack, onContinue }) {
     <Shell back={onBack}>
       <Header title="Delete Account" />
       <View style={{ alignItems: 'center', marginTop: 24 }}>
-        <ImagePlaceholder size={72} label="DELETE ICON" />
+        <TrashIcon size={64} color={C.red} />
         <Text style={{ fontSize: 16, fontWeight: '800', textAlign: 'center', marginTop: 24 }}>
           Are you sure you want to delete this profile?
         </Text>
       </View>
-      <View style={{ backgroundColor: C.white, borderRadius: 17, padding: 16, marginTop: 31 }}>
+      <View style={{ backgroundColor: C.paper, borderRadius: 17, padding: 16, marginTop: 31 }}>
         <Text style={{ fontSize: 12, fontWeight: '800', marginBottom: 12 }}>Please Note:</Text>
         <View style={{ flexDirection: 'row' }}>
           <X size={17} color={C.red} />
@@ -638,7 +681,7 @@ function ProfileDeleteReasonLatest({ onBack, onDelete }) {
     <Shell back={onBack}>
       <Header title="Delete Account" />
       <View style={{ alignItems: 'center', marginTop: 16 }}>
-        <ImagePlaceholder size={58} label="DELETE ICON" />
+        <TrashIcon size={52} color={C.red} />
       </View>
       <Text style={{ fontSize: 14, fontWeight: '800', marginTop: 23, marginBottom: 15 }}>
         What is the reason for deleting your Profile?
@@ -650,7 +693,7 @@ function ProfileDeleteReasonLatest({ onBack, onDelete }) {
           style={{
             height: 39,
             borderRadius: 18,
-            backgroundColor: C.white,
+            backgroundColor: C.paper,
             marginBottom: 9,
             paddingHorizontal: 13,
             flexDirection: 'row',
@@ -704,11 +747,13 @@ function PalProfileLatest({
 }) {
   const [available, setAvailable] = useState(true),
     [push, setPush] = useState(true);
-  const row = (label, target, toggle = false, onToggle) => (
+  const row = (label, target, toggle = false, onToggle, value) => (
     <ProfileRow
+      Icon={ROW_ICONS[label]}
       label={label}
       target={target}
       toggle={toggle}
+      value={value}
       onToggle={onToggle}
       onNavigate={onNavigate}
     />
@@ -734,22 +779,22 @@ function PalProfileLatest({
           Member since {memberDate}
         </Text>
       </View>
-      <View style={{ backgroundColor: C.white, borderRadius: 16, paddingVertical: 3 }}>
+      <View style={{ backgroundColor: C.paper, borderRadius: 16, paddingVertical: 3 }}>
         {row('Personal info', 'profile-personal')}
         {row('ID Verification', 'profile-id')}
         {row('Occupation / Skills', 'profile-skills')}
-        {row('Availability', null, true, () => setAvailable((value) => !value))}
+        {row('Availability', null, true, () => setAvailable((value) => !value), available)}
       </View>
       <View style={{ height: 17 }} />
-      <View style={{ backgroundColor: C.white, borderRadius: 16, paddingVertical: 3 }}>
+      <View style={{ backgroundColor: C.paper, borderRadius: 16, paddingVertical: 3 }}>
         {row('Language', 'profile-language')}
         {row('Password Settings', 'profile-password')}
         {row('PIN Settings', 'profile-pin')}
         {row('Themes', 'profile-theme')}
-        {row('Push Notification', null, true, () => setPush((value) => !value))}
+        {row('Push Notification', null, true, () => setPush((value) => !value), push)}
       </View>
       <View style={{ height: 17 }} />
-      <View style={{ backgroundColor: C.white, borderRadius: 16, paddingVertical: 3 }}>
+      <View style={{ backgroundColor: C.paper, borderRadius: 16, paddingVertical: 3 }}>
         {row('Privacy Policy', 'profile-privacy')}
         {row('Terms & Conditions', 'profile-terms')}
         {row('Support', 'profile-support')}
@@ -841,7 +886,7 @@ function PalIdVerification({ idDetails = {}, verification = {}, onBack, onSave }
     <Shell back={onBack}>
       <Header title="ID Verification" />
       {idDetails.submitted && !editing ? (
-        <View style={{ backgroundColor: C.white, borderRadius: 17, padding: 17, marginTop: 10 }}>
+        <View style={{ backgroundColor: C.paper, borderRadius: 17, padding: 17, marginTop: 10 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <ShieldCheck size={22} color={C.warning} />
             <Text style={{ fontSize: 14, fontWeight: '800', marginLeft: 9 }}>ID submitted</Text>
@@ -922,7 +967,7 @@ function PalIdVerification({ idDetails = {}, verification = {}, onBack, onSave }
           </View>
         </View>
       ) : (
-        <View style={{ backgroundColor: C.white, borderRadius: 17, padding: 17, marginTop: 10 }}>
+        <View style={{ backgroundColor: C.paper, borderRadius: 17, padding: 17, marginTop: 10 }}>
           <Text style={s.label}>Preferred ID type</Text>
           <TouchableOpacity
             onPress={() => setOpen(true)}
@@ -1017,7 +1062,7 @@ function PalIdVerification({ idDetails = {}, verification = {}, onBack, onSave }
             backgroundColor: 'rgba(0,0,0,.4)',
           }}
         >
-          <View style={{ backgroundColor: C.white, borderRadius: 20, padding: 18 }}>
+          <View style={{ backgroundColor: C.paper, borderRadius: 20, padding: 18 }}>
             <Text style={{ fontSize: 16, fontWeight: '800', marginBottom: 9 }}>
               Select preferred ID
             </Text>
@@ -1076,7 +1121,7 @@ function PalMultiSelect({
   return (
     <Shell back={onBack}>
       <Header title={title} />
-      <View style={{ backgroundColor: C.white, borderRadius: 16, paddingVertical: 4 }}>
+      <View style={{ backgroundColor: C.paper, borderRadius: 16, paddingVertical: 4 }}>
         {options.map((item) => {
           const on = selected.includes(item);
           return (
@@ -1125,7 +1170,7 @@ function ProfileTerms({ onBack, title = 'Terms & Conditions' }) {
   return (
     <Shell back={onBack}>
       <Header title={title} />
-      <View style={{ backgroundColor: C.white, borderRadius: 16, padding: 18 }}>
+      <View style={{ backgroundColor: C.paper, borderRadius: 16, padding: 18 }}>
         <Text style={{ fontSize: 14, lineHeight: 22 }}>
           This information will be published here before PalGo launches.
         </Text>
