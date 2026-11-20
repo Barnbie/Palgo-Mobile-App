@@ -278,7 +278,7 @@ function CreateCategoryFinal({ form, setForm, onBack, onContinue }) {
               style={{
                 width: '48.5%',
                 height: 110,
-                backgroundColor: selected ? C.mint : C.paper,
+                backgroundColor: selected ? C.blue : C.paper,
                 borderRadius: 18,
                 padding: 15,
                 marginBottom: 12,
