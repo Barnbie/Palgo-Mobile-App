@@ -125,25 +125,25 @@ drop policy if exists "Participants read their profile reviews" on public.profil
 create policy "Participants read their profile reviews" on public.profile_reviews for select to authenticated using (reviewer_id=(select auth.uid()) or reviewee_id=(select auth.uid()));
 create or replace function public.submit_profile_review(errand_to_review uuid,stars smallint,words text default '',as_role text default null)
 returns public.profile_reviews language plpgsql security definer set search_path = '' as $$
-declare e public.errands; result public.profile_reviews; current_role text; target uuid;
+declare e public.errands; result public.profile_reviews; acting_role text; target uuid;
 begin
   if auth.uid() is null then raise exception 'Sign in to leave a review.'; end if;
   if as_role is not null then
-    if as_role='user' and exists(select 1 from public.user_profiles p where p.id=auth.uid()) then current_role:='user';
-    elsif as_role='pal' and exists(select 1 from public.pal_profiles p where p.id=auth.uid()) then current_role:='pal';
+    if as_role='user' and exists(select 1 from public.user_profiles p where p.id=auth.uid()) then acting_role:='user';
+    elsif as_role='pal' and exists(select 1 from public.pal_profiles p where p.id=auth.uid()) then acting_role:='pal';
     else raise exception 'This account does not have that profile type.'; end if;
-  elsif exists(select 1 from public.user_profiles p where p.id=auth.uid()) and not exists(select 1 from public.pal_profiles p where p.id=auth.uid()) then current_role:='user';
-  elsif exists(select 1 from public.pal_profiles p where p.id=auth.uid()) and not exists(select 1 from public.user_profiles p where p.id=auth.uid()) then current_role:='pal';
+  elsif exists(select 1 from public.user_profiles p where p.id=auth.uid()) and not exists(select 1 from public.pal_profiles p where p.id=auth.uid()) then acting_role:='user';
+  elsif exists(select 1 from public.pal_profiles p where p.id=auth.uid()) and not exists(select 1 from public.user_profiles p where p.id=auth.uid()) then acting_role:='pal';
   else raise exception 'Choose which profile you are reviewing from.'; end if;
   select * into e from public.errands where id=errand_to_review and status='completed' and (requester_id=auth.uid() or pal_id=auth.uid());
   if e.id is null then raise exception 'Reviews are available after an errand is completed.'; end if;
-  if current_role='user' and e.requester_id=auth.uid() then target:=e.pal_id;
-  elsif current_role='pal' and e.pal_id=auth.uid() then target:=e.requester_id;
+  if acting_role='user' and e.requester_id=auth.uid() then target:=e.pal_id;
+  elsif acting_role='pal' and e.pal_id=auth.uid() then target:=e.requester_id;
   else raise exception 'This account does not match the errand participant role.';
   end if;
   if target is null then raise exception 'This errand has no assigned counterpart.'; end if;
   insert into public.profile_reviews(errand_id,reviewer_id,reviewee_id,reviewer_role,reviewee_role,rating,review_text)
-  values(e.id,auth.uid(),target,current_role,case when current_role='user' then 'pal' else 'user' end,stars,left(coalesce(words,''),2000)) returning * into result;
+  values(e.id,auth.uid(),target,acting_role,case when acting_role='user' then 'pal' else 'user' end,stars,left(coalesce(words,''),2000)) returning * into result;
   return result;
 end; $$;
 revoke all on function public.submit_profile_review(uuid,smallint,text,text) from public;
