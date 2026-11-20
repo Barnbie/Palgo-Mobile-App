@@ -709,7 +709,7 @@ function ProfileDeleteReasonLatest({ onBack, onDelete }) {
               borderRadius: 8,
               borderWidth: 1,
               borderColor: selected === reason ? C.mint : C.ink,
-              backgroundColor: selected === reason ? C.mint : C.white,
+              backgroundColor: selected === reason ? C.mint : C.paper,
             }}
           />
         </TouchableOpacity>
@@ -1144,7 +1144,7 @@ function PalMultiSelect({
                   borderRadius: 8,
                   borderWidth: 1.5,
                   borderColor: on ? C.mint : C.blue,
-                  backgroundColor: on ? C.mint : C.white,
+                  backgroundColor: on ? C.mint : C.paper,
                 }}
               />
             </TouchableOpacity>

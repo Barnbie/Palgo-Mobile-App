@@ -108,16 +108,43 @@ const Header = ({ eyebrow, title, sub }) => (
     {sub && <Text style={s.sub}>{sub}</Text>}
   </>
 );
-const AssetBackground = ({ source, art, style, children }) =>
-  source ? (
-    <ImageBackground source={source} resizeMode="cover" style={style}>
+const AssetBackground = ({ source, art, style, children, placeholderLabel }) => {
+  if (source) {
+    return (
+      <ImageBackground source={source} resizeMode="cover" style={style}>
+        {children}
+      </ImageBackground>
+    );
+  }
+  if (art) {
+    return (
+      <ArtBackground variant={art} style={style}>
+        {children}
+      </ArtBackground>
+    );
+  }
+  return (
+    <View style={style}>
+      {placeholderLabel && (
+        <Text
+          pointerEvents="none"
+          style={{
+            position: 'absolute',
+            alignSelf: 'center',
+            top: '50%',
+            fontSize: 8,
+            fontWeight: '800',
+            letterSpacing: 0.4,
+            color: 'rgba(255,255,255,.48)',
+          }}
+        >
+          {placeholderLabel}
+        </Text>
+      )}
       {children}
-    </ImageBackground>
-  ) : (
-    <ArtBackground variant={art} style={style}>
-      {children}
-    </ArtBackground>
+    </View>
   );
+};
 
 function PalCompleteWaiting({ errand, onBack }) {
   return (

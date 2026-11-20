@@ -21,8 +21,8 @@ import {
   Search,
 } from '../../components/glyphs';
 import { colors as C } from '../../theme';
-import { uiPlaceholders, homeActionImages } from '../../assets';
-import { RaisedField, RaisedTextInput } from '../../components/Input3D';
+import { uiPlaceholders } from '../../assets';
+import { Raised3D, RaisedField, RaisedTextInput } from '../../components/Input3D';
 import {
   money,
   Shell,
@@ -217,7 +217,7 @@ function DateFilter({ title, onBack }) {
                 paddingHorizontal: 14,
                 borderRadius: 18,
                 justifyContent: 'center',
-                backgroundColor: period === item ? C.mint : C.white,
+                backgroundColor: period === item ? C.mint : C.paper,
                 borderWidth: period === item ? 0 : 1,
                 borderColor: C.blue,
               }}
@@ -323,17 +323,13 @@ function PalWalletLatest({
   return (
     <Shell back={onBack}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 18 }}>
-        <AssetBackground
-          source={uiPlaceholders.walletHelloBackground}
-          art="walletHeader"
+        <Raised3D
           style={{
             height: 60,
             flex: 1,
             borderRadius: 30,
-            backgroundColor: C.blue,
             justifyContent: 'center',
             paddingHorizontal: 10,
-            overflow: 'hidden',
           }}
         >
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
@@ -349,27 +345,19 @@ function PalWalletLatest({
               {profileDetails.name ? `Hello ${profileDetails.name}` : 'Your wallet'}
             </Text>
           </View>
-        </AssetBackground>
-        <TouchableOpacity
-          onPress={onNotify}
-          style={{
-            height: 60,
-            width: 60,
-            borderRadius: 30,
-            alignItems: 'center',
-            justifyContent: 'center',
-            overflow: 'hidden',
-            backgroundColor: C.blue,
-          }}
-        >
-          {homeActionImages.notifications && (
-            <Image
-              source={homeActionImages.notifications}
-              resizeMode="stretch"
-              style={{ position: 'absolute', height: 82, width: 82 }}
-            />
-          )}
-          <Bell size={23} color={C.white} fill={C.white} />
+        </Raised3D>
+        <TouchableOpacity onPress={onNotify} accessibilityLabel="Notifications">
+          <Raised3D
+            style={{
+              height: 60,
+              width: 60,
+              borderRadius: 30,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Bell size={23} color={C.white} />
+          </Raised3D>
         </TouchableOpacity>
       </View>
       <AssetBackground
@@ -461,7 +449,7 @@ function PalWalletLatest({
       )}
       <AssetBackground
         source={uiPlaceholders.walletPromoCard}
-        art="walletPromo"
+        placeholderLabel="WALLET AD IMAGE (ADD YOUR AD IMAGE)"
         style={{
           height: 94,
           backgroundColor: '#15A877',

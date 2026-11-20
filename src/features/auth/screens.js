@@ -278,7 +278,7 @@ function CreateCategoryFinal({ form, setForm, onBack, onContinue }) {
               style={{
                 width: '48.5%',
                 height: 110,
-                backgroundColor: selected ? C.mint : C.white,
+                backgroundColor: selected ? C.mint : C.paper,
                 borderRadius: 18,
                 padding: 15,
                 marginBottom: 12,
@@ -576,7 +576,7 @@ function RegistrationFlow({ role, onBack, onContinue, onLogin, initialValues = {
                     style={{
                       height: 48,
                       borderRadius: 24,
-                      backgroundColor: C.white,
+                      backgroundColor: C.paper,
                       paddingHorizontal: 16,
                       justifyContent: 'center',
                       shadowColor: '#8592B1',
@@ -600,7 +600,7 @@ function RegistrationFlow({ role, onBack, onContinue, onLogin, initialValues = {
                         height: 40,
                         flex: 1,
                         borderRadius: 20,
-                        backgroundColor: gender === item ? C.mint : C.white,
+                        backgroundColor: gender === item ? C.mint : C.paper,
                         alignItems: 'center',
                         justifyContent: 'center',
                       }}
@@ -660,7 +660,7 @@ function RegistrationFlow({ role, onBack, onContinue, onLogin, initialValues = {
                   borderWidth: 1.5,
                   borderColor: acceptedTerms ? C.mint : C.muted,
                   borderRadius: 4,
-                  backgroundColor: acceptedTerms ? C.mint : C.white,
+                  backgroundColor: acceptedTerms ? C.mint : C.paper,
                   alignItems: 'center',
                   justifyContent: 'center',
                 }}
@@ -713,7 +713,7 @@ function RegistrationFlow({ role, onBack, onContinue, onLogin, initialValues = {
           >
             <View
               style={{
-                backgroundColor: C.white,
+                backgroundColor: C.paper,
                 borderRadius: 18,
                 padding: 16,
                 marginHorizontal: 24,
@@ -805,7 +805,7 @@ function UserEmailConfirmation({ email, onBack, onVerify, onResend }) {
                       borderRadius: cellSize / 2,
                       borderWidth: 2,
                       borderColor: focused && index === activeIndex ? C.blue : C.line,
-                      backgroundColor: C.white,
+                      backgroundColor: C.paper,
                       alignItems: 'center',
                       justifyContent: 'center',
                     }}
@@ -944,7 +944,7 @@ function PalVerification({ onBack, onNext, initialValue = {} }) {
               width: profile ? 94 : '100%',
               aspectRatio: profile ? 1 : 1.6,
               borderRadius: profile ? 47 : 16,
-              backgroundColor: C.white,
+              backgroundColor: C.paper,
             }}
           />
           <TouchableOpacity
@@ -958,7 +958,7 @@ function PalVerification({ onBack, onNext, initialValue = {} }) {
               height: 34,
               width: 34,
               borderRadius: 17,
-              backgroundColor: C.white,
+              backgroundColor: C.paper,
               alignItems: 'center',
               justifyContent: 'center',
               elevation: 3,
@@ -976,7 +976,7 @@ function PalVerification({ onBack, onNext, initialValue = {} }) {
             width: profile ? 170 : '100%',
             minHeight: profile ? 124 : 138,
             borderRadius: profile ? 18 : 18,
-            backgroundColor: C.white,
+            backgroundColor: C.paper,
             alignItems: 'center',
             justifyContent: 'center',
             padding: 16,
@@ -1096,7 +1096,7 @@ function PalVerification({ onBack, onNext, initialValue = {} }) {
                     height: 40,
                     borderRadius: 20,
                     paddingHorizontal: 13,
-                    backgroundColor: id === item ? C.mint : C.white,
+                    backgroundColor: id === item ? C.mint : C.paper,
                     justifyContent: 'center',
                   }}
                 >
@@ -1223,7 +1223,7 @@ function PalOccupation({ onBack, onNext, initialValue = {} }) {
                     height: 34,
                     borderRadius: 17,
                     paddingHorizontal: 11,
-                    backgroundColor: selected.includes(item) ? C.mint : C.white,
+                    backgroundColor: selected.includes(item) ? C.mint : C.paper,
                     justifyContent: 'center',
                   }}
                 >

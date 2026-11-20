@@ -523,7 +523,7 @@ function ErrandsCardsUpdated({ role, errands = [], onBack, onOpen, onFilter }) {
                 height: 35,
                 flex: 1,
                 borderRadius: 18,
-                backgroundColor: selected ? C.mint : C.white,
+                backgroundColor: selected ? C.mint : C.paper,
                 borderWidth: selected ? 0 : 1,
                 borderColor: C.blue,
                 alignItems: 'center',
