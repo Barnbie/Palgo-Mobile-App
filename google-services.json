@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "748474095759",
+    "project_id": "palgo-68d83",
+    "storage_bucket": "palgo-68d83.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:748474095759:android:d09739c9bfbb0e19adf8fa",
+        "android_client_info": {
+          "package_name": "com.palgo.prototype"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCOA6Kju4pHoe7IQlaztigW4kjkseUAtAc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -29,10 +29,8 @@ export default ({ config }) => {
       ...config.android,
       package: config.android?.package || 'com.palgo.prototype',
       adaptiveIcon: { ...config.android?.adaptiveIcon },
-      // Firebase file for Android push; on EAS set GOOGLE_SERVICES_JSON as a file variable.
-      ...(process.env.GOOGLE_SERVICES_JSON
-        ? { googleServicesFile: process.env.GOOGLE_SERVICES_JSON }
-        : {}),
+      // Firebase file for Android push notifications (kept in the project root).
+      googleServicesFile: process.env.GOOGLE_SERVICES_JSON || './google-services.json',
       ...(androidMapsKey
         ? {
             config: {
