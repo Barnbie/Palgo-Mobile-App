@@ -3,11 +3,11 @@ import {
   Modal,
   PanResponder,
   ScrollView,
-  Text,
   TouchableOpacity,
   useWindowDimensions,
   View,
 } from 'react-native';
+import { Text } from '../../components/ThemedText';
 import {
   Bell,
   ChevronDown,

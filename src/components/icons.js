@@ -1,12 +1,11 @@
 import React from 'react';
+import { colors } from '../theme';
 import Svg, { Circle, Defs, G, LinearGradient, Line, Path, Stop } from 'react-native-svg';
 
 // PalGo's code-drawn icon set (24x24 grid). Every icon is a filled shape with a soft
 // top-to-bottom gradient so it looks slightly raised. Pass variant="outline" for the
 // outline version (used by inactive tab-bar icons). Names match the lucide icons the
 // app used before, so screens can swap imports without other changes.
-
-const BLUE = '#2563EB';
 
 function lighten(hex) {
   const value = String(hex).replace('#', '');
@@ -20,6 +19,9 @@ function lighten(hex) {
   return `#${mix(0)}${mix(2)}${mix(4)}`;
 }
 
+// In dark mode the brand blue is shown as green, which reads better on navy cards.
+const tone = (color) => (colors.scheme === 'dark' && color === '#2563EB' ? '#34D399' : color);
+
 let counter = 0;
 function useGradientId() {
   const ref = React.useRef(null);
@@ -31,7 +33,14 @@ function useGradientId() {
 }
 
 /** Shared wrapper: gives children the fill (gradient or none) and stroke settings. */
-function Glyph({ size = 22, color = BLUE, variant = 'filled', style, children }) {
+function Glyph({
+  size = 22,
+  color: rawColor = colors.icon(),
+  variant = 'filled',
+  style,
+  children,
+}) {
+  const color = tone(rawColor);
   const id = useGradientId();
   const outline = variant === 'outline';
   const paint = {
@@ -191,7 +200,8 @@ export function NotificationIcon(props) {
   );
 }
 
-export function ThemeIcon({ size = 22, color = BLUE }) {
+export function ThemeIcon({ size = 22, color: rawColor = colors.icon() }) {
+  const color = tone(rawColor);
   const rays = Array.from({ length: 8 }, (_, index) => {
     const angle = (index * Math.PI) / 4;
     return {
@@ -218,7 +228,8 @@ export function ThemeIcon({ size = 22, color = BLUE }) {
   );
 }
 
-export function CloseIcon({ size = 22, color = BLUE }) {
+export function CloseIcon({ size = 22, color: rawColor = colors.icon() }) {
+  const color = tone(rawColor);
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24">
       <Path d="M6 6l12 12M18 6 6 18" stroke={color} strokeWidth={2.6} strokeLinecap="round" />
@@ -226,7 +237,8 @@ export function CloseIcon({ size = 22, color = BLUE }) {
   );
 }
 
-export function SearchIcon({ size = 22, color = BLUE }) {
+export function SearchIcon({ size = 22, color: rawColor = colors.icon() }) {
+  const color = tone(rawColor);
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24">
       <Circle cx={10.5} cy={10.5} r={6.5} fill="none" stroke={color} strokeWidth={2.6} />
@@ -235,7 +247,8 @@ export function SearchIcon({ size = 22, color = BLUE }) {
   );
 }
 
-export function MoreIcon({ size = 22, color = BLUE }) {
+export function MoreIcon({ size = 22, color: rawColor = colors.icon() }) {
+  const color = tone(rawColor);
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24">
       {[5, 12, 19].map((cx) => (

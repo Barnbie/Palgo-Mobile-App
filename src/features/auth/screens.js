@@ -7,12 +7,12 @@ import {
   Modal,
   Platform,
   ScrollView,
-  Text,
   TextInput,
   TouchableOpacity,
   useWindowDimensions,
   View,
 } from 'react-native';
+import { Text } from '../../components/ThemedText';
 import {
   Bike,
   ChevronLeft,
@@ -107,9 +107,10 @@ function AuthInput({ Icon, label, value, onChangeText, secure, raised = false })
     const Leading = secure ? LockIcon : MailIcon;
     const EyeShape = show ? EyeIcon : EyeOffIcon;
     return (
-      <RaisedField>
+      <RaisedField glass>
         <Leading size={20} color="#4A5563" />
         <RaisedTextInput
+          glass
           value={value}
           onChangeText={onChangeText}
           secureTextEntry={secure && !show}
@@ -404,10 +405,12 @@ function FlowField({
   onToggleSecure,
   keyboardType,
   autoCapitalize,
+  glass = false,
 }) {
   const box = (
-    <RaisedField multiline={multiline} style={{ marginBottom: 0 }}>
+    <RaisedField glass={glass} multiline={multiline} style={{ marginBottom: 0 }}>
       <RaisedTextInput
+        glass={glass}
         value={value}
         onChangeText={onChange}
         placeholder={placeholder || label}
@@ -426,7 +429,7 @@ function FlowField({
           style={{ padding: 8, marginRight: -8 }}
         >
           {showSecureText ? (
-            <EyeOffIcon size={20} color="#4A5563" />
+            <EyeOffIcon size={20} color={glass ? '#4A5563' : C.muted} />
           ) : (
             <Eye size={19} color={C.muted} />
           )}
@@ -538,8 +541,14 @@ function RegistrationFlow({ role, onBack, onContinue, onLogin, initialValues = {
             keyboardDismissMode="on-drag"
             automaticallyAdjustKeyboardInsets
           >
-            <FlowField label="Full name" value={values.name} onChange={(v) => set('name', v)} />
             <FlowField
+              glass
+              label="Full name"
+              value={values.name}
+              onChange={(v) => set('name', v)}
+            />
+            <FlowField
+              glass
               label="Email"
               value={values.email}
               onChange={(v) => set('email', v)}
@@ -549,6 +558,7 @@ function RegistrationFlow({ role, onBack, onContinue, onLogin, initialValues = {
             {pal && (
               <>
                 <FlowField
+                  glass
                   label="Phone number"
                   value={values.phone}
                   onChange={(v) => set('phone', v)}
@@ -610,6 +620,7 @@ function RegistrationFlow({ role, onBack, onContinue, onLogin, initialValues = {
               </>
             )}
             <FlowField
+              glass
               label="Password"
               value={values.password}
               onChange={(v) => set('password', v)}
@@ -620,6 +631,7 @@ function RegistrationFlow({ role, onBack, onContinue, onLogin, initialValues = {
               onToggleSecure={() => setShowPassword((v) => !v)}
             />
             <FlowField
+              glass
               label="Confirm password"
               value={values.confirmPassword}
               onChange={(v) => set('confirmPassword', v)}

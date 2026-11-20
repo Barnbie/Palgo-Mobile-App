@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Alert, Image, Modal, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Image, Modal, TouchableOpacity, View } from 'react-native';
+import { Text } from '../../components/ThemedText';
 import {
   CheckCircle2,
   ChevronDown,
@@ -55,7 +56,7 @@ function ProfileHeader({ compact = false, editable = false, photoUrl, onPickPhot
     width: compact ? 112 : 108,
     borderRadius: 54,
     overflow: 'hidden',
-    backgroundColor: '#E7EEFF',
+    backgroundColor: C.soft('#E7EEFF'),
     alignItems: 'center',
     justifyContent: 'center',
   };
@@ -893,7 +894,7 @@ function PalIdVerification({ idDetails = {}, verification = {}, onBack, onSave }
             <View
               style={{
                 marginLeft: 'auto',
-                backgroundColor: '#FFF4D6',
+                backgroundColor: C.soft('#FFF4D6'),
                 borderRadius: 12,
                 paddingHorizontal: 10,
                 paddingVertical: 5,

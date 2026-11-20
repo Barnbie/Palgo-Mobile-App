@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Alert, Image, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Image, TouchableOpacity, View } from 'react-native';
+import { Text } from '../../components/ThemedText';
 import {
   Banknote,
   Bell,
@@ -537,7 +538,7 @@ function ErrandsCardsUpdated({ role, errands = [], onBack, onOpen, onFilter }) {
         })}
       </View>
       <RaisedField style={{ marginBottom: 14 }}>
-        <Search size={18} color="#4A5563" />
+        <Search size={18} color={C.muted} />
         <RaisedTextInput value={query} onChangeText={setQuery} placeholder="Search errands" />
       </RaisedField>
       <TouchableOpacity

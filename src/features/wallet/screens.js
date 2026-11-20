@@ -6,10 +6,10 @@ import {
   Platform,
   ScrollView,
   Share,
-  Text,
   TouchableOpacity,
   View,
 } from 'react-native';
+import { Text } from '../../components/ThemedText';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import {
   Banknote,
@@ -46,7 +46,7 @@ function WalletTransactions({ onBack, onFilter, onOpen, transactions = [] }) {
     <Shell back={onBack}>
       <Header title="Transactions" />
       <RaisedField style={{ marginBottom: 14 }}>
-        <Search size={18} color="#4A5563" />
+        <Search size={18} color={C.muted} />
         <RaisedTextInput value={query} onChangeText={setQuery} placeholder="Search" />
       </RaisedField>
       <TouchableOpacity
@@ -75,7 +75,7 @@ function WalletTransactions({ onBack, onFilter, onOpen, transactions = [] }) {
                 height: 32,
                 width: 32,
                 borderRadius: 16,
-                backgroundColor: '#E7EEFF',
+                backgroundColor: C.soft('#E7EEFF'),
                 alignItems: 'center',
                 justifyContent: 'center',
               }}
