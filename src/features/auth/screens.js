@@ -184,6 +184,7 @@ function Login({ role, onBack, onLogin, initialEmail = '' }) {
             <Text style={a.authCopy}>Enter your email and password to access your account.</Text>
           </View>
           <ScrollView
+            showsVerticalScrollIndicator={false}
             style={{ flex: 1 }}
             contentContainerStyle={{ paddingBottom: 50 }}
             keyboardShouldPersistTaps="handled"
@@ -537,6 +538,7 @@ function RegistrationFlow({ role, onBack, onContinue, onLogin, initialValues = {
             Create a new account to get started and enjoy seamless access to our features.
           </Text>
           <ScrollView
+            showsVerticalScrollIndicator={false}
             style={{ flex: 1 }}
             contentContainerStyle={{ paddingBottom: 38 }}
             keyboardShouldPersistTaps="handled"
@@ -780,6 +782,7 @@ function UserEmailConfirmation({ email, onBack, onVerify, onResend }) {
             Enter the 6-digit code we sent to {email}.
           </Text>
           <ScrollView
+            showsVerticalScrollIndicator={false}
             style={{ flex: 1 }}
             contentContainerStyle={{ paddingBottom: 30 }}
             keyboardShouldPersistTaps="handled"
@@ -1050,6 +1053,7 @@ function PalVerification({ onBack, onNext, initialValue = {} }) {
         <View style={{ flex: 1 }}>
           <Header title="Verification process" sub="Complete your profile and ID verification." />
           <ScrollView
+            showsVerticalScrollIndicator={false}
             style={{ flex: 1 }}
             contentContainerStyle={{ paddingBottom: 30 }}
             keyboardShouldPersistTaps="handled"
@@ -1189,6 +1193,7 @@ function PalOccupation({ onBack, onNext, initialValue = {} }) {
             sub="Tell us about the services you can provide."
           />
           <ScrollView
+            showsVerticalScrollIndicator={false}
             style={{ flex: 1 }}
             contentContainerStyle={{ paddingBottom: 30 }}
             keyboardShouldPersistTaps="handled"

@@ -75,7 +75,7 @@ function HomePanel({
         nestedScrollEnabled
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"
-        showsVerticalScrollIndicator={state === 2}
+        showsVerticalScrollIndicator={false}
       >
         {children}
       </ScrollView>

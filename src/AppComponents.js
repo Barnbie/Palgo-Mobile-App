@@ -58,6 +58,7 @@ function Shell({ children, back, right, scroll = true }) {
       {fixedHeaders}
       {scroll ? (
         <ScrollView
+          showsVerticalScrollIndicator={false}
           style={{ flex: 1 }}
           contentContainerStyle={s.scroll}
           keyboardShouldPersistTaps="handled"
