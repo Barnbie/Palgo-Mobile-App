@@ -1,177 +1,1488 @@
-import React, { useEffect, useState } from 'react';
-import { Image, ImageBackground, KeyboardAvoidingView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, Alert, Modal, Linking, Share, Platform, useWindowDimensions } from 'react-native';
+import React from 'react';
+import {
+  Image,
+  ImageBackground,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+  Platform,
+  useWindowDimensions,
+} from 'react-native';
 import Constants from 'expo-constants';
 import MapView, { Marker, PROVIDER_GOOGLE, UrlTile } from 'react-native-maps';
-import DateTimePicker from '@react-native-community/datetimepicker';
-import * as Location from 'expo-location';
-import { Banknote, Bell, Bike, CalendarDays, Car, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, ClipboardList, ClipboardPenLine, Clock3, CreditCard, Eye, EyeOff, House, LockKeyhole, Mail, MapPinned, MessageCircle, MoreHorizontal, Package, Phone, Search, ShieldCheck, ShoppingBasket, Smartphone, Sparkles, Star, UserRound, Wrench, X } from 'lucide-react-native';
-import { colors as C, radius, shadow, space, type } from './theme';
-import { activeErrandImages, homeActionImages, homeProfileImage, onboardingSlideImages, palgoBackgrounds, palgoLogos, profileAssets, uiPlaceholders } from './assets';
+import {
+  CheckCircle2,
+  ChevronLeft,
+  ClipboardList,
+  CreditCard,
+  House,
+  UserRound,
+  X,
+} from 'lucide-react-native';
+import { colors as C } from './theme';
+import { homeProfileImage, palgoLogos, profileAssets } from './assets';
 
-const commissionRate = 0.1;
-const money = value => `₦${Number(value || 0).toLocaleString('en-NG')}`;
-const statuses = { PENDING:'Pending', ACCEPTED:'Accepted', PAL_INTERESTED:'Pals interested', PAL_SELECTED:'Pal selected', ACTIVE:'On the way', PAL_ARRIVED:'Pal arrived', PAL_COMPLETED:'Awaiting confirmation', COMPLETED:'Completed', CANCELLED:'Cancelled', COUNTER_OFFER:'Counter-offer sent' };
+const money = (value) => `₦${Number(value || 0).toLocaleString('en-NG')}`;
 
-function Shell({ children, back, right, scroll=true }) {
-  const allChildren=React.Children.toArray(children);
-  const fixedHeaders=allChildren.filter(child=>child.type===Header);
-  const bodyChildren=allChildren.filter(child=>child.type!==Header);
-  const nav=(back||right)&&<View style={[s.nav,{height:42}]}>{back?<TouchableOpacity accessibilityRole="button" accessibilityLabel="Go back" hitSlop={12} onPress={back} style={[s.back,{minHeight:42,minWidth:48,justifyContent:'center'}]}><ChevronLeft size={24} color={C.ink}/></TouchableOpacity>:<View style={s.back}/>}<View style={{flex:1}}/>{right||null}</View>;
-  return <View style={[s.page,s.pageFill,{paddingTop:28}]}>
-    {nav}
-    {fixedHeaders}
-    {scroll
-      ? <ScrollView style={{flex:1}} contentContainerStyle={s.scroll} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">{bodyChildren}</ScrollView>
-      : <View style={{flex:1}}>{bodyChildren}</View>}
-  </View>;
+function Shell({ children, back, right, scroll = true }) {
+  const allChildren = React.Children.toArray(children);
+  const fixedHeaders = allChildren.filter((child) => child.type === Header);
+  const bodyChildren = allChildren.filter((child) => child.type !== Header);
+  const nav = (back || right) && (
+    <View style={[s.nav, { height: 42 }]}>
+      {back ? (
+        <TouchableOpacity
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
+          hitSlop={12}
+          onPress={back}
+          style={[s.back, { minHeight: 42, minWidth: 48, justifyContent: 'center' }]}
+        >
+          <ChevronLeft size={24} color={C.ink} />
+        </TouchableOpacity>
+      ) : (
+        <View style={s.back} />
+      )}
+      <View style={{ flex: 1 }} />
+      {right || null}
+    </View>
+  );
+  return (
+    <View style={[s.page, s.pageFill, { paddingTop: 28 }]}>
+      {nav}
+      {fixedHeaders}
+      {scroll ? (
+        <ScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={s.scroll}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+        >
+          {bodyChildren}
+        </ScrollView>
+      ) : (
+        <View style={{ flex: 1 }}>{bodyChildren}</View>
+      )}
+    </View>
+  );
 }
-const Logo=({style,variant='onboarding'})=> style===a.authLogo?<View style={{height:20}}/>:<View style={[a.logoPlaceholder,style]}>{palgoLogos[variant]?<Image source={palgoLogos[variant]} resizeMode="contain" style={a.logoImage}/>:<Text style={a.logoPlaceholderText}>LOGO IMAGE</Text>}</View>;
-const Button=({title,onPress,kind='primary',small=false})=><TouchableOpacity onPress={onPress} style={[s.button,{height:40,minHeight:40,borderRadius:20},kind==='secondary'&&s.secondary,kind==='outline'&&s.outline,kind==='danger'&&s.danger,small&&s.smallButton]}><Text style={[s.buttonText,kind==='outline'&&s.outlineText,kind==='danger'&&s.dangerText]}>{title}</Text></TouchableOpacity>;
-const Header=({eyebrow,title,sub})=><><Text style={s.eyebrow}>{eyebrow}</Text><Text style={s.title}>{title}</Text>{sub&&<Text style={s.sub}>{sub}</Text>}</>;
-const AssetBackground=({source,style,children,placeholderLabel})=>source?<ImageBackground source={source} resizeMode="cover" style={style}>{children}</ImageBackground>:<View style={style}>{placeholderLabel&&<Text pointerEvents="none" style={{position:'absolute',alignSelf:'center',top:'50%',fontSize:8,fontWeight:'800',letterSpacing:.4,color:'rgba(255,255,255,.48)'}}>{placeholderLabel}</Text>}{children}</View>;
-const waveHeights=[28,52,35,68,43,57,31,66,38,54,30,62,41,58,34,67];
+const Logo = ({ style, variant = 'onboarding' }) =>
+  style === a.authLogo ? (
+    <View style={{ height: 20 }} />
+  ) : (
+    <View style={[a.logoPlaceholder, style]}>
+      {palgoLogos[variant] ? (
+        <Image source={palgoLogos[variant]} resizeMode="contain" style={a.logoImage} />
+      ) : (
+        <Text style={a.logoPlaceholderText}>LOGO IMAGE</Text>
+      )}
+    </View>
+  );
+const Button = ({ title, onPress, kind = 'primary', small = false }) => (
+  <TouchableOpacity
+    onPress={onPress}
+    style={[
+      s.button,
+      { height: 40, minHeight: 40, borderRadius: 20 },
+      kind === 'secondary' && s.secondary,
+      kind === 'outline' && s.outline,
+      kind === 'danger' && s.danger,
+      small && s.smallButton,
+    ]}
+  >
+    <Text
+      style={[s.buttonText, kind === 'outline' && s.outlineText, kind === 'danger' && s.dangerText]}
+    >
+      {title}
+    </Text>
+  </TouchableOpacity>
+);
+const Header = ({ eyebrow, title, sub }) => (
+  <>
+    <Text style={s.eyebrow}>{eyebrow}</Text>
+    <Text style={s.title}>{title}</Text>
+    {sub && <Text style={s.sub}>{sub}</Text>}
+  </>
+);
+const AssetBackground = ({ source, style, children, placeholderLabel }) =>
+  source ? (
+    <ImageBackground source={source} resizeMode="cover" style={style}>
+      {children}
+    </ImageBackground>
+  ) : (
+    <View style={style}>
+      {placeholderLabel && (
+        <Text
+          pointerEvents="none"
+          style={{
+            position: 'absolute',
+            alignSelf: 'center',
+            top: '50%',
+            fontSize: 8,
+            fontWeight: '800',
+            letterSpacing: 0.4,
+            color: 'rgba(255,255,255,.48)',
+          }}
+        >
+          {placeholderLabel}
+        </Text>
+      )}
+      {children}
+    </View>
+  );
 
+function PalCompleteWaiting({ errand, onBack }) {
+  return (
+    <Shell back={onBack}>
+      <View style={{ alignItems: 'center', marginTop: 52 }}>
+        <CheckCircle2 size={74} color={C.mint} fill={C.mint} />
+        <Text style={{ fontSize: 21, fontWeight: '800', marginTop: 20 }}>Errand Complete!</Text>
+      </View>
+      <View
+        style={{
+          backgroundColor: C.white,
+          borderRadius: 18,
+          borderWidth: 1,
+          borderColor: C.blue,
+          padding: 18,
+          marginTop: 44,
+        }}
+      >
+        <Text style={{ fontSize: 14 }}>Errand: {errand.title}</Text>
+        <Text style={{ fontSize: 14, marginTop: 14 }}>
+          Customer: {errand.person?.name || 'User'}
+        </Text>
+        <Text style={{ fontSize: 14, marginTop: 14 }}>Payment amount: {money(errand.fee)}</Text>
+      </View>
+      <Text style={{ fontSize: 13, color: C.muted, textAlign: 'center', marginTop: 20 }}>
+        The User will confirm completion and payment. Your errand status is saved.
+      </Text>
+      <Text style={{ fontSize: 15, textAlign: 'center', marginTop: 50 }}>
+        Waiting for confirmation...
+      </Text>
+    </Shell>
+  );
+}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-function Home({role,errand,wallet,onCreate,onErrands,onTrack,onNotify,onWallet}) { const [expanded,setExpanded]=useState(false); const recent=errand||{title:'Grocery run',location:'Lekki Phase 1, Lagos',schedule:'2 days ago',fee:2000,status:'COMPLETED'}; if(role==='pal') return <Shell right={onNotify}><Header eyebrow="PAL DASHBOARD" title="Good morning, John"/><Card><Text style={s.cardTitle}>Verification approved</Text><Text style={s.cardText}>You can accept available errands.</Text></Card>{errand&&errand.pal?<Hero title={errand.title} copy={statuses[errand.status]} action="Open errand" onAction={onTrack}/>:<Hero title="3 errands near you." copy="New opportunities are ready for you." action="View errands" onAction={onErrands}/>}<TouchableOpacity onPress={onWallet} style={s.wallet}><Text style={s.walletSmall}>AVAILABLE EARNINGS</Text><Text style={s.walletValue}>{money(wallet.available)}</Text><Text style={s.walletSmall}>Total earned {money(wallet.total)}  ·  Withdrawn {money(wallet.withdrawn)}</Text></TouchableOpacity></Shell>; return <View style={s.homeScreen}><HomeMap/><View style={s.homeTop}><TouchableOpacity style={s.homeRoundButton} onPress={()=>onWallet()}><UserRound size={21} color={C.white}/></TouchableOpacity><TouchableOpacity style={s.homeRoundButton} onPress={onNotify}><Bell size={20} color={C.white}/></TouchableOpacity></View><View style={[s.homePanel,expanded&&s.homePanelExpanded]}><TouchableOpacity style={s.panelHandle} onPress={()=>setExpanded(v=>!v)}><View style={s.handle}/>{expanded?<ChevronDown size={18} color={C.blue}/>:<ChevronUp size={18} color={C.blue}/>}</TouchableOpacity>{expanded?<><View style={s.homeSearch}><Search size={18} color={C.muted}/><TextInput placeholder="Search services" placeholderTextColor={C.muted} style={s.homeSearchInput}/></View><Text style={s.homeSectionTitle}>Popular services</Text><View style={s.homeServices}>{['Grocery shopping','Pick up & drop off','House chores'].map(service=><TouchableOpacity key={service} style={s.homeService} onPress={()=>onCreate(service)}><Text style={s.homeServiceText}>{service}</Text></TouchableOpacity>)}</View><View style={s.homeSectionRow}><Text style={s.homeSectionTitle}>Recent errands</Text><TouchableOpacity onPress={onErrands}><Text style={s.homeViewAll}>See all</Text></TouchableOpacity></View><TouchableOpacity onPress={onTrack} style={s.homeRecent}><Text style={s.homeRecentTitle}>{recent.title}</Text><Text style={s.homeRecentMeta}>{recent.schedule}</Text></TouchableOpacity></>:<TouchableOpacity style={s.homeRequestButton} onPress={()=>onCreate()}><Text style={s.homeRequestText}>Request an errand</Text></TouchableOpacity>}</View></View>; }
-function Errands({role,errand,onBack,onOpen}) { const listed=errand||{ title:'Grocery shopping at FreshMart', location:'Lekki Phase 1, Lagos', schedule:'Today, 4:00 PM', fee:2000, status:'PENDING' }; return <Shell back={onBack}><Header eyebrow="ERRANDS" title={role==='pal'?'Find work near you.':'Manage your errands.'}/><View style={s.filters}><Badge text={role==='pal'?'Available':'All'} type="green"/><Badge text="Active"/><Badge text="Completed"/></View><Text style={s.section}>{role==='pal'?'Available errands':'Your activity'}</Text><TouchableOpacity onPress={onOpen}><ErrandCard errand={listed}/></TouchableOpacity></Shell>; }
-function PalDetail({errand,onBack,onAccept,onCounter}) { return <Shell back={onBack}><Badge text="Available" type="pending"/><Header title={errand.title} sub={errand.description}/><Card><Text style={s.cardText}>📍 {errand.location}{`\n`}◷ {errand.schedule}</Text><Text style={[s.cardText,{marginTop:12}]}>User's offer</Text><Text style={s.money}>{money(errand.fee)}</Text></Card><View style={s.row}><View style={{flex:1,marginRight:8}}><Button kind="outline" title="Counter offer" onPress={onCounter}/></View><View style={{flex:1}}><Button title="Accept" onPress={onAccept}/></View></View></Shell>; }
-
-function PalActive({errand,onBack,onChat,onProgress,onPaid}) { const complete=errand.status==='PAL_COMPLETED'; return <Shell back={onBack}><Badge text={statuses[errand.status]} type="active"/><Header title={errand.title}/><Map stage={errand.status}/><Card><Text style={s.cardText}>User: <Text style={s.cardTitle}>Jane Doe</Text>{`\n`}{errand.location}</Text></Card><View style={s.row}><View style={{flex:1,marginRight:8}}><Button kind="outline" title="💬 Chat" onPress={onChat}/></View><View style={{flex:1}}><Button kind="outline" title="☎ Call" onPress={()=>Alert.alert('Calling','This is a simulated call.')}/></View></View><View style={{height:10}}/>{complete?<><Button kind="outline" title="Waiting for User confirmation" onPress={()=>{}}/><View style={{height:10}}/><Button title="Simulate payment received" onPress={onPaid}/></>:<Button title={errand.status==='PAL_SELECTED'?'Start errand':errand.status==='ACTIVE'?'I have arrived':'Mark errand complete'} onPress={onProgress}/>}</Shell>; }
-function PalPaid({errand,onWallet,onRate}) { const fee=errand.fee, cut=Math.round(fee*commissionRate); return <Shell><Success icon="✓" title={`You earned ${money(fee-cut)}.`} copy="Your earnings have been added to your PalGo wallet."/><Card><RowText left="Service payment" right={money(fee)}/><RowText left={`PalGo fee (${commissionRate*100}%)`} right={`−${money(cut)}`}/><RowText left="Your earnings" right={money(fee-cut)} strong/></Card><Button title="Rate customer" onPress={onRate}/><View style={{height:10}}/><Button kind="outline" title="View wallet" onPress={onWallet}/></Shell>; }
-function PalCompleteWaiting({errand,onBack}) { return <Shell back={onBack}><View style={{alignItems:'center',marginTop:52}}><CheckCircle2 size={74} color={C.mint} fill={C.mint}/><Text style={{fontSize:21,fontWeight:'800',marginTop:20}}>Errand Complete!</Text></View><View style={{backgroundColor:C.white,borderRadius:18,borderWidth:1,borderColor:C.blue,padding:18,marginTop:44}}><Text style={{fontSize:14}}>Errand: {errand.title}</Text><Text style={{fontSize:14,marginTop:14}}>Customer: {errand.person?.name||'User'}</Text><Text style={{fontSize:14,marginTop:14}}>Payment amount: {money(errand.fee)}</Text></View><Text style={{fontSize:13,color:C.muted,textAlign:'center',marginTop:20}}>The User will confirm completion and payment. Your errand status is saved.</Text><Text style={{fontSize:15,textAlign:'center',marginTop:50}}>Waiting for confirmation...</Text></Shell>; }
-
-
-
-
-
-
-function Chat({messages,message,setMessage,send,onBack,onCall}) { return <Shell back={onBack} scroll={false}><View style={s.chatHead}><Avatar/><View><Text style={s.cardTitle}>John Doe Chijioke</Text><Text style={s.cardText}>Active now</Text></View><TouchableOpacity onPress={onCall}><Text style={s.call}>☎</Text></TouchableOpacity></View><ScrollView style={s.chat}>{messages.map((m,i)=><View key={i} style={[s.bubble,m.me&&s.bubbleMe]}><Text style={s.bubbleText}>{m.text}</Text><Text style={s.time}>{m.time}</Text></View>)}</ScrollView><View style={s.composer}><TextInput style={s.composerInput} value={message} onChangeText={setMessage} placeholder="Type a message…" onSubmitEditing={send}/><TouchableOpacity style={s.send} onPress={send}><Text style={{color:C.white}}>➤</Text></TouchableOpacity></View></Shell>; }
-function Profile({role,onBack,onSwitch,onLogout}) { return <Shell back={onBack}><View style={s.profileHead}><Avatar big/><Text style={s.titleSmall}>{role==='pal'?'John Doe Chijioke':'Jane Doe'}</Text><Text style={s.sub}>{role==='pal'?'Verified Pal':'PalGo User'}</Text></View>{['Personal information','Notifications','Support & report a problem','Terms & privacy'].map(x=><TouchableOpacity key={x} onPress={()=>Alert.alert(x,'This is ready for backend integration.')}><Card><Text style={s.cardTitle}>{x}<Text style={{float:'right'}}>›</Text></Text></Card></TouchableOpacity>)}<Button kind="outline" title={`Switch to ${role==='pal'?'User':'Pal'} demo`} onPress={onSwitch}/><View style={{height:10}}/><Button kind="danger" title="Log out" onPress={onLogout}/></Shell>; }
-function Notifications({onBack}) { return <Shell back={onBack}><Header eyebrow="UPDATES" title="Notifications."/><Text style={{textAlign:'center',color:C.muted,marginTop:32}}>You have no notifications yet.</Text></Shell>; }
-function Success({icon,title,copy,primary,onPrimary,secondary,onSecondary,imageSource}) { return <Shell><View style={s.success}>{imageSource?<Image source={imageSource} resizeMode="contain" style={{height:82,width:82,marginBottom:18}}/>:icon?<Text style={s.successIcon}>{icon}</Text>:<View style={{height:82,width:82,borderRadius:41,borderWidth:2,borderColor:C.blue,alignItems:'center',justifyContent:'center',marginBottom:18}}><CheckCircle2 size={38} color={C.mint}/></View>}<Text style={s.eyebrow}>SUCCESS</Text><Text style={s.successTitle}>{title}</Text><Text style={s.sub}>{copy}</Text></View>{primary&&<Button title={primary} onPress={onPrimary}/>} {secondary&&<><View style={{height:10}}/><Button kind="outline" title={secondary} onPress={onSecondary}/></>}</Shell>; }
-function Input({label,value,onChangeText,placeholder,multiline,keyboardType,secure,maxLength}) { return <View style={s.inputGroup}><Text style={s.label}>{label}</Text><TextInput style={[s.input,{borderWidth:0,borderRadius:24,shadowColor:'#8492B8',shadowOpacity:.13,shadowRadius:7,shadowOffset:{width:0,height:3},elevation:2},multiline&&s.multiline]} value={value} onChangeText={onChangeText} placeholder={placeholder} placeholderTextColor="#A3AEC7" multiline={multiline} keyboardType={keyboardType} secureTextEntry={secure} maxLength={maxLength} autoCorrect={false} /></View>; }
-function Card({children}) { return <View style={s.card}>{children}</View>; }
-function Avatar({image,big}) { const size=big?76:44; return <View style={[s.avatar,big&&s.avatarBig,{overflow:'hidden',backgroundColor:C.white,alignItems:'center',justifyContent:'center'}]}>{image?<Image source={image} resizeMode="cover" style={{height:'100%',width:'100%',borderRadius:size/2}}/>:<UserRound size={Math.round(size*.48)} color={C.blue} strokeWidth={2}/>}</View>; }
-function Badge({text,type}) { return <View style={[s.badge,type==='green'&&s.badgeGreen,type==='active'&&s.badgeActive,type==='pending'&&s.badgePending]}><Text style={[s.badgeText,type==='active'&&s.badgeActiveText,type==='pending'&&s.badgePendingText]}>{text}</Text></View>; }
-function ErrandCard({errand}) { return <Card><View style={s.row}><View style={{flex:1}}><Text style={s.cardTitle}>{errand.title}</Text><Text style={s.cardText}>📍 {errand.location}</Text></View><Badge text={statuses[errand.status]||'Pending'} type={errand.status==='COMPLETED'?'green':'pending'}/></View><Text style={[s.cardText,{marginTop:12}]}>◷ {errand.schedule}</Text><Text style={s.money}>{money(errand.fee)} <Text style={s.feeSmall}>service fee</Text></Text></Card>; }
+function Notifications({ onBack }) {
+  return (
+    <Shell back={onBack}>
+      <Header eyebrow="UPDATES" title="Notifications." />
+      <Text style={{ textAlign: 'center', color: C.muted, marginTop: 32 }}>
+        You have no notifications yet.
+      </Text>
+    </Shell>
+  );
+}
+function Success({ icon, title, copy, primary, onPrimary, secondary, onSecondary, imageSource }) {
+  return (
+    <Shell>
+      <View style={s.success}>
+        {imageSource ? (
+          <Image
+            source={imageSource}
+            resizeMode="contain"
+            style={{ height: 82, width: 82, marginBottom: 18 }}
+          />
+        ) : icon ? (
+          <Text style={s.successIcon}>{icon}</Text>
+        ) : (
+          <View
+            style={{
+              height: 82,
+              width: 82,
+              borderRadius: 41,
+              borderWidth: 2,
+              borderColor: C.blue,
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginBottom: 18,
+            }}
+          >
+            <CheckCircle2 size={38} color={C.mint} />
+          </View>
+        )}
+        <Text style={s.eyebrow}>SUCCESS</Text>
+        <Text style={s.successTitle}>{title}</Text>
+        <Text style={s.sub}>{copy}</Text>
+      </View>
+      {primary && <Button title={primary} onPress={onPrimary} />}{' '}
+      {secondary && (
+        <>
+          <View style={{ height: 10 }} />
+          <Button kind="outline" title={secondary} onPress={onSecondary} />
+        </>
+      )}
+    </Shell>
+  );
+}
+function Input({
+  label,
+  value,
+  onChangeText,
+  placeholder,
+  multiline,
+  keyboardType,
+  secure,
+  maxLength,
+}) {
+  return (
+    <View style={s.inputGroup}>
+      <Text style={s.label}>{label}</Text>
+      <TextInput
+        style={[
+          s.input,
+          {
+            borderWidth: 0,
+            borderRadius: 24,
+            shadowColor: '#8492B8',
+            shadowOpacity: 0.13,
+            shadowRadius: 7,
+            shadowOffset: { width: 0, height: 3 },
+            elevation: 2,
+          },
+          multiline && s.multiline,
+        ]}
+        value={value}
+        onChangeText={onChangeText}
+        placeholder={placeholder}
+        placeholderTextColor="#A3AEC7"
+        multiline={multiline}
+        keyboardType={keyboardType}
+        secureTextEntry={secure}
+        maxLength={maxLength}
+        autoCorrect={false}
+      />
+    </View>
+  );
+}
+function Card({ children }) {
+  return <View style={s.card}>{children}</View>;
+}
+function Avatar({ image, big }) {
+  const size = big ? 76 : 44;
+  return (
+    <View
+      style={[
+        s.avatar,
+        big && s.avatarBig,
+        {
+          overflow: 'hidden',
+          backgroundColor: C.white,
+          alignItems: 'center',
+          justifyContent: 'center',
+        },
+      ]}
+    >
+      {image ? (
+        <Image
+          source={image}
+          resizeMode="cover"
+          style={{ height: '100%', width: '100%', borderRadius: size / 2 }}
+        />
+      ) : (
+        <UserRound size={Math.round(size * 0.48)} color={C.blue} strokeWidth={2} />
+      )}
+    </View>
+  );
+}
 // Expo Go's Android client may not have a working bundled Google Maps key.
 // Show OpenStreetMap tiles during development; installed builds use the
 // project's Google Maps key configured by app.config.js.
 const isExpoGo = Constants.appOwnership === 'expo';
 const useDevelopmentMapTiles = __DEV__ && isExpoGo && Platform.OS === 'android';
-const mapProvider = Platform.OS === 'android' || (Platform.OS === 'ios' && !isExpoGo) ? PROVIDER_GOOGLE : undefined;
+const mapProvider =
+  Platform.OS === 'android' || (Platform.OS === 'ios' && !isExpoGo) ? PROVIDER_GOOGLE : undefined;
 const developmentMapTiles = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
-function MapAttribution({home=false}) { return useDevelopmentMapTiles ? <View pointerEvents="none" style={{position:'absolute',left:8,bottom:home?83:5,backgroundColor:'rgba(255,255,255,.88)',paddingHorizontal:6,paddingVertical:3,borderRadius:4}}><Text style={{fontSize:9,color:'#334155'}}>© OpenStreetMap contributors</Text></View> : null; }
-function Map({stage}) { const arrived=stage==='PAL_ARRIVED'||stage==='PAL_COMPLETED'; const initialRegion={latitude:6.5244,longitude:3.3792,latitudeDelta:.045,longitudeDelta:.045}; const runner={latitude:arrived?6.5244:6.5168,longitude:arrived?3.3792:3.3665}; const renderer=Platform.OS==='android'?'LATEST':undefined; return <View style={s.map}><MapView style={StyleSheet.absoluteFillObject} provider={mapProvider} googleRenderer={renderer} initialRegion={initialRegion} mapType={useDevelopmentMapTiles?'none':'standard'} toolbarEnabled={false} loadingEnabled onMapReady={()=>console.info('[Palgo map] errand map ready')} onMapLoaded={()=>console.info('[Palgo map] errand map tiles loaded')} onError={event=>console.error('[Palgo map] errand map error',event.nativeEvent)}>{useDevelopmentMapTiles&&<UrlTile urlTemplate={developmentMapTiles} maximumZ={19} zIndex={-1}/>}<Marker coordinate={{latitude:6.5244,longitude:3.3792}} pinColor={C.blue} title="Errand location"/><Marker coordinate={runner} pinColor={C.mint} title="Pal location" description={stage==='ACTIVE'?'On the way':'Current errand location'}/></MapView><MapAttribution/></View>; }
-function HomeMap() { const {width,height}=useWindowDimensions(); const initialRegion={latitude:6.5244,longitude:3.3792,latitudeDelta:.09,longitudeDelta:.09}; const renderer=Platform.OS==='android'?'LATEST':undefined; const mapFrame={position:'absolute',top:0,left:0,width,height,backgroundColor:'#DCEFE8'}; return <View style={mapFrame} onLayout={event=>{const size=event.nativeEvent.layout;console.info('[Palgo map] home container size',size.width,size.height);}}><MapView style={{width,height}} provider={mapProvider} googleRenderer={renderer} initialRegion={initialRegion} mapType={useDevelopmentMapTiles?'none':'standard'} toolbarEnabled={false} loadingEnabled onLayout={event=>{const size=event.nativeEvent.layout;console.info('[Palgo map] native map size',size.width,size.height);}} onMapReady={()=>console.info('[Palgo map] home map ready')} onMapLoaded={()=>console.info('[Palgo map] home map tiles loaded')} onError={event=>console.error('[Palgo map] home map error',event.nativeEvent)}>{useDevelopmentMapTiles&&<UrlTile urlTemplate={developmentMapTiles} maximumZ={19} zIndex={-1}/>}<Marker coordinate={{latitude:6.5244,longitude:3.3792}} pinColor={C.blue} title="Your location"/></MapView><MapAttribution home/></View>; }
-function Hero({title,copy,action,onAction}) { return <View style={s.hero}><Text style={s.heroKicker}>GET STARTED</Text><Text style={s.heroTitle}>{title}</Text><Text style={s.heroCopy}>{copy}</Text><TouchableOpacity onPress={onAction} style={s.heroButton}><Text style={s.heroButtonText}>{action}</Text></TouchableOpacity></View>; }
-function Choice({label,sub,selected,onPress}) { return <TouchableOpacity onPress={onPress} style={[s.choice,selected&&s.choiceOn]}><View><Text style={s.cardTitle}>{label}</Text><Text style={s.cardText}>{sub}</Text></View><Text style={{fontSize:20,color:selected?C.mint:C.line}}>{selected?'●':'○'}</Text></TouchableOpacity>; }
-function Progress({n}) { return <View style={s.progress}>{[1,2,3,4,5,6].map(v=><View key={v} style={[s.progressPart,v<=n&&s.progressOn]}/>)}</View>; }
-function Info({children}) { return <View style={s.info}><Text style={s.infoText}>{children}</Text></View>; }
-function RowText({left,right,strong}) { return <View style={s.rowText}><Text style={[s.cardText,strong&&s.strong]}>{left}</Text><Text style={[s.cardText,strong&&s.strong]} numberOfLines={1}>{right}</Text></View>; }
-function Timeline({active,text,sub}) { return <View style={s.timelineRow}><View style={[s.timelineDot,active&&s.timelineDotOn]}/><View><Text style={s.cardTitle}>{text}</Text>{sub&&<Text style={s.cardText}>{sub}</Text>}</View></View>; }
-function BottomTabs({role,screen,go}) { const tabs=role==='pal'?[['home',House,'Home'],['errands',ClipboardList,'Errands'],['wallet',CreditCard,'Wallet'],['profile',UserRound,'Profile']]:[['home',House,'Home'],['errands',ClipboardList,'Errands'],['profile',UserRound,'Profile']]; return <View style={s.tabs}>{tabs.map(([id,Icon,label])=>{const active=screen===id; return <TouchableOpacity key={id} onPress={()=>go(id)} style={s.tab}><View style={[s.tabIconWrap,active&&s.tabIconActive]}><Icon size={19} color={active?C.mint:C.white}/></View><Text style={[s.tabText,active&&s.tabTextActive]}>{label}</Text></TouchableOpacity>;})}</View>; }
-function createBack(screen,go) { const prev={'create-category':'home','create-details':'create-category','create-location':'create-details','create-schedule':'create-location','create-fee':'create-schedule','create-review':'create-fee'}; go(prev[screen]); }
-function createNext(screen,form,go,submit,notify) { const next={'create-category':'create-details','create-details':'create-location','create-location':'create-schedule','create-schedule':'create-fee','create-fee':'create-review'}; if(screen==='create-review') submit(); else { if(screen==='create-details'&&(!form.title||!form.description)){notify('Complete the required details');return;} if(screen==='create-fee'&&Number(form.fee)<=0){notify('Enter a service fee greater than zero');return;} go(next[screen]); } }
-
-let styleSheet=StyleSheet.create({ homeScreen:{flex:1,backgroundColor:'#DCEFE8',overflow:'hidden'},homeMap:{...StyleSheet.absoluteFillObject,backgroundColor:'#DCEFE8'},mapParkOne:{position:'absolute',height:250,width:280,borderRadius:140,backgroundColor:'#BDE8CD',left:-90,top:130},mapParkTwo:{position:'absolute',height:210,width:260,borderRadius:110,backgroundColor:'#C9EEC7',right:-100,bottom:100},mapRoadOne:{position:'absolute',height:24,width:'140%',backgroundColor:'rgba(255,255,255,.9)',top:'29%',left:'-18%',transform:[{rotate:'-21deg'}]},mapRoadTwo:{position:'absolute',height:22,width:'140%',backgroundColor:'rgba(255,255,255,.9)',top:'58%',left:'-18%',transform:[{rotate:'31deg'}]},mapRoadThree:{position:'absolute',height:18,width:'125%',backgroundColor:'rgba(255,255,255,.86)',top:'47%',left:'-16%',transform:[{rotate:'-58deg'}]},mapPin:{position:'absolute',height:44,width:44,borderRadius:22,backgroundColor:'#2563EB',alignItems:'center',justifyContent:'center',borderWidth:3,borderColor:'#DCEFE8',shadowColor:'#1646B4',shadowOpacity:.4,shadowRadius:5,elevation:5},mapTown:{position:'absolute',fontSize:14,fontWeight:'800',color:'#4B5563'},mapZoom:{position:'absolute',right:15,bottom:170,backgroundColor:C.white,borderRadius:10,overflow:'hidden',alignItems:'center',shadowColor:'#555',shadowOpacity:.2,shadowRadius:4,elevation:3},mapZoomText:{fontSize:25,fontWeight:'800',paddingHorizontal:11,paddingVertical:1},mapZoomLine:{height:1,width:30,backgroundColor:C.line},homeMapPin:{position:'absolute',top:'34%',left:'49%',height:47,width:47,borderRadius:24,backgroundColor:C.white,alignItems:'center',justifyContent:'center',shadowColor:'#54716C',shadowOpacity:.25,shadowRadius:5,shadowOffset:{width:0,height:3},elevation:3},homeMapLabel:{position:'absolute',top:'47%',right:34,fontSize:13,fontWeight:'800',color:'#64847D'},homeTop:{position:'absolute',top:20,left:20,right:20,flexDirection:'row',justifyContent:'space-between'},homeRoundButton:{height:46,width:46,borderRadius:23,backgroundColor:'#2563EB',alignItems:'center',justifyContent:'center',shadowColor:'#1646B4',shadowOpacity:.65,shadowOffset:{width:0,height:4},shadowRadius:0,elevation:4},homePanel:{position:'absolute',left:0,right:0,bottom:0,minHeight:144,backgroundColor:'#EEF2FF',borderTopLeftRadius:29,borderTopRightRadius:29,paddingHorizontal:22,paddingTop:13,paddingBottom:17},homePanelExpanded:{minHeight:390},panelHandle:{alignItems:'center',height:24},handle:{height:4,width:42,borderRadius:4,backgroundColor:'#B9C4E0',marginBottom:2},homeRequestButton:{height:44,width:258,alignSelf:'center',borderRadius:24,backgroundColor:'#2563EB',alignItems:'center',justifyContent:'center',shadowColor:'#1646B4',shadowOpacity:.65,shadowOffset:{width:0,height:4},shadowRadius:0,elevation:4,marginTop:21},homeRequestText:{fontSize:14,fontWeight:'800',color:C.white},homeSearch:{height:44,backgroundColor:C.white,borderRadius:22,flexDirection:'row',alignItems:'center',paddingHorizontal:15,marginTop:8},homeSearchInput:{flex:1,paddingHorizontal:9,fontSize:14,color:C.ink},homeSectionTitle:{fontSize:14,fontWeight:'800',color:C.ink,marginTop:15,marginBottom:10},homeServices:{flexDirection:'row',gap:8},homeService:{flex:1,height:51,borderRadius:13,backgroundColor:'#2563EB',alignItems:'center',justifyContent:'center',paddingHorizontal:6,shadowColor:'#1646B4',shadowOpacity:.55,shadowOffset:{width:0,height:3},shadowRadius:0,elevation:3},homeServiceText:{color:C.white,fontSize:10,fontWeight:'700',textAlign:'center'},homeSectionRow:{flexDirection:'row',alignItems:'center',justifyContent:'space-between'},homeViewAll:{fontSize:12,fontWeight:'700',color:C.blue,marginTop:15},homeRecent:{height:48,borderRadius:24,backgroundColor:C.white,paddingHorizontal:16,flexDirection:'row',alignItems:'center',justifyContent:'space-between'},homeRecentTitle:{fontSize:12,fontWeight:'700',color:C.ink},homeRecentMeta:{fontSize:10,color:C.muted},safe:{flex:1,backgroundColor:C.pale},scroll:{paddingBottom:88},page:{paddingHorizontal:20,paddingTop:14},pageFill:{flex:1},nav:{height:35,flexDirection:'row',alignItems:'center',justifyContent:'space-between',marginBottom:8},back:{minWidth:70},backText:{fontSize:15,color:C.ink,fontWeight:'600'},bell:{fontSize:20,color:C.blue},logo:{fontSize:29,fontWeight:'800',color:C.blue,letterSpacing:-1,marginBottom:28},eyebrow:{fontSize:11,fontWeight:'800',letterSpacing:1.1,color:C.mint,marginBottom:6},title:{fontSize:29,lineHeight:34,fontWeight:'800',color:C.ink,letterSpacing:-.7,marginBottom:8},titleSmall:{fontSize:21,fontWeight:'800',color:C.ink,marginTop:10},sub:{fontSize:14,lineHeight:21,color:C.muted,marginBottom:20},button:{backgroundColor:C.blue,minHeight:48,borderRadius:12,alignItems:'center',justifyContent:'center',paddingHorizontal:14},buttonText:{color:C.white,fontSize:14,fontWeight:'800'},secondary:{backgroundColor:C.mint},outline:{backgroundColor:C.white,borderWidth:1,borderColor:C.blue},outlineText:{color:C.blue},danger:{backgroundColor:'#FFF1F2'},dangerText:{color:C.red},smallButton:{minHeight:38,borderRadius:10},centerLink:{textAlign:'center',color:C.blue,fontSize:13,fontWeight:'700',marginTop:18},splash:{flex:1,alignItems:'center',justifyContent:'center',backgroundColor:C.pale,padding:30},splashMark:{height:220,width:220,borderRadius:36,backgroundColor:'#BDEFE6',alignItems:'center',justifyContent:'center',marginBottom:28},splashTitle:{fontSize:31,fontWeight:'800',color:C.ink,marginBottom:10},splashSub:{fontSize:15,color:C.muted,textAlign:'center',lineHeight:22,marginBottom:34},onboard:{flex:1,alignItems:'center',justifyContent:'center',backgroundColor:C.blue,padding:26},wave:{height:240,width:'100%',borderRadius:26,backgroundColor:'#BDEFE6',alignItems:'center',justifyContent:'center',marginBottom:24},onboardTitle:{fontSize:27,fontWeight:'800',color:C.white,marginBottom:9},onboardSub:{fontSize:14,color:C.white,textAlign:'center',opacity:.85,marginBottom:20},dots:{flexDirection:'row',marginBottom:30},dotActive:{color:C.mint,fontSize:18,marginRight:8},dot:{color:C.white,fontSize:18,opacity:.7},inputGroup:{marginBottom:15},label:{fontSize:13,fontWeight:'700',color:C.ink,marginBottom:7},input:{borderWidth:1,borderColor:C.line,borderRadius:11,backgroundColor:C.white,paddingHorizontal:13,height:48,fontSize:14,color:C.ink},multiline:{height:94,textAlignVertical:'top',paddingTop:13},card:{backgroundColor:C.white,borderRadius:15,borderWidth:1,borderColor:C.line,padding:15,marginBottom:12},cardTitle:{fontSize:14,fontWeight:'800',color:C.ink},cardText:{fontSize:12,color:C.muted,lineHeight:18},row:{flexDirection:'row',alignItems:'center'},grid:{flexDirection:'row',flexWrap:'wrap',justifyContent:'space-between',marginBottom:16},category:{width:'48.5%',backgroundColor:C.white,borderRadius:15,borderWidth:1,borderColor:C.line,padding:14,marginBottom:11},categoryOn:{borderWidth:2,borderColor:C.mint,backgroundColor:'#E9FBF5'},categoryIcon:{fontSize:24,marginBottom:13},categoryText:{fontSize:13,fontWeight:'800',color:C.ink},info:{padding:13,borderRadius:12,backgroundColor:'#FFF6DD',marginBottom:16},infoText:{color:'#80611C',fontSize:12,lineHeight:18},progress:{height:5,flexDirection:'row',gap:5,marginBottom:23},progressPart:{flex:1,borderRadius:5,backgroundColor:C.line},progressOn:{backgroundColor:C.blue},avatar:{height:44,width:44,borderRadius:22,alignItems:'center',justifyContent:'center',backgroundColor:'#D9FBF0',marginRight:11},avatarBig:{height:76,width:76,borderRadius:38,marginRight:0},avatarText:{fontSize:14,color:C.blue,fontWeight:'800'},avatarTextBig:{fontSize:24},verified:{color:C.mint},money:{fontSize:16,fontWeight:'800',color:C.blue},feeSmall:{fontSize:10,fontWeight:'400',color:C.muted},profileHead:{alignItems:'center',marginBottom:21},badge:{alignSelf:'flex-start',paddingHorizontal:9,paddingVertical:5,borderRadius:10,backgroundColor:C.white,borderWidth:1,borderColor:C.line,marginBottom:9},badgeGreen:{backgroundColor:'#DDFBF1',borderColor:'#DDFBF1'},badgeActive:{backgroundColor:'#E5F2FF',borderColor:'#E5F2FF'},badgePending:{backgroundColor:'#FFF4D6',borderColor:'#FFF4D6'},badgeText:{fontSize:10,fontWeight:'800',color:C.muted},badgeActiveText:{color:'#2F77B0'},badgePendingText:{color:'#9A701B'},map:{height:215,borderRadius:17,backgroundColor:'#CCE7DA',overflow:'hidden',marginVertical:15,position:'relative',borderWidth:1,borderColor:'#B2D2C1'},roadOne:{position:'absolute',height:16,width:'150%',backgroundColor:'rgba(255,255,255,.65)',transform:[{rotate:'-25deg'}],top:'43%',left:'-30%'},roadTwo:{position:'absolute',height:16,width:'150%',backgroundColor:'rgba(255,255,255,.65)',transform:[{rotate:'37deg'}],top:'62%',left:'-26%'},pin:{position:'absolute',fontSize:25,zIndex:2},route:{position:'absolute',left:'27%',top:'53%',width:'49%',borderTopWidth:3,borderColor:C.blue,borderStyle:'dashed',transform:[{rotate:'-18deg'}]},mapLabel:{position:'absolute',bottom:8,left:11,fontSize:10,color:C.muted,fontWeight:'700'},timeline:{marginBottom:15,borderLeftWidth:2,borderColor:'#C8E8DD',paddingLeft:16,marginLeft:8},timelineRow:{flexDirection:'row',marginBottom:16,position:'relative'},timelineDot:{height:10,width:10,borderRadius:5,backgroundColor:C.line,position:'absolute',left:-22,top:4},timelineDotOn:{backgroundColor:C.mint},rowText:{flexDirection:'row',justifyContent:'space-between',paddingVertical:10,borderBottomWidth:1,borderColor:'#EEF1F8',gap:16},strong:{fontWeight:'800',color:C.ink},stars:{fontSize:33,color:C.gold,letterSpacing:3,marginTop:6},hero:{backgroundColor:C.blue,borderRadius:18,padding:20,marginBottom:20,overflow:'hidden'},heroKicker:{fontSize:10,fontWeight:'800',letterSpacing:1,color:C.mint,marginBottom:8},heroTitle:{color:C.white,fontSize:24,lineHeight:29,fontWeight:'800',maxWidth:'82%',marginBottom:7},heroCopy:{color:'#DDE7FF',fontSize:13,lineHeight:19,maxWidth:'86%',marginBottom:16},heroButton:{backgroundColor:C.white,alignSelf:'flex-start',paddingHorizontal:14,paddingVertical:10,borderRadius:10},heroButtonText:{fontSize:12,fontWeight:'800',color:C.blue},section:{fontSize:16,fontWeight:'800',color:C.ink,marginTop:6,marginBottom:12},blueLink:{color:C.blue,fontWeight:'800',fontSize:12,marginLeft:'auto'},wallet:{backgroundColor:C.blue,borderRadius:18,padding:20,marginBottom:18},walletSmall:{color:'#DDE7FF',fontSize:11},walletValue:{fontSize:30,fontWeight:'800',color:C.white,marginVertical:7},filters:{flexDirection:'row',gap:7,marginBottom:9},success:{alignItems:'center',marginTop:55,marginBottom:24},successIcon:{fontSize:51,marginBottom:10},successTitle:{fontSize:27,lineHeight:32,fontWeight:'800',color:C.ink,textAlign:'center',marginVertical:7},tabs:{position:'absolute',bottom:0,left:0,right:0,height:75,backgroundColor:'#2563EB',flexDirection:'row',justifyContent:'space-around',alignItems:'center'},tab:{alignItems:'center',minWidth:58},tabIconWrap:{height:28,width:36,borderRadius:18,alignItems:'center',justifyContent:'center'},tabIconActive:{backgroundColor:'#EEF2FF'},tabText:{fontSize:10,color:C.white,marginTop:3},tabTextActive:{color:C.mint,fontWeight:'800'},chatHead:{flexDirection:'row',alignItems:'center',borderBottomWidth:1,borderColor:C.line,paddingBottom:12},call:{fontSize:22,color:C.blue,marginLeft:'auto'},chat:{flex:1,marginVertical:12},bubble:{alignSelf:'flex-start',maxWidth:'77%',backgroundColor:C.white,padding:12,borderRadius:13,borderBottomLeftRadius:3,marginBottom:9},bubbleMe:{alignSelf:'flex-end',backgroundColor:'#DDFBF1',borderBottomLeftRadius:13,borderBottomRightRadius:3},bubbleText:{fontSize:13,color:C.ink,lineHeight:18},time:{fontSize:9,color:C.muted,marginTop:4},composer:{flexDirection:'row',paddingVertical:11,gap:8},composerInput:{flex:1,height:45,borderWidth:1,borderColor:C.line,borderRadius:13,paddingHorizontal:12,backgroundColor:C.white},send:{width:45,height:45,borderRadius:13,backgroundColor:C.blue,alignItems:'center',justifyContent:'center'},choice:{backgroundColor:C.white,borderColor:C.line,borderWidth:1,borderRadius:14,padding:15,marginBottom:11,flexDirection:'row',justifyContent:'space-between',alignItems:'center'},choiceOn:{borderWidth:2,borderColor:C.mint,backgroundColor:'#E9FBF5'},toast:{position:'absolute',bottom:88,alignSelf:'center',backgroundColor:C.ink,paddingHorizontal:16,paddingVertical:11,borderRadius:10},toastText:{color:C.white,fontSize:12,fontWeight:'700'} });
-
-
-
-function HomeActionImage({source,label,Icon,onPress}) { const isProfile=label==='PROFILE'; const profileImage=homeProfileImage||profileAssets.profileImage; return <TouchableOpacity onPress={onPress} style={[s.homeRoundButton,{top:22,height:58,width:58,borderRadius:29,backgroundColor:'transparent',alignItems:'center',justifyContent:'center'}]}>{source&&<Image source={source} resizeMode="contain" style={{position:'absolute',height:66,width:66}}/>}{isProfile&&profileImage?<Image source={profileImage} resizeMode="cover" style={{height:36,width:36,borderRadius:18}}/>:isProfile?<UserRound size={22} color={C.white} fill={C.white} strokeWidth={2.5}/>:<Icon size={20} color={C.white} fill={C.white} strokeWidth={2.5}/>}</TouchableOpacity>; }
-function UserHome({role,errand,wallet,onCreate,onErrands,onTrack,onNotify,onWallet}) { const [expanded,setExpanded]=useState(false); const recent=errand||{title:'Grocery run',schedule:'2 days ago'}; if(role==='pal') return <Home role={role} errand={errand} wallet={wallet} onCreate={onCreate} onErrands={onErrands} onTrack={onTrack} onNotify={onNotify} onWallet={onWallet}/>; return <View style={s.homeScreen}><HomeMap/><View style={[s.homeTop,{top:42}]}><HomeActionImage source={homeActionImages.profile} label="PROFILE" Icon={UserRound} onPress={onWallet}/><HomeActionImage source={homeActionImages.notifications} label="ALERT" Icon={Bell} onPress={onNotify}/></View><View style={[s.homePanel,{bottom:75,minHeight:expanded?405:170}]}><TouchableOpacity style={s.panelHandle} onPress={()=>setExpanded(value=>!value)}><View style={s.handle}/>{expanded?<ChevronDown size={18} color={C.blue}/>:<ChevronUp size={18} color={C.blue}/>}</TouchableOpacity><View style={s.homeSearch}><Search size={18} color={C.muted}/><TextInput placeholder="Search services" placeholderTextColor={C.muted} style={s.homeSearchInput}/></View>{expanded&&<><Text style={s.homeSectionTitle}>Popular services</Text><View style={s.homeServices}>{['Grocery shopping','Pick up & drop off','House chores'].map(service=><TouchableOpacity key={service} style={s.homeService} onPress={()=>onCreate(service)}><Text style={s.homeServiceText}>{service}</Text></TouchableOpacity>)}</View><View style={s.homeSectionRow}><Text style={s.homeSectionTitle}>Recent errands</Text><TouchableOpacity onPress={onErrands}><Text style={s.homeViewAll}>See all</Text></TouchableOpacity></View><TouchableOpacity onPress={onTrack} style={s.homeRecent}><Text style={s.homeRecentTitle}>{recent.title}</Text><Text style={s.homeRecentMeta}>{recent.schedule}</Text></TouchableOpacity></>} {!expanded&&<TouchableOpacity style={[s.homeRequestButton,{marginTop:15}]} onPress={()=>onCreate()}><Text style={s.homeRequestText}>Request an errand</Text></TouchableOpacity>}</View></View>; }
-function PalGoBottomTabs({role,screen,go}) { const tabs=role==='pal'?[['home',House,'Home'],['errands',ClipboardList,'Errands'],['wallet',CreditCard,'Wallet'],['profile',UserRound,'Profile']]:[['home',House,'Home'],['errands',ClipboardList,'Errands'],['profile',UserRound,'Profile']]; return <View style={[s.tabs,{backgroundColor:'#2563EB'}]}>{tabs.map(([id,Icon,label])=>{const active=screen===id, iconColor=active?C.mint:C.white;return <TouchableOpacity key={id} onPress={()=>go(id)} style={{alignItems:'center',justifyContent:'center'}}><View style={active?{height:38,borderRadius:21,backgroundColor:'#EEF2FF',paddingHorizontal:12,flexDirection:'row',alignItems:'center',gap:5}:{height:38,justifyContent:'center',alignItems:'center'}}><Icon size={18} color={iconColor} strokeWidth={2.4}/><Text style={{fontSize:10,fontWeight:'700',color:iconColor}}>{label}</Text></View></TouchableOpacity>;})}</View>; }
-
-function UserHomeUpdated({role,errand,wallet,onCreate,onErrands,onTrack,onNotify,onWallet}) { const [expanded,setExpanded]=useState(false); const recent=errand||{title:'Grocery run',schedule:'2 days ago'}; if(role==='pal') return <Home role={role} errand={errand} wallet={wallet} onCreate={onCreate} onErrands={onErrands} onTrack={onTrack} onNotify={onNotify} onWallet={onWallet}/>; return <View style={s.homeScreen}><HomeMap/><View style={[s.homeTop,{top:42}]}><HomeActionImage source={homeActionImages.profile} label="PROFILE" Icon={UserRound} onPress={onWallet}/><HomeActionImage source={homeActionImages.notifications} label="ALERT" Icon={Bell} onPress={onNotify}/></View><View style={[s.homePanel,{bottom:75,minHeight:expanded?330:144}]}><TouchableOpacity style={s.panelHandle} onPress={()=>setExpanded(value=>!value)}><View style={s.handle}/>{expanded?<ChevronDown size={18} color={C.blue}/>:<ChevronUp size={18} color={C.blue}/>}</TouchableOpacity>{expanded?<><Text style={s.homeSectionTitle}>Popular services</Text><View style={s.homeServices}>{['Grocery shopping','Pick up & drop off','House chores'].map(service=><TouchableOpacity key={service} style={s.homeService} onPress={()=>onCreate(service)}><Text style={s.homeServiceText}>{service}</Text></TouchableOpacity>)}</View><View style={s.homeSectionRow}><Text style={s.homeSectionTitle}>Recent errands</Text><TouchableOpacity onPress={onErrands}><Text style={s.homeViewAll}>See all</Text></TouchableOpacity></View><TouchableOpacity onPress={onTrack} style={s.homeRecent}><Text style={s.homeRecentTitle}>{recent.title}</Text><Text style={s.homeRecentMeta}>{recent.schedule}</Text></TouchableOpacity></>:<TouchableOpacity style={[s.homeRequestButton,{marginTop:21}]} onPress={()=>onCreate()}><Text style={s.homeRequestText}>Request an errand</Text></TouchableOpacity>}</View></View>; }
-
-function DetailRow({Icon,label,value,accent,size=20}) { return <View style={{flexDirection:'row',alignItems:'center',marginBottom:13}}><Icon size={size} color={accent||C.blue} strokeWidth={2.2}/><View style={{marginLeft:13,flex:1}}><Text style={{fontSize:14,color:C.ink}}>{label}{value?`: ${value}`:''}</Text></View></View>; }
-
-
-function TrackingFinal({errand,pal,onBack,onChat,onCall,onAdvance,onConfirm}) { const completed=errand.status==='PAL_COMPLETED'; return <View style={{flex:1}}><HomeMap/><View style={{position:'absolute',top:42,left:20,right:20,flexDirection:'row',justifyContent:'space-between'}}><TouchableOpacity onPress={onBack} style={{height:46,width:46,borderRadius:23,backgroundColor:C.blue,alignItems:'center',justifyContent:'center'}}><ChevronLeft size={23} color={C.white}/></TouchableOpacity><TouchableOpacity onPress={onCall} style={{height:46,width:46,borderRadius:23,backgroundColor:C.blue,alignItems:'center',justifyContent:'center'}}><Bell size={21} color={C.white} fill={C.white}/></TouchableOpacity></View><View style={{position:'absolute',left:0,right:0,bottom:75,backgroundColor:C.pale,borderTopLeftRadius:30,borderTopRightRadius:30,padding:22,shadowColor:'#38466A',shadowOpacity:.23,shadowRadius:16,shadowOffset:{width:0,height:-5},elevation:12}}><View style={{alignItems:'center',marginBottom:16}}><View style={s.handle}/></View><Text style={{fontSize:17,fontWeight:'800'}}>Pal is 17 min away from you</Text><Text style={{fontSize:13,color:C.blue,marginTop:7}}>{pal.name}</Text><View style={{height:1,backgroundColor:C.line,marginVertical:16}}/><View style={{flexDirection:'row',justifyContent:'space-around'}}><TouchableOpacity onPress={onCall} style={{alignItems:'center'}}><View style={{height:56,width:56,borderRadius:28,backgroundColor:C.blue,alignItems:'center',justifyContent:'center'}}><Phone size={25} color={C.white} fill={C.white}/></View><Text style={{marginTop:7,fontSize:12}}>Contact Pal</Text></TouchableOpacity><View style={{alignItems:'center'}}><Avatar/><Text style={{marginTop:7,fontSize:11,color:'#FFD400'}}>★ 4.45</Text></View><TouchableOpacity style={{alignItems:'center'}}><View style={{height:56,width:56,borderRadius:28,backgroundColor:C.blue,alignItems:'center',justifyContent:'center'}}><ShieldCheck size={25} color={C.white} fill={C.white}/></View><Text style={{marginTop:7,fontSize:12}}>Safety</Text></TouchableOpacity></View><View style={{height:1,backgroundColor:C.line,marginVertical:17}}/><DetailRow Icon={CheckCircle2} label="Pal is on the way Estimated arrival: 10 mins" accent="#96BE83"/><Text style={{fontSize:14,color:C.muted,marginBottom:13}}>Your current service</Text><DetailRow Icon={CheckCircle2} label={errand.title||'Help me buy food'} accent="#89A9ED"/><DetailRow Icon={MapPinned} label={errand.location||'Lekki Phase 1'}/><DetailRow Icon={Banknote} label={money(errand.fee||2500)}/><DetailRow Icon={Clock3} label="Started: 10:00 AM"/><TouchableOpacity onPress={onChat} style={{height:44,borderRadius:22,backgroundColor:C.blue,alignItems:'center',justifyContent:'center',marginTop:4}}><Text style={{color:C.white,fontWeight:'800'}}>Open chat</Text></TouchableOpacity>{completed?<TouchableOpacity onPress={onConfirm}><Text style={{color:C.mint,textAlign:'center',marginTop:12,fontWeight:'800'}}>Confirm completion</Text></TouchableOpacity>:<TouchableOpacity onPress={onAdvance}><Text style={{color:C.blue,textAlign:'center',marginTop:12,fontWeight:'800'}}>Update errand status</Text></TouchableOpacity>}</View></View>; }
-function ChatFinal({messages,message,setMessage,send,onBack,onCall}) { return <KeyboardAvoidingView style={{flex:1,backgroundColor:C.pale}} behavior={Platform.OS==='ios'?'padding':'height'} keyboardVerticalOffset={Platform.OS==='ios'?24:0}><View style={[s.safe,{flex:1,paddingTop:28,paddingHorizontal:22,paddingBottom:12}]}><View style={{flexDirection:'row',alignItems:'center',marginBottom:16}}><TouchableOpacity onPress={onBack}><ChevronLeft size={23} color={C.ink}/></TouchableOpacity><Text style={{fontSize:17,fontWeight:'800',marginLeft:16}}>John Doe Chijioke</Text><TouchableOpacity onPress={onCall} style={{marginLeft:'auto',height:42,width:42,borderRadius:21,backgroundColor:C.mint,alignItems:'center',justifyContent:'center'}}><Phone size={19} color={C.white}/></TouchableOpacity></View><Text style={{textAlign:'center',fontSize:12,marginBottom:14}}>Dec 20, 2025</Text><ScrollView style={{flex:1}} contentContainerStyle={{paddingBottom:8}} keyboardShouldPersistTaps="handled">{messages.map((item,index)=><View key={index} style={{maxWidth:'86%',alignSelf:item.me?'flex-end':'flex-start',backgroundColor:C.white,borderRadius:16,padding:14,marginBottom:12,shadowColor:'#8492B8',shadowOpacity:.16,shadowRadius:6,shadowOffset:{width:0,height:2},elevation:2}}><Text style={{fontSize:13,lineHeight:21}}>{item.text}</Text></View>)}</ScrollView><View style={{flexDirection:'row',alignItems:'center',gap:12,paddingTop:12,paddingBottom:Platform.OS==='ios'?8:4}}><TextInput style={{flex:1,height:43,borderRadius:22,backgroundColor:C.white,paddingHorizontal:17,shadowColor:'#8492B8',shadowOpacity:.16,shadowRadius:6,shadowOffset:{width:0,height:2},elevation:2}} value={message} onChangeText={setMessage} placeholder="Type a message..." onSubmitEditing={send} returnKeyType="send" blurOnSubmit={false}/><TouchableOpacity onPress={send} style={{height:43,width:43,borderRadius:22,backgroundColor:C.blue,alignItems:'center',justifyContent:'center'}}><ChevronRight size={24} color={C.white}/></TouchableOpacity></View></View></KeyboardAvoidingView>; }
-function ProfileFinal({role,onBack,onSwitch,onLogout}) { const items=[['Personal information',UserRound],['Professional Settings',ClipboardList],['Theme',Sparkles],['Push Notifications',Bell]]; const more=[['Terms & Conditions',ClipboardList],['Support',MessageCircle],['Reports',ClipboardList],['Logout',ChevronRight]]; return <Shell back={onBack}><View style={{alignItems:'center',marginBottom:22}}><Avatar big/><Text style={{fontSize:17,fontWeight:'800',marginTop:12}}>{role==='pal'?'John Doe Chijioke':'John Doe'}</Text><Text style={{fontSize:12,color:'#E9AE00',marginTop:5}}>★★★★★</Text></View><View style={{backgroundColor:C.white,borderRadius:16,padding:4,marginBottom:15}}>{items.map(([text,Icon])=><TouchableOpacity key={text} onPress={()=>Alert.alert(text,'This setting is ready for the next profile step.')} style={{height:46,flexDirection:'row',alignItems:'center',paddingHorizontal:12}}><Icon size={17} color={C.blue} fill={C.blue}/><Text style={{fontSize:13,marginLeft:12,flex:1}}>{text}</Text><ChevronRight size={17} color={C.ink}/></TouchableOpacity>)}</View><View style={{backgroundColor:C.white,borderRadius:16,padding:4}}>{more.map(([text,Icon])=><TouchableOpacity key={text} onPress={text==='Logout'?onLogout:()=>Alert.alert(text,'This setting is ready for the next profile step.')} style={{height:46,flexDirection:'row',alignItems:'center',paddingHorizontal:12}}><Icon size={17} color={text==='Logout'?C.red:C.blue} fill={text==='Logout'?C.red:C.blue}/><Text style={{fontSize:13,marginLeft:12,flex:1,color:text==='Logout'?C.red:C.ink}}>{text}</Text><ChevronRight size={17} color={C.ink}/></TouchableOpacity>)}</View><TouchableOpacity onPress={onSwitch}><Text style={{textAlign:'center',marginTop:22,color:C.blue,fontWeight:'800'}}>Switch to {role==='pal'?'User':'Pal'} demo</Text></TouchableOpacity></Shell>; }
-function ImagePlaceholder({size=58,label='IMAGE',profile=false,image}) { return <View style={{height:size,width:size,borderRadius:size/2,borderWidth:2,borderColor:C.blue,backgroundColor:C.white,alignItems:'center',justifyContent:'center',overflow:'hidden'}}>{image?<Image source={image} resizeMode="cover" style={{height:'100%',width:'100%'}}/>:profile?<UserRound size={Math.round(size*.42)} color={C.blue} strokeWidth={2}/>:<Text style={{fontSize:8,fontWeight:'800',color:C.blue,textAlign:'center'}}>{label}</Text>}</View>; }
-function PersonErrandCard({person={},offer,distance,services,rating='4.5',jobs=0,phoneVerified=true,idVerified=true,status,primaryTitle='Accept',onPrimary,secondaryTitle='View Profile',onSecondary}) {
-  const verification=(label,verified,color)=><View style={{flexDirection:'row',alignItems:'center',gap:4,marginRight:10}}>{verified?<CheckCircle2 size={14} color={color}/>:<X size={14} color={C.red}/>}<Text style={{fontSize:10,color:verified?C.muted:C.red}}>{label} {verified?'verified':'not verified'}</Text></View>;
-  return <View style={{backgroundColor:C.white,borderRadius:18,padding:15,marginBottom:13,shadowColor:'#8592B1',shadowOpacity:.12,shadowRadius:9,shadowOffset:{width:0,height:3},elevation:2}}><View style={{flexDirection:'row',alignItems:'center'}}><ImagePlaceholder size={58} profile image={person.image}/><View style={{flex:1,marginLeft:11}}><Text numberOfLines={1} style={{fontSize:14,fontWeight:'800',color:C.ink}}>{person.name||'PalGo member'}</Text><View style={{flexDirection:'row',alignItems:'center',marginTop:5}}><Text style={{fontSize:12,color:'#FFD400'}}>★★★★★</Text><Text style={{fontSize:11,color:C.muted,marginLeft:5}}>{rating}</Text>{jobs>0&&<Text style={{fontSize:10,color:C.muted}}> · {jobs} errands</Text>}</View></View><Text style={{fontSize:14,fontWeight:'800',color:C.blue,marginLeft:7}}>{money(offer)}</Text></View><View style={{flexDirection:'row',alignItems:'center',flexWrap:'wrap',marginTop:13}}>{verification('Phone',phoneVerified,C.mint)}{verification('ID',idVerified,C.blue)}</View><Text numberOfLines={2} style={{fontSize:11,color:C.muted,marginTop:11}}>{services||'Errand support'} · {distance||'Distance unavailable'}</Text>{!!status&&<Text style={{fontSize:11,fontWeight:'800',color:C.mint,marginTop:8}}>{status}</Text>}<View style={{flexDirection:'row',gap:10,marginTop:15}}><TouchableOpacity onPress={onPrimary} style={{height:40,flex:1,borderRadius:20,backgroundColor:C.mint,alignItems:'center',justifyContent:'center'}}><Text style={{fontSize:12,fontWeight:'800',color:C.white}}>{primaryTitle}</Text></TouchableOpacity><TouchableOpacity onPress={onSecondary} style={{height:40,flex:1,borderRadius:20,backgroundColor:C.blue,alignItems:'center',justifyContent:'center'}}><Text style={{fontSize:12,fontWeight:'800',color:C.white}}>{secondaryTitle}</Text></TouchableOpacity></View></View>;
+function MapAttribution({ home = false }) {
+  return useDevelopmentMapTiles ? (
+    <View
+      pointerEvents="none"
+      style={{
+        position: 'absolute',
+        left: 8,
+        bottom: home ? 83 : 5,
+        backgroundColor: 'rgba(255,255,255,.88)',
+        paddingHorizontal: 6,
+        paddingVertical: 3,
+        borderRadius: 4,
+      }}
+    >
+      <Text style={{ fontSize: 9, color: '#334155' }}>© OpenStreetMap contributors</Text>
+    </View>
+  ) : null;
 }
-function ActiveActionImage({source,label,onPress}) { return <TouchableOpacity onPress={onPress} style={{alignItems:'center'}}>{source?<Image source={source} resizeMode="contain" style={{height:58,width:58}}/>:<View style={{height:58,width:58,borderRadius:29,borderWidth:1.5,borderStyle:'dashed',borderColor:C.blue,backgroundColor:C.white,alignItems:'center',justifyContent:'center'}}><Text style={{fontSize:8,fontWeight:'800',color:C.blue,textAlign:'center'}}>{label}{'\n'}IMAGE</Text></View>}<Text style={{marginTop:8,fontSize:12}}>{label}</Text></TouchableOpacity>; }
+function HomeMap() {
+  const { width, height } = useWindowDimensions();
+  const initialRegion = {
+    latitude: 6.5244,
+    longitude: 3.3792,
+    latitudeDelta: 0.09,
+    longitudeDelta: 0.09,
+  };
+  const renderer = Platform.OS === 'android' ? 'LATEST' : undefined;
+  const mapFrame = {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width,
+    height,
+    backgroundColor: '#DCEFE8',
+  };
+  return (
+    <View
+      style={mapFrame}
+      onLayout={(event) => {
+        const size = event.nativeEvent.layout;
+        console.info('[Palgo map] home container size', size.width, size.height);
+      }}
+    >
+      <MapView
+        style={{ width, height }}
+        provider={mapProvider}
+        googleRenderer={renderer}
+        initialRegion={initialRegion}
+        mapType={useDevelopmentMapTiles ? 'none' : 'standard'}
+        toolbarEnabled={false}
+        loadingEnabled
+        onLayout={(event) => {
+          const size = event.nativeEvent.layout;
+          console.info('[Palgo map] native map size', size.width, size.height);
+        }}
+        onMapReady={() => console.info('[Palgo map] home map ready')}
+        onMapLoaded={() => console.info('[Palgo map] home map tiles loaded')}
+        onError={(event) => console.error('[Palgo map] home map error', event.nativeEvent)}
+      >
+        {useDevelopmentMapTiles && (
+          <UrlTile urlTemplate={developmentMapTiles} maximumZ={19} zIndex={-1} />
+        )}
+        <Marker
+          coordinate={{ latitude: 6.5244, longitude: 3.3792 }}
+          pinColor={C.blue}
+          title="Your location"
+        />
+      </MapView>
+      <MapAttribution home />
+    </View>
+  );
+}
+function Choice({ label, sub, selected, onPress }) {
+  return (
+    <TouchableOpacity onPress={onPress} style={[s.choice, selected && s.choiceOn]}>
+      <View>
+        <Text style={s.cardTitle}>{label}</Text>
+        <Text style={s.cardText}>{sub}</Text>
+      </View>
+      <Text style={{ fontSize: 20, color: selected ? C.mint : C.line }}>
+        {selected ? '●' : '○'}
+      </Text>
+    </TouchableOpacity>
+  );
+}
+function RowText({ left, right, strong }) {
+  return (
+    <View style={s.rowText}>
+      <Text style={[s.cardText, strong && s.strong]}>{left}</Text>
+      <Text style={[s.cardText, strong && s.strong]} numberOfLines={1}>
+        {right}
+      </Text>
+    </View>
+  );
+}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-function PalTrackingHome({errand,onProfile,onChat,onCall,onComplete}) { const [expanded,setExpanded]=useState(false); const item=errand||{}; return <View style={s.homeScreen}><HomeMap/><View style={[s.homeTop,{top:42}]}><HomeActionImage source={homeActionImages.profile} label="PROFILE" Icon={UserRound} onPress={onProfile}/><HomeActionImage source={homeActionImages.notifications} label="ALERT" Icon={Bell} onPress={()=>Alert.alert('Notifications','No new notifications.')}/></View><View style={[s.homePanel,{bottom:75,minHeight:expanded?555:267,shadowColor:'#38466A',shadowOpacity:.23,shadowRadius:16,shadowOffset:{width:0,height:-5},elevation:12}]}><TouchableOpacity style={s.panelHandle} onPress={()=>setExpanded(v=>!v)}><View style={s.handle}/></TouchableOpacity><Text style={{fontSize:17,fontWeight:'800'}}>On my way</Text><Text style={{fontSize:13,color:C.blue,marginTop:6}}>Pal is 17 min away from User</Text><View style={{height:1,backgroundColor:C.line,marginVertical:15}}/><View style={{flexDirection:'row',alignItems:'center'}}><ImagePlaceholder size={56} profile/><View style={{marginLeft:11,flex:1}}><Text style={{fontSize:14,fontWeight:'800'}}>Jane Doe Chijioke</Text><Text style={{fontSize:11,color:'#FFD400',marginTop:5}}>★ 4.45</Text></View><TouchableOpacity onPress={onChat} style={{height:40,width:40,borderRadius:20,backgroundColor:C.blue,alignItems:'center',justifyContent:'center',marginRight:9}}><MessageCircle size={19} color={C.white}/></TouchableOpacity><TouchableOpacity onPress={onCall} style={{height:40,width:40,borderRadius:20,backgroundColor:C.mint,alignItems:'center',justifyContent:'center'}}><Phone size={19} color={C.white}/></TouchableOpacity></View>{expanded&&<><View style={{height:1,backgroundColor:C.line,marginVertical:17}}/><Text style={{fontSize:14,color:C.muted,marginBottom:13}}>Your current service</Text><DetailRow Icon={CheckCircle2} label={item.title||'Help me buy food'} accent="#89A9ED"/><DetailRow Icon={MapPinned} label={item.location||'Lekki Phase 1'}/><DetailRow Icon={Banknote} label={money(item.fee||2500)}/><DetailRow Icon={Clock3} label="Requested time: 10:00 AM"/><DetailRow Icon={Clock3} label="Estimated duration: 30 minutes"/><Text style={{fontSize:14,color:C.muted,marginTop:5,marginBottom:12}}>Special notes</Text><Text style={{fontSize:13,lineHeight:20,marginBottom:16}}>Please call before arriving and confirm any unavailable items.</Text><Text style={{fontSize:14,color:C.muted,marginBottom:10}}>Payment</Text><DetailRow Icon={Banknote} label="Transfer" accent="#6C9F3A"/><TouchableOpacity onPress={onComplete}><Text style={{color:C.mint,textAlign:'center',fontWeight:'800',marginTop:9}}>Mark errand complete</Text></TouchableOpacity><TouchableOpacity onPress={()=>Alert.alert('Cancel errand','Cancellation reasons will open here.')}><Text style={{color:C.red,textAlign:'center',fontWeight:'800',marginTop:14}}>Cancel errand</Text></TouchableOpacity></>}</View></View>; }
-
-
-
-function PaymentPending({onBack,onConfirm}) { return <View style={s.safe}><View style={{flex:1,backgroundColor:'rgba(12,19,38,.48)',justifyContent:'center',paddingHorizontal:44}}><View style={{backgroundColor:C.white,borderRadius:23,borderWidth:1,borderColor:C.blue,padding:24}}><View style={{flexDirection:'row',alignItems:'center'}}><Clock3 size={21} color={C.mint}/><Text style={{fontSize:18,fontWeight:'800',marginLeft:10}}>Payment Pending</Text></View><Text style={{fontSize:16,lineHeight:28,marginTop:43}}>We are waiting for your Pal to confirm they have received your payment.</Text><Text style={{fontSize:14,lineHeight:22,color:C.muted,marginTop:20}}>This confirmation protects both the User and the Pal.</Text><View style={{height:34}}/><Button title="I Paid Through App" onPress={onConfirm}/><TouchableOpacity onPress={onBack}><Text style={{color:C.red,textAlign:'center',fontSize:12,textDecorationLine:'underline',marginTop:20}}>Report Issue</Text></TouchableOpacity></View></View></View>; }
-
-
-
-
-
-
-
-
-
-function CompletionConfirm({onBack,onContinue}) { return <Shell back={onBack}><View style={{marginTop:120,backgroundColor:C.white,borderRadius:24,padding:24,shadowColor:'#38466A',shadowOpacity:.18,shadowRadius:16,elevation:8}}><Text style={{fontSize:20,fontWeight:'800',textAlign:'center'}}>Confirm completion?</Text><Text style={{fontSize:14,lineHeight:21,color:C.muted,textAlign:'center',marginTop:13}}>Confirm only after your Pal has marked the saved errand complete.</Text><View style={{height:24}}/><Button title="Confirm completed errand" onPress={onContinue}/><TouchableOpacity onPress={onBack}><Text style={{textAlign:'center',color:C.blue,fontSize:13,fontWeight:'800',marginTop:18}}>Not yet</Text></TouchableOpacity></View></Shell>; }
-function PaymentFlowFinal({errand,onBack,onMadePayment}) { return <Shell back={onBack}><View style={{alignItems:'center',marginTop:17}}><Text style={{fontSize:18,fontWeight:'800'}}>Make Payment</Text><View style={{width:84,height:84,borderRadius:28,backgroundColor:C.mint,alignItems:'center',justifyContent:'center',marginTop:38}}><CheckCircle2 size={55} color={C.white}/></View></View><Text style={{fontSize:16,marginTop:40}}>Errand: {errand.title||'Help me buy food'}</Text><Text style={{fontSize:16,marginTop:17}}>Payment Amount: {money(errand.fee||2500)}</Text><Text style={{fontSize:16,textAlign:'center',marginTop:47,marginBottom:18}}>Pay to this Account:</Text><View style={{backgroundColor:C.white,borderRadius:20,borderWidth:1,borderColor:C.blue,padding:28}}><Text style={{fontSize:16}}>Bank: Wema Bank</Text><Text style={{fontSize:16,marginTop:20}}>Account No: 8012345678</Text><Text style={{fontSize:16,marginTop:20}}>Name: Errandpal - John Eze</Text><View style={{flexDirection:'row',gap:20,marginTop:28}}><TouchableOpacity onPress={()=>Alert.alert('Copied','Account number copied.')} style={{height:40,flex:1,borderRadius:20,backgroundColor:C.mint,alignItems:'center',justifyContent:'center'}}><Text style={{fontSize:12,color:C.white,fontWeight:'800'}}>Copy</Text></TouchableOpacity><TouchableOpacity onPress={()=>Alert.alert('Share','Account details ready to share.')} style={{height:40,flex:1,borderRadius:20,backgroundColor:C.blue,alignItems:'center',justifyContent:'center'}}><Text style={{fontSize:12,color:C.white,fontWeight:'800'}}>Share</Text></TouchableOpacity></View></View><View style={{flexDirection:'row',marginTop:21,alignItems:'center'}}><Text style={{color:'#DCAC25',fontSize:21,marginRight:10}}>!</Text><Text style={{fontSize:13,flex:1}}>You must confirm payment below after transferring.</Text></View><View style={{marginTop:48}}><Button title="I have made payment" onPress={onMadePayment}/></View><TouchableOpacity onPress={()=>Alert.alert('Report issue','Support will assist you.')}><Text style={{textAlign:'center',color:C.red,fontSize:12,textDecorationLine:'underline',marginTop:80}}>Report Issue</Text></TouchableOpacity></Shell>; }
-
-
-
-
-
-
-
-
-
-
-
-const a=StyleSheet.create({
-  splash:{flex:1,backgroundColor:'#EEF2FF',alignItems:'center',justifyContent:'center'}, splashLogo:{marginTop:92},
-  authCanvas:{flex:1,overflow:'hidden',backgroundColor:'#EEF2FF'}, backgroundPlaceholder:{...StyleSheet.absoluteFillObject,backgroundColor:'#EEF2FF',alignItems:'center',justifyContent:'center'}, backgroundPlaceholderText:{fontSize:12,fontWeight:'700',color:'#8B99BD',letterSpacing:.4},
-  waveBand:{height:68,flexDirection:'row',alignItems:'flex-start',justifyContent:'space-around',paddingHorizontal:1,zIndex:2}, waveBandFlip:{position:'absolute',bottom:0,left:0,right:0,transform:[{scaleY:-1}]}, waveBar:{width:8,borderRadius:9,backgroundColor:C.blue},
-  logoPlaceholder:{height:48,width:140,alignItems:'center',justifyContent:'center'}, logoImage:{height:'100%',width:'100%'}, logoPlaceholderText:{fontSize:12,fontWeight:'800',letterSpacing:.8,color:C.blue}, onboardContent:{alignItems:'center',paddingTop:62,paddingHorizontal:30,zIndex:3}, onboardMiddle:{alignItems:'center'}, imagePlaceholder:{height:267,width:267,alignItems:'center',justifyContent:'center',overflow:'hidden',marginTop:42,marginBottom:43}, onboardImage:{height:'100%',width:'100%'}, placeholderLabel:{fontSize:12,fontWeight:'800',letterSpacing:.7,color:C.blue}, placeholderNote:{fontSize:10,color:C.muted,marginTop:6}, onboardTitle:{fontSize:24,fontWeight:'700',lineHeight:30,color:'#101522',textAlign:'center'}, onboardFooter:{position:'absolute',left:28,right:28,bottom:46,zIndex:4,alignItems:'center'}, dots:{flexDirection:'row',gap:8,marginTop:14,alignSelf:'center'}, dot:{width:8,height:8,borderRadius:4,backgroundColor:'rgba(255,255,255,.55)',borderWidth:1,borderColor:'rgba(46,99,233,.22)'}, dotOn:{backgroundColor:C.mint,borderColor:C.mint}, onboardBack:{paddingVertical:10,alignSelf:'center'}, onboardBackText:{fontSize:14,fontWeight:'700',color:C.blue}, pillPrimary:{height:44,width:258,alignSelf:'center',borderRadius:24,backgroundColor:'#2563EB',borderWidth:1,borderColor:'#1C52D2',alignItems:'center',justifyContent:'center',shadowColor:'#1746BC',shadowOpacity:.65,shadowOffset:{width:0,height:4},shadowRadius:0,elevation:4}, pillOnboardChoice:{width:149,height:40}, pillPrimaryText:{fontSize:14,fontWeight:'700',color:C.white}, skipButton:{position:'absolute',bottom:90,alignSelf:'center',zIndex:4,padding:8}, skip:{color:C.blue,fontSize:12,fontWeight:'700'},
-  entryContent:{alignItems:'center',paddingTop:48,zIndex:3}, entryTitle:{fontSize:16,fontWeight:'700',color:'#101522',textAlign:'center'}, entryButtons:{zIndex:4,flexDirection:'row',gap:15,width:313,alignSelf:'center'}, pillGhost:{height:44,flex:1,borderRadius:24,borderWidth:1.5,borderColor:'#1C52D2',backgroundColor:'rgba(67,124,241,.38)',alignItems:'center',justifyContent:'center',shadowColor:'#1746BC',shadowOpacity:.5,shadowOffset:{width:0,height:3},shadowRadius:0,elevation:3}, pillGhostText:{color:C.white,fontSize:14,fontWeight:'700'},
-  dimLayer:{...StyleSheet.absoluteFillObject,backgroundColor:'rgba(8,19,58,.67)',zIndex:5}, roleSheet:{position:'absolute',left:0,right:0,bottom:0,zIndex:6,backgroundColor:'#EEF2FF',borderTopLeftRadius:28,borderTopRightRadius:28,paddingHorizontal:46,paddingTop:31,paddingBottom:22}, close:{position:'absolute',right:16,top:13},
-  authScreen:{zIndex:3,paddingHorizontal:30,paddingTop:150,alignItems:'center'}, authLogo:{position:'absolute',top:62,alignSelf:'center'}, authBack:{position:'absolute',top:25,left:16,zIndex:3,height:36,width:36,alignItems:'center',justifyContent:'center'}, authHead:{alignItems:'center',marginTop:0,marginBottom:24}, authTitle:{fontSize:22,fontWeight:'800',color:'#101522',marginBottom:8}, authCopy:{fontSize:12,lineHeight:17,color:'#34415C',textAlign:'center',maxWidth:276}, authField:{height:47,width:367,maxWidth:'100%',alignSelf:'center',borderRadius:24,backgroundColor:C.white,flexDirection:'row',alignItems:'center',paddingHorizontal:15,marginBottom:14,shadowColor:'#98AECB',shadowOpacity:.25,shadowOffset:{width:0,height:2},shadowRadius:3,elevation:1}, authInput:{flex:1,fontSize:14,color:C.ink,paddingHorizontal:10,paddingVertical:0}, terms:{width:367,maxWidth:'100%',flexDirection:'row',alignItems:'flex-start',marginTop:2,marginBottom:21}, remember:{width:367,maxWidth:'100%',flexDirection:'row',alignItems:'center',marginBottom:21}, checkBox:{width:13,height:13,borderRadius:7,borderWidth:1,borderColor:'#4D9F9A',marginRight:7,marginTop:1,backgroundColor:'rgba(255,255,255,.65)'}, termsText:{fontSize:10,color:'#35445D',flex:1,lineHeight:14}, forgot:{fontSize:10,color:C.blue,fontWeight:'700',marginLeft:'auto'}, authLink:{fontSize:12,color:'#35445D',textAlign:'center',marginTop:18}, linkText:{color:C.blue,fontWeight:'700'},
+let styleSheet = StyleSheet.create({
+  homeScreen: { flex: 1, backgroundColor: '#DCEFE8', overflow: 'hidden' },
+  homeMap: { ...StyleSheet.absoluteFillObject, backgroundColor: '#DCEFE8' },
+  mapParkOne: {
+    position: 'absolute',
+    height: 250,
+    width: 280,
+    borderRadius: 140,
+    backgroundColor: '#BDE8CD',
+    left: -90,
+    top: 130,
+  },
+  mapParkTwo: {
+    position: 'absolute',
+    height: 210,
+    width: 260,
+    borderRadius: 110,
+    backgroundColor: '#C9EEC7',
+    right: -100,
+    bottom: 100,
+  },
+  mapRoadOne: {
+    position: 'absolute',
+    height: 24,
+    width: '140%',
+    backgroundColor: 'rgba(255,255,255,.9)',
+    top: '29%',
+    left: '-18%',
+    transform: [{ rotate: '-21deg' }],
+  },
+  mapRoadTwo: {
+    position: 'absolute',
+    height: 22,
+    width: '140%',
+    backgroundColor: 'rgba(255,255,255,.9)',
+    top: '58%',
+    left: '-18%',
+    transform: [{ rotate: '31deg' }],
+  },
+  mapRoadThree: {
+    position: 'absolute',
+    height: 18,
+    width: '125%',
+    backgroundColor: 'rgba(255,255,255,.86)',
+    top: '47%',
+    left: '-16%',
+    transform: [{ rotate: '-58deg' }],
+  },
+  mapPin: {
+    position: 'absolute',
+    height: 44,
+    width: 44,
+    borderRadius: 22,
+    backgroundColor: '#2563EB',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 3,
+    borderColor: '#DCEFE8',
+    shadowColor: '#1646B4',
+    shadowOpacity: 0.4,
+    shadowRadius: 5,
+    elevation: 5,
+  },
+  mapTown: { position: 'absolute', fontSize: 14, fontWeight: '800', color: '#4B5563' },
+  mapZoom: {
+    position: 'absolute',
+    right: 15,
+    bottom: 170,
+    backgroundColor: C.white,
+    borderRadius: 10,
+    overflow: 'hidden',
+    alignItems: 'center',
+    shadowColor: '#555',
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  mapZoomText: { fontSize: 25, fontWeight: '800', paddingHorizontal: 11, paddingVertical: 1 },
+  mapZoomLine: { height: 1, width: 30, backgroundColor: C.line },
+  homeMapPin: {
+    position: 'absolute',
+    top: '34%',
+    left: '49%',
+    height: 47,
+    width: 47,
+    borderRadius: 24,
+    backgroundColor: C.white,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#54716C',
+    shadowOpacity: 0.25,
+    shadowRadius: 5,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 3,
+  },
+  homeMapLabel: {
+    position: 'absolute',
+    top: '47%',
+    right: 34,
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#64847D',
+  },
+  homeTop: {
+    position: 'absolute',
+    top: 20,
+    left: 20,
+    right: 20,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  homeRoundButton: {
+    height: 46,
+    width: 46,
+    borderRadius: 23,
+    backgroundColor: '#2563EB',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#1646B4',
+    shadowOpacity: 0.65,
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 0,
+    elevation: 4,
+  },
+  homePanel: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    minHeight: 144,
+    backgroundColor: '#EEF2FF',
+    borderTopLeftRadius: 29,
+    borderTopRightRadius: 29,
+    paddingHorizontal: 22,
+    paddingTop: 13,
+    paddingBottom: 17,
+  },
+  homePanelExpanded: { minHeight: 390 },
+  panelHandle: { alignItems: 'center', height: 24 },
+  handle: { height: 4, width: 42, borderRadius: 4, backgroundColor: '#B9C4E0', marginBottom: 2 },
+  homeRequestButton: {
+    height: 44,
+    width: 258,
+    alignSelf: 'center',
+    borderRadius: 24,
+    backgroundColor: '#2563EB',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#1646B4',
+    shadowOpacity: 0.65,
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 0,
+    elevation: 4,
+    marginTop: 21,
+  },
+  homeRequestText: { fontSize: 14, fontWeight: '800', color: C.white },
+  homeSearch: {
+    height: 44,
+    backgroundColor: C.white,
+    borderRadius: 22,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 15,
+    marginTop: 8,
+  },
+  homeSearchInput: { flex: 1, paddingHorizontal: 9, fontSize: 14, color: C.ink },
+  homeSectionTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: C.ink,
+    marginTop: 15,
+    marginBottom: 10,
+  },
+  homeServices: { flexDirection: 'row', gap: 8 },
+  homeService: {
+    flex: 1,
+    height: 51,
+    borderRadius: 13,
+    backgroundColor: '#2563EB',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 6,
+    shadowColor: '#1646B4',
+    shadowOpacity: 0.55,
+    shadowOffset: { width: 0, height: 3 },
+    shadowRadius: 0,
+    elevation: 3,
+  },
+  homeServiceText: { color: C.white, fontSize: 10, fontWeight: '700', textAlign: 'center' },
+  homeSectionRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  homeViewAll: { fontSize: 12, fontWeight: '700', color: C.blue, marginTop: 15 },
+  homeRecent: {
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: C.white,
+    paddingHorizontal: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  homeRecentTitle: { fontSize: 12, fontWeight: '700', color: C.ink },
+  homeRecentMeta: { fontSize: 10, color: C.muted },
+  safe: { flex: 1, backgroundColor: C.pale },
+  scroll: { paddingBottom: 88 },
+  page: { paddingHorizontal: 20, paddingTop: 14 },
+  pageFill: { flex: 1 },
+  nav: {
+    height: 35,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  back: { minWidth: 70 },
+  backText: { fontSize: 15, color: C.ink, fontWeight: '600' },
+  bell: { fontSize: 20, color: C.blue },
+  logo: { fontSize: 29, fontWeight: '800', color: C.blue, letterSpacing: -1, marginBottom: 28 },
+  eyebrow: { fontSize: 11, fontWeight: '800', letterSpacing: 1.1, color: C.mint, marginBottom: 6 },
+  title: {
+    fontSize: 29,
+    lineHeight: 34,
+    fontWeight: '800',
+    color: C.ink,
+    letterSpacing: -0.7,
+    marginBottom: 8,
+  },
+  titleSmall: { fontSize: 21, fontWeight: '800', color: C.ink, marginTop: 10 },
+  sub: { fontSize: 14, lineHeight: 21, color: C.muted, marginBottom: 20 },
+  button: {
+    backgroundColor: C.blue,
+    minHeight: 48,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 14,
+  },
+  buttonText: { color: C.white, fontSize: 14, fontWeight: '800' },
+  secondary: { backgroundColor: C.mint },
+  outline: { backgroundColor: C.white, borderWidth: 1, borderColor: C.blue },
+  outlineText: { color: C.blue },
+  danger: { backgroundColor: '#FFF1F2' },
+  dangerText: { color: C.red },
+  smallButton: { minHeight: 38, borderRadius: 10 },
+  centerLink: {
+    textAlign: 'center',
+    color: C.blue,
+    fontSize: 13,
+    fontWeight: '700',
+    marginTop: 18,
+  },
+  splash: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: C.pale,
+    padding: 30,
+  },
+  splashMark: {
+    height: 220,
+    width: 220,
+    borderRadius: 36,
+    backgroundColor: '#BDEFE6',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 28,
+  },
+  splashTitle: { fontSize: 31, fontWeight: '800', color: C.ink, marginBottom: 10 },
+  splashSub: {
+    fontSize: 15,
+    color: C.muted,
+    textAlign: 'center',
+    lineHeight: 22,
+    marginBottom: 34,
+  },
+  onboard: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: C.blue,
+    padding: 26,
+  },
+  wave: {
+    height: 240,
+    width: '100%',
+    borderRadius: 26,
+    backgroundColor: '#BDEFE6',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 24,
+  },
+  onboardTitle: { fontSize: 27, fontWeight: '800', color: C.white, marginBottom: 9 },
+  onboardSub: {
+    fontSize: 14,
+    color: C.white,
+    textAlign: 'center',
+    opacity: 0.85,
+    marginBottom: 20,
+  },
+  dots: { flexDirection: 'row', marginBottom: 30 },
+  dotActive: { color: C.mint, fontSize: 18, marginRight: 8 },
+  dot: { color: C.white, fontSize: 18, opacity: 0.7 },
+  inputGroup: { marginBottom: 15 },
+  label: { fontSize: 13, fontWeight: '700', color: C.ink, marginBottom: 7 },
+  input: {
+    borderWidth: 1,
+    borderColor: C.line,
+    borderRadius: 11,
+    backgroundColor: C.white,
+    paddingHorizontal: 13,
+    height: 48,
+    fontSize: 14,
+    color: C.ink,
+  },
+  multiline: { height: 94, textAlignVertical: 'top', paddingTop: 13 },
+  card: {
+    backgroundColor: C.white,
+    borderRadius: 15,
+    borderWidth: 1,
+    borderColor: C.line,
+    padding: 15,
+    marginBottom: 12,
+  },
+  cardTitle: { fontSize: 14, fontWeight: '800', color: C.ink },
+  cardText: { fontSize: 12, color: C.muted, lineHeight: 18 },
+  row: { flexDirection: 'row', alignItems: 'center' },
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+  },
+  category: {
+    width: '48.5%',
+    backgroundColor: C.white,
+    borderRadius: 15,
+    borderWidth: 1,
+    borderColor: C.line,
+    padding: 14,
+    marginBottom: 11,
+  },
+  categoryOn: { borderWidth: 2, borderColor: C.mint, backgroundColor: '#E9FBF5' },
+  categoryIcon: { fontSize: 24, marginBottom: 13 },
+  categoryText: { fontSize: 13, fontWeight: '800', color: C.ink },
+  info: { padding: 13, borderRadius: 12, backgroundColor: '#FFF6DD', marginBottom: 16 },
+  infoText: { color: '#80611C', fontSize: 12, lineHeight: 18 },
+  progress: { height: 5, flexDirection: 'row', gap: 5, marginBottom: 23 },
+  progressPart: { flex: 1, borderRadius: 5, backgroundColor: C.line },
+  progressOn: { backgroundColor: C.blue },
+  avatar: {
+    height: 44,
+    width: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#D9FBF0',
+    marginRight: 11,
+  },
+  avatarBig: { height: 76, width: 76, borderRadius: 38, marginRight: 0 },
+  avatarText: { fontSize: 14, color: C.blue, fontWeight: '800' },
+  avatarTextBig: { fontSize: 24 },
+  verified: { color: C.mint },
+  money: { fontSize: 16, fontWeight: '800', color: C.blue },
+  feeSmall: { fontSize: 10, fontWeight: '400', color: C.muted },
+  profileHead: { alignItems: 'center', marginBottom: 21 },
+  badge: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: 9,
+    paddingVertical: 5,
+    borderRadius: 10,
+    backgroundColor: C.white,
+    borderWidth: 1,
+    borderColor: C.line,
+    marginBottom: 9,
+  },
+  badgeGreen: { backgroundColor: '#DDFBF1', borderColor: '#DDFBF1' },
+  badgeActive: { backgroundColor: '#E5F2FF', borderColor: '#E5F2FF' },
+  badgePending: { backgroundColor: '#FFF4D6', borderColor: '#FFF4D6' },
+  badgeText: { fontSize: 10, fontWeight: '800', color: C.muted },
+  badgeActiveText: { color: '#2F77B0' },
+  badgePendingText: { color: '#9A701B' },
+  map: {
+    height: 215,
+    borderRadius: 17,
+    backgroundColor: '#CCE7DA',
+    overflow: 'hidden',
+    marginVertical: 15,
+    position: 'relative',
+    borderWidth: 1,
+    borderColor: '#B2D2C1',
+  },
+  roadOne: {
+    position: 'absolute',
+    height: 16,
+    width: '150%',
+    backgroundColor: 'rgba(255,255,255,.65)',
+    transform: [{ rotate: '-25deg' }],
+    top: '43%',
+    left: '-30%',
+  },
+  roadTwo: {
+    position: 'absolute',
+    height: 16,
+    width: '150%',
+    backgroundColor: 'rgba(255,255,255,.65)',
+    transform: [{ rotate: '37deg' }],
+    top: '62%',
+    left: '-26%',
+  },
+  pin: { position: 'absolute', fontSize: 25, zIndex: 2 },
+  route: {
+    position: 'absolute',
+    left: '27%',
+    top: '53%',
+    width: '49%',
+    borderTopWidth: 3,
+    borderColor: C.blue,
+    borderStyle: 'dashed',
+    transform: [{ rotate: '-18deg' }],
+  },
+  mapLabel: {
+    position: 'absolute',
+    bottom: 8,
+    left: 11,
+    fontSize: 10,
+    color: C.muted,
+    fontWeight: '700',
+  },
+  timeline: {
+    marginBottom: 15,
+    borderLeftWidth: 2,
+    borderColor: '#C8E8DD',
+    paddingLeft: 16,
+    marginLeft: 8,
+  },
+  timelineRow: { flexDirection: 'row', marginBottom: 16, position: 'relative' },
+  timelineDot: {
+    height: 10,
+    width: 10,
+    borderRadius: 5,
+    backgroundColor: C.line,
+    position: 'absolute',
+    left: -22,
+    top: 4,
+  },
+  timelineDotOn: { backgroundColor: C.mint },
+  rowText: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderColor: '#EEF1F8',
+    gap: 16,
+  },
+  strong: { fontWeight: '800', color: C.ink },
+  stars: { fontSize: 33, color: C.gold, letterSpacing: 3, marginTop: 6 },
+  hero: {
+    backgroundColor: C.blue,
+    borderRadius: 18,
+    padding: 20,
+    marginBottom: 20,
+    overflow: 'hidden',
+  },
+  heroKicker: { fontSize: 10, fontWeight: '800', letterSpacing: 1, color: C.mint, marginBottom: 8 },
+  heroTitle: {
+    color: C.white,
+    fontSize: 24,
+    lineHeight: 29,
+    fontWeight: '800',
+    maxWidth: '82%',
+    marginBottom: 7,
+  },
+  heroCopy: { color: '#DDE7FF', fontSize: 13, lineHeight: 19, maxWidth: '86%', marginBottom: 16 },
+  heroButton: {
+    backgroundColor: C.white,
+    alignSelf: 'flex-start',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 10,
+  },
+  heroButtonText: { fontSize: 12, fontWeight: '800', color: C.blue },
+  section: { fontSize: 16, fontWeight: '800', color: C.ink, marginTop: 6, marginBottom: 12 },
+  blueLink: { color: C.blue, fontWeight: '800', fontSize: 12, marginLeft: 'auto' },
+  wallet: { backgroundColor: C.blue, borderRadius: 18, padding: 20, marginBottom: 18 },
+  walletSmall: { color: '#DDE7FF', fontSize: 11 },
+  walletValue: { fontSize: 30, fontWeight: '800', color: C.white, marginVertical: 7 },
+  filters: { flexDirection: 'row', gap: 7, marginBottom: 9 },
+  success: { alignItems: 'center', marginTop: 55, marginBottom: 24 },
+  successIcon: { fontSize: 51, marginBottom: 10 },
+  successTitle: {
+    fontSize: 27,
+    lineHeight: 32,
+    fontWeight: '800',
+    color: C.ink,
+    textAlign: 'center',
+    marginVertical: 7,
+  },
+  tabs: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 75,
+    backgroundColor: '#2563EB',
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+  },
+  tab: { alignItems: 'center', minWidth: 58 },
+  tabIconWrap: {
+    height: 28,
+    width: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  tabIconActive: { backgroundColor: '#EEF2FF' },
+  tabText: { fontSize: 10, color: C.white, marginTop: 3 },
+  tabTextActive: { color: C.mint, fontWeight: '800' },
+  chatHead: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    borderColor: C.line,
+    paddingBottom: 12,
+  },
+  call: { fontSize: 22, color: C.blue, marginLeft: 'auto' },
+  chat: { flex: 1, marginVertical: 12 },
+  bubble: {
+    alignSelf: 'flex-start',
+    maxWidth: '77%',
+    backgroundColor: C.white,
+    padding: 12,
+    borderRadius: 13,
+    borderBottomLeftRadius: 3,
+    marginBottom: 9,
+  },
+  bubbleMe: {
+    alignSelf: 'flex-end',
+    backgroundColor: '#DDFBF1',
+    borderBottomLeftRadius: 13,
+    borderBottomRightRadius: 3,
+  },
+  bubbleText: { fontSize: 13, color: C.ink, lineHeight: 18 },
+  time: { fontSize: 9, color: C.muted, marginTop: 4 },
+  composer: { flexDirection: 'row', paddingVertical: 11, gap: 8 },
+  composerInput: {
+    flex: 1,
+    height: 45,
+    borderWidth: 1,
+    borderColor: C.line,
+    borderRadius: 13,
+    paddingHorizontal: 12,
+    backgroundColor: C.white,
+  },
+  send: {
+    width: 45,
+    height: 45,
+    borderRadius: 13,
+    backgroundColor: C.blue,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  choice: {
+    backgroundColor: C.white,
+    borderColor: C.line,
+    borderWidth: 1,
+    borderRadius: 14,
+    padding: 15,
+    marginBottom: 11,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  choiceOn: { borderWidth: 2, borderColor: C.mint, backgroundColor: '#E9FBF5' },
+  toast: {
+    position: 'absolute',
+    bottom: 88,
+    alignSelf: 'center',
+    backgroundColor: C.ink,
+    paddingHorizontal: 16,
+    paddingVertical: 11,
+    borderRadius: 10,
+  },
+  toastText: { color: C.white, fontSize: 12, fontWeight: '700' },
 });
 
-const s=new Proxy({}, {get:(_target,key)=>styleSheet[key],set:(_target,key,value)=>{styleSheet={...styleSheet,[key]:value};return true;},ownKeys:()=>Reflect.ownKeys(styleSheet),getOwnPropertyDescriptor:(_target,key)=>key in styleSheet?{enumerable:true,configurable:true,value:styleSheet[key]}:undefined});
+function HomeActionImage({ source, label, Icon, onPress }) {
+  const isProfile = label === 'PROFILE';
+  const profileImage = homeProfileImage || profileAssets.profileImage;
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      style={[
+        s.homeRoundButton,
+        {
+          top: 22,
+          height: 58,
+          width: 58,
+          borderRadius: 29,
+          backgroundColor: 'transparent',
+          alignItems: 'center',
+          justifyContent: 'center',
+        },
+      ]}
+    >
+      {source && (
+        <Image
+          source={source}
+          resizeMode="contain"
+          style={{ position: 'absolute', height: 66, width: 66 }}
+        />
+      )}
+      {isProfile && profileImage ? (
+        <Image
+          source={profileImage}
+          resizeMode="cover"
+          style={{ height: 36, width: 36, borderRadius: 18 }}
+        />
+      ) : isProfile ? (
+        <UserRound size={22} color={C.white} fill={C.white} strokeWidth={2.5} />
+      ) : (
+        <Icon size={20} color={C.white} fill={C.white} strokeWidth={2.5} />
+      )}
+    </TouchableOpacity>
+  );
+}
+function PalGoBottomTabs({ role, screen, go }) {
+  const tabs =
+    role === 'pal'
+      ? [
+          ['home', House, 'Home'],
+          ['errands', ClipboardList, 'Errands'],
+          ['wallet', CreditCard, 'Wallet'],
+          ['profile', UserRound, 'Profile'],
+        ]
+      : [
+          ['home', House, 'Home'],
+          ['errands', ClipboardList, 'Errands'],
+          ['profile', UserRound, 'Profile'],
+        ];
+  return (
+    <View style={[s.tabs, { backgroundColor: '#2563EB' }]}>
+      {tabs.map(([id, Icon, label]) => {
+        const active = screen === id,
+          iconColor = active ? C.mint : C.white;
+        return (
+          <TouchableOpacity
+            key={id}
+            onPress={() => go(id)}
+            style={{ alignItems: 'center', justifyContent: 'center' }}
+          >
+            <View
+              style={
+                active
+                  ? {
+                      height: 38,
+                      borderRadius: 21,
+                      backgroundColor: '#EEF2FF',
+                      paddingHorizontal: 12,
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      gap: 5,
+                    }
+                  : { height: 38, justifyContent: 'center', alignItems: 'center' }
+              }
+            >
+              <Icon size={18} color={iconColor} strokeWidth={2.4} />
+              <Text style={{ fontSize: 10, fontWeight: '700', color: iconColor }}>{label}</Text>
+            </View>
+          </TouchableOpacity>
+        );
+      })}
+    </View>
+  );
+}
 
-export { C, s, a, Logo, AssetBackground, Button, Header, commissionRate, money, statuses, Shell, Home, Errands, PalDetail, PalActive, PalPaid, PalCompleteWaiting, Chat, Profile, Notifications, Success, Input, Card, Avatar, Badge, ErrandCard, Map, HomeMap, Hero, Choice, Progress, Info, RowText, Timeline, BottomTabs, createBack, createNext, HomeActionImage, UserHome, PalGoBottomTabs, UserHomeUpdated, DetailRow, TrackingFinal, ChatFinal, ProfileFinal, ImagePlaceholder, PersonErrandCard, ActiveActionImage, PalTrackingHome, PaymentPending, CompletionConfirm, PaymentFlowFinal };
+function DetailRow({ Icon, label, value, accent, size = 20 }) {
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 13 }}>
+      <Icon size={size} color={accent || C.blue} strokeWidth={2.2} />
+      <View style={{ marginLeft: 13, flex: 1 }}>
+        <Text style={{ fontSize: 14, color: C.ink }}>
+          {label}
+          {value ? `: ${value}` : ''}
+        </Text>
+      </View>
+    </View>
+  );
+}
+
+function ImagePlaceholder({ size = 58, label = 'IMAGE', profile = false, image }) {
+  return (
+    <View
+      style={{
+        height: size,
+        width: size,
+        borderRadius: size / 2,
+        borderWidth: 2,
+        borderColor: C.blue,
+        backgroundColor: C.white,
+        alignItems: 'center',
+        justifyContent: 'center',
+        overflow: 'hidden',
+      }}
+    >
+      {image ? (
+        <Image source={image} resizeMode="cover" style={{ height: '100%', width: '100%' }} />
+      ) : profile ? (
+        <UserRound size={Math.round(size * 0.42)} color={C.blue} strokeWidth={2} />
+      ) : (
+        <Text style={{ fontSize: 8, fontWeight: '800', color: C.blue, textAlign: 'center' }}>
+          {label}
+        </Text>
+      )}
+    </View>
+  );
+}
+function PersonErrandCard({
+  person = {},
+  offer,
+  distance,
+  services,
+  rating = '4.5',
+  jobs = 0,
+  phoneVerified = true,
+  idVerified = true,
+  status,
+  primaryTitle = 'Accept',
+  onPrimary,
+  secondaryTitle = 'View Profile',
+  onSecondary,
+}) {
+  const verification = (label, verified, color) => (
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginRight: 10 }}>
+      {verified ? <CheckCircle2 size={14} color={color} /> : <X size={14} color={C.red} />}
+      <Text style={{ fontSize: 10, color: verified ? C.muted : C.red }}>
+        {label} {verified ? 'verified' : 'not verified'}
+      </Text>
+    </View>
+  );
+  return (
+    <View
+      style={{
+        backgroundColor: C.white,
+        borderRadius: 18,
+        padding: 15,
+        marginBottom: 13,
+        shadowColor: '#8592B1',
+        shadowOpacity: 0.12,
+        shadowRadius: 9,
+        shadowOffset: { width: 0, height: 3 },
+        elevation: 2,
+      }}
+    >
+      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        <ImagePlaceholder size={58} profile image={person.image} />
+        <View style={{ flex: 1, marginLeft: 11 }}>
+          <Text numberOfLines={1} style={{ fontSize: 14, fontWeight: '800', color: C.ink }}>
+            {person.name || 'PalGo member'}
+          </Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 5 }}>
+            <Text style={{ fontSize: 12, color: '#FFD400' }}>★★★★★</Text>
+            <Text style={{ fontSize: 11, color: C.muted, marginLeft: 5 }}>{rating}</Text>
+            {jobs > 0 && <Text style={{ fontSize: 10, color: C.muted }}> · {jobs} errands</Text>}
+          </View>
+        </View>
+        <Text style={{ fontSize: 14, fontWeight: '800', color: C.blue, marginLeft: 7 }}>
+          {money(offer)}
+        </Text>
+      </View>
+      <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', marginTop: 13 }}>
+        {verification('Phone', phoneVerified, C.mint)}
+        {verification('ID', idVerified, C.blue)}
+      </View>
+      <Text numberOfLines={2} style={{ fontSize: 11, color: C.muted, marginTop: 11 }}>
+        {services || 'Errand support'} · {distance || 'Distance unavailable'}
+      </Text>
+      {!!status && (
+        <Text style={{ fontSize: 11, fontWeight: '800', color: C.mint, marginTop: 8 }}>
+          {status}
+        </Text>
+      )}
+      <View style={{ flexDirection: 'row', gap: 10, marginTop: 15 }}>
+        <TouchableOpacity
+          onPress={onPrimary}
+          style={{
+            height: 40,
+            flex: 1,
+            borderRadius: 20,
+            backgroundColor: C.mint,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <Text style={{ fontSize: 12, fontWeight: '800', color: C.white }}>{primaryTitle}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={onSecondary}
+          style={{
+            height: 40,
+            flex: 1,
+            borderRadius: 20,
+            backgroundColor: C.blue,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <Text style={{ fontSize: 12, fontWeight: '800', color: C.white }}>{secondaryTitle}</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+}
+
+function CompletionConfirm({ onBack, onContinue }) {
+  return (
+    <Shell back={onBack}>
+      <View
+        style={{
+          marginTop: 120,
+          backgroundColor: C.white,
+          borderRadius: 24,
+          padding: 24,
+          shadowColor: '#38466A',
+          shadowOpacity: 0.18,
+          shadowRadius: 16,
+          elevation: 8,
+        }}
+      >
+        <Text style={{ fontSize: 20, fontWeight: '800', textAlign: 'center' }}>
+          Confirm completion?
+        </Text>
+        <Text
+          style={{
+            fontSize: 14,
+            lineHeight: 21,
+            color: C.muted,
+            textAlign: 'center',
+            marginTop: 13,
+          }}
+        >
+          Confirm only after your Pal has marked the saved errand complete.
+        </Text>
+        <View style={{ height: 24 }} />
+        <Button title="Confirm completed errand" onPress={onContinue} />
+        <TouchableOpacity onPress={onBack}>
+          <Text
+            style={{
+              textAlign: 'center',
+              color: C.blue,
+              fontSize: 13,
+              fontWeight: '800',
+              marginTop: 18,
+            }}
+          >
+            Not yet
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </Shell>
+  );
+}
+
+const a = StyleSheet.create({
+  splash: { flex: 1, backgroundColor: '#EEF2FF', alignItems: 'center', justifyContent: 'center' },
+  splashLogo: { marginTop: 92 },
+  authCanvas: { flex: 1, overflow: 'hidden', backgroundColor: '#EEF2FF' },
+  backgroundPlaceholder: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: '#EEF2FF',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  backgroundPlaceholderText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#8B99BD',
+    letterSpacing: 0.4,
+  },
+  waveBand: {
+    height: 68,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-around',
+    paddingHorizontal: 1,
+    zIndex: 2,
+  },
+  waveBandFlip: { position: 'absolute', bottom: 0, left: 0, right: 0, transform: [{ scaleY: -1 }] },
+  waveBar: { width: 8, borderRadius: 9, backgroundColor: C.blue },
+  logoPlaceholder: { height: 48, width: 140, alignItems: 'center', justifyContent: 'center' },
+  logoImage: { height: '100%', width: '100%' },
+  logoPlaceholderText: { fontSize: 12, fontWeight: '800', letterSpacing: 0.8, color: C.blue },
+  onboardContent: { alignItems: 'center', paddingTop: 62, paddingHorizontal: 30, zIndex: 3 },
+  onboardMiddle: { alignItems: 'center' },
+  imagePlaceholder: {
+    height: 267,
+    width: 267,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+    marginTop: 42,
+    marginBottom: 43,
+  },
+  onboardImage: { height: '100%', width: '100%' },
+  placeholderLabel: { fontSize: 12, fontWeight: '800', letterSpacing: 0.7, color: C.blue },
+  placeholderNote: { fontSize: 10, color: C.muted, marginTop: 6 },
+  onboardTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    lineHeight: 30,
+    color: '#101522',
+    textAlign: 'center',
+  },
+  onboardFooter: {
+    position: 'absolute',
+    left: 28,
+    right: 28,
+    bottom: 46,
+    zIndex: 4,
+    alignItems: 'center',
+  },
+  dots: { flexDirection: 'row', gap: 8, marginTop: 14, alignSelf: 'center' },
+  dot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: 'rgba(255,255,255,.55)',
+    borderWidth: 1,
+    borderColor: 'rgba(46,99,233,.22)',
+  },
+  dotOn: { backgroundColor: C.mint, borderColor: C.mint },
+  onboardBack: { paddingVertical: 10, alignSelf: 'center' },
+  onboardBackText: { fontSize: 14, fontWeight: '700', color: C.blue },
+  pillPrimary: {
+    height: 44,
+    width: 258,
+    alignSelf: 'center',
+    borderRadius: 24,
+    backgroundColor: '#2563EB',
+    borderWidth: 1,
+    borderColor: '#1C52D2',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#1746BC',
+    shadowOpacity: 0.65,
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 0,
+    elevation: 4,
+  },
+  pillOnboardChoice: { width: 149, height: 40 },
+  pillPrimaryText: { fontSize: 14, fontWeight: '700', color: C.white },
+  skipButton: { position: 'absolute', bottom: 90, alignSelf: 'center', zIndex: 4, padding: 8 },
+  skip: { color: C.blue, fontSize: 12, fontWeight: '700' },
+  entryContent: { alignItems: 'center', paddingTop: 48, zIndex: 3 },
+  entryTitle: { fontSize: 16, fontWeight: '700', color: '#101522', textAlign: 'center' },
+  entryButtons: { zIndex: 4, flexDirection: 'row', gap: 15, width: 313, alignSelf: 'center' },
+  pillGhost: {
+    height: 44,
+    flex: 1,
+    borderRadius: 24,
+    borderWidth: 1.5,
+    borderColor: '#1C52D2',
+    backgroundColor: 'rgba(67,124,241,.38)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#1746BC',
+    shadowOpacity: 0.5,
+    shadowOffset: { width: 0, height: 3 },
+    shadowRadius: 0,
+    elevation: 3,
+  },
+  pillGhostText: { color: C.white, fontSize: 14, fontWeight: '700' },
+  dimLayer: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(8,19,58,.67)', zIndex: 5 },
+  roleSheet: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 6,
+    backgroundColor: '#EEF2FF',
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    paddingHorizontal: 46,
+    paddingTop: 31,
+    paddingBottom: 22,
+  },
+  close: { position: 'absolute', right: 16, top: 13 },
+  authScreen: { zIndex: 3, paddingHorizontal: 30, paddingTop: 150, alignItems: 'center' },
+  authLogo: { position: 'absolute', top: 62, alignSelf: 'center' },
+  authBack: {
+    position: 'absolute',
+    top: 25,
+    left: 16,
+    zIndex: 3,
+    height: 36,
+    width: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  authHead: { alignItems: 'center', marginTop: 0, marginBottom: 24 },
+  authTitle: { fontSize: 22, fontWeight: '800', color: '#101522', marginBottom: 8 },
+  authCopy: { fontSize: 12, lineHeight: 17, color: '#34415C', textAlign: 'center', maxWidth: 276 },
+  authField: {
+    height: 47,
+    width: 367,
+    maxWidth: '100%',
+    alignSelf: 'center',
+    borderRadius: 24,
+    backgroundColor: C.white,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 15,
+    marginBottom: 14,
+    shadowColor: '#98AECB',
+    shadowOpacity: 0.25,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 3,
+    elevation: 1,
+  },
+  authInput: { flex: 1, fontSize: 14, color: C.ink, paddingHorizontal: 10, paddingVertical: 0 },
+  terms: {
+    width: 367,
+    maxWidth: '100%',
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginTop: 2,
+    marginBottom: 21,
+  },
+  remember: {
+    width: 367,
+    maxWidth: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 21,
+  },
+  checkBox: {
+    width: 13,
+    height: 13,
+    borderRadius: 7,
+    borderWidth: 1,
+    borderColor: '#4D9F9A',
+    marginRight: 7,
+    marginTop: 1,
+    backgroundColor: 'rgba(255,255,255,.65)',
+  },
+  termsText: { fontSize: 10, color: '#35445D', flex: 1, lineHeight: 14 },
+  forgot: { fontSize: 10, color: C.blue, fontWeight: '700', marginLeft: 'auto' },
+  authLink: { fontSize: 12, color: '#35445D', textAlign: 'center', marginTop: 18 },
+  linkText: { color: C.blue, fontWeight: '700' },
+});
+
+const s = new Proxy(
+  {},
+  {
+    get: (_target, key) => styleSheet[key],
+    set: (_target, key, value) => {
+      styleSheet = { ...styleSheet, [key]: value };
+      return true;
+    },
+    ownKeys: () => Reflect.ownKeys(styleSheet),
+    getOwnPropertyDescriptor: (_target, key) =>
+      key in styleSheet
+        ? { enumerable: true, configurable: true, value: styleSheet[key] }
+        : undefined,
+  },
+);
+
+export {
+  C,
+  s,
+  a,
+  Logo,
+  AssetBackground,
+  Button,
+  Header,
+  money,
+  Shell,
+  PalCompleteWaiting,
+  Notifications,
+  Success,
+  Input,
+  Card,
+  Avatar,
+  HomeMap,
+  Choice,
+  RowText,
+  HomeActionImage,
+  PalGoBottomTabs,
+  DetailRow,
+  ImagePlaceholder,
+  PersonErrandCard,
+  CompletionConfirm,
+};

@@ -1,7 +1,11 @@
 export default ({ config }) => {
   const androidMapsKey = process.env.GOOGLE_MAPS_API_KEY;
   const iosMapsKey = process.env.GOOGLE_MAPS_IOS_API_KEY;
-  const plugins = [...(config.plugins || []), '@react-native-community/datetimepicker', 'expo-sqlite', 'expo-splash-screen'];
+  const plugins = [
+    ...(config.plugins || []),
+    '@react-native-community/datetimepicker',
+    'expo-splash-screen',
+  ];
 
   // This configures Maps in a custom native build. Expo Go already bundles
   // react-native-maps and does not read this project API key at runtime.

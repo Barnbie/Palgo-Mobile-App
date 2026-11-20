@@ -27,11 +27,6 @@ export const homeActionImages = {
 export const homeProfileImage = null;
 
 // Active-errand action images include BOTH their icon and their background.
-export const activeErrandImages = {
-  contact: require('./assets/contact-pal.png'),
-  safety: require('./assets/safety.png'),
-};
-
 
 // Profile header art and the fallback/user profile image are separate.
 export const profileAssets = { headerBackground: null, profileImage: null };

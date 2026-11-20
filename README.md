@@ -1,30 +1,69 @@
-# Palgo-Mobile-App
+# PalGo
 
-PalGo is a React Native/Expo errand app. User sign-up now creates accounts through Supabase Auth; Pal sign-up, login, payments, and withdrawals are still demo flows.
+PalGo is an Expo SDK 58 / React Native errand marketplace. **Users** post errands and **Pals** accept and complete them. The backend is Supabase (Auth, Postgres with RLS, Storage, one Edge Function).
 
-## Run
+## Run on your phone (EAS development build)
 
 ```bash
-npm install
-npx expo start
+pnpm install
+pnpm start          # = expo start --dev-client
 ```
 
-Use the on-screen role picker to demonstrate the User or Pal journey. The app persists its mock state while it is open.
+Open the PalGo development build already installed on your phone and scan the QR code (or pick the server from the build's launcher). If the phone and Mac are on different networks, use `pnpm start -- --tunnel`.
 
-## Google Maps
+Rebuild the native app (`eas build --profile development --platform android`) only when native modules or `app.config.js` change. This refactor removed `expo-sqlite` and `expo-location`, which only matters for your next rebuild; JavaScript changes need no rebuild.
 
-Create separate, platform-restricted Google Maps keys and add them to the local `.env` file as `GOOGLE_MAPS_API_KEY` (Android) and `GOOGLE_MAPS_IOS_API_KEY` (iOS). `app.config.js` passes those values to Expo's native maps configuration. Rebuild the native app after changing either key.
+Other scripts: `pnpm lint`, `pnpm format`, `pnpm test`, `pnpm check` (lint + format check + tests). CI (`.github/workflows/ci.yml`) runs the same checks plus an `expo export` smoke test.
 
-## Supabase User sign-up
+## Environment
 
-Copy `.env.example` to `.env` and fill `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY` from the Supabase project settings. `.env` is ignored by Git. Only use the publishable key in this mobile app; never put a Supabase secret or `service_role` key in the app. Restart Expo after changing environment values.
+Copy `.env.example` to `.env` and fill:
 
-User sign-up stores the full name and `role: user` in Supabase Auth metadata. Confirmation uses a six-digit email OTP, then shows an Email verified screen before continuing. In Supabase, enable email confirmations and edit **Authentication → Email Templates → Confirm signup** so the message contains `{{ .Token }}` (the six-digit code) instead of only `{{ .ConfirmationURL }}`. The client verifies it with Supabase Auth's OTP endpoint.
+- `EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (publishable key only, never a `service_role` key).
+- `GOOGLE_MAPS_API_KEY` (Android) and `GOOGLE_MAPS_IOS_API_KEY` (iOS), platform-restricted. Rebuild the native app after changing them.
 
-Supabase's built-in SMTP is suitable only for early testing: it currently sends only to project team addresses and is rate-limited. For sign-ups from arbitrary Gmail inboxes, configure a custom SMTP provider in Supabase Auth. Resend is the recommended provider for this project; it can deliver to Gmail recipients, but the From address must use a domain you control and verify. Keep SMTP credentials in Supabase's server-side SMTP settings, never in this app's `.env`.
+## Supabase setup
+
+Apply the migrations in `supabase/migrations` in order:
+
+1. `202611150001_private_pal_id_storage.sql` – private buckets for Pal ID documents and profile photos.
+2. `202611150002_real_profiles_errands_reviews.sql` – profiles, errands, reviews, RLS, and the errand/review functions.
+3. `202611200001_security_hardening.sql` – server-controlled roles and Pal status, column-level grants, address privacy, tighter photo access, `app_settings`.
+
+Enable email confirmation and put `{{ .Token }}` in **Authentication → Email Templates → Confirm signup** (sign-up uses a six-digit OTP). Built-in SMTP is for testing only; use a custom SMTP provider (e.g. Resend) for real users.
+
+Deploy `supabase/functions/delete-account` (`supabase functions deploy delete-account`) for in-app account deletion. It is not deployed yet.
+
+### Security model
+
+- Roles and Pal verification are never taken from client-writable auth metadata. The `sync_role_profile` trigger creates the profile; Pal details go through `save_pal_profile`.
+- ID number, address and documents live in `pal_profiles` / private Storage, with column-level update grants.
+- Pending errands hide the exact address and notes from Pals until accepted.
+- Auth tokens are stored in Expo SecureStore (chunked), not SQLite.
+- `app_settings.require_verified_pals` is `false`. Set it to `true` once Pal ID review exists; Pals then must be verified to accept errands.
 
 ## Architecture
 
-- `App.js` contains the screen renderer and app state; UI screens and reusable components are organized under `src/features` and `src/AppComponents.js`.
-- `src/lib/supabase.js` contains the Supabase client and User sign-up/confirmation calls. Payment and withdrawal adapters remain demo implementations.
-- `commissionRate` is the single source of truth for the PalGo commission calculation.
+- `App.js` – small shell: wires state hooks, resolves the current route, renders it.
+- `src/navigation` – route table (`resolveRoute`, tabs, notices). Each route returns `{ view, back }`; Android back follows `back`.
+- `src/state` – hooks: `useRouter`, `usePreferences`, `useAccount` (session, roles, profile), `useErrands` (list, refresh every 20 s, on foreground and after changes), `useWithdrawalPin`.
+- `src/lib` – `supabase.js`, `secureStorage.js`, `mappers.js`, and `api/{auth,profile,errands}.js`.
+- `src/features/*` – screens; `src/AppComponents.js` – shared components.
+
+## Progress log
+
+- [x] Authentication (email OTP sign-up, login, password/email change, delete account)
+- [x] Roles/Pal status server-controlled; ID and address moved out of auth metadata
+- [x] Address privacy for pending errands; photo access limited to errand counterparts
+- [x] Tokens moved to SecureStore
+- [x] `App.js` split into hooks and routes; dead code removed
+- [x] Single source of truth for profile data; errands refresh automatically
+- [x] ESLint, Prettier, Jest, GitHub Actions CI
+- [ ] Pal identity verification review (deferred)
+- [ ] Errand lifecycle: cancel/release of accepted errands, disputes (deferred)
+- [ ] Payments, messaging, withdrawals (demo only / removed)
+- [ ] Dark-mode styling (setting exists but does not restyle yet)
+
+## Removed in the refactor
+
+Unused chat, payment, receipt and counter-offer screens and the `commissionRate` helper were removed as dead code. They remain in git history at commit `82cba83`.

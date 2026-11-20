@@ -1,96 +1,1156 @@
-import React, { useEffect, useState } from 'react';
-import { Alert, Image, Linking, Modal, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { Banknote, CheckCircle2, ChevronDown, ChevronRight, ClipboardList, CreditCard, Mail, MessageCircle, Phone, ShieldCheck, Star, UserRound, X } from 'lucide-react-native';
+import { useEffect, useState } from 'react';
+import { Alert, Image, Linking, Modal, Text, TouchableOpacity, View } from 'react-native';
+import {
+  CheckCircle2,
+  ChevronDown,
+  ChevronRight,
+  ClipboardList,
+  Mail,
+  MessageCircle,
+  Phone,
+  ShieldCheck,
+  Star,
+  UserRound,
+  X,
+} from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { colors as C } from '../../theme';
-import { profileAssets, uiPlaceholders } from '../../assets';
+import { uiPlaceholders } from '../../assets';
 import * as Shared from '../../AppComponents';
-const { s, a, AssetBackground, Button, Header, commissionRate, money, pals, statuses, Shell, AuthBackground, Splash, OnboardingFlow, Onboarding, Entry, RolePicker, AuthInput, SignUp, Login, Verification, Skills, CreateFlow, PalsList, PalCard, PalProfile, Selected, Tracking, Confirm, Payment, Receipt, Rating, Home, Errands, PalDetail, PalPending, PalActive, PalPaid, PalCompleteWaiting, Chat, Profile, Notifications, Success, Input, Card, Avatar, Badge, ErrandCard, Map, HomeMap, Hero, Choice, Progress, Info, RowText, Timeline, BottomTabs, createBack, createNext, CreateCategoryFinal, CreateErrandFormFinal, HomeActionImage, UserHome, PalGoBottomTabs, UserHomeUpdated, DetailRow, CompletedErrandDetail, PendingErrandDetail, TrackingFinal, ChatFinal, ProfileFinal, ImagePlaceholder, ActiveActionImage, TrackingHomeActive, OnboardingFlowFinal, RolePickerFinal, PalHomeFinal, PalTrackingHome, PalTrackingHomeLatest, PalDetailFinal, CounterOffer, PaymentPending, UserHomeLatest, ErrandsUpdated, CompletionConfirm, PaymentFlowFinal, FlowField, RegistrationFlow, EmailVerification, PalVerification, PalOccupation, PalPassword } = Shared;
+const {
+  s,
 
-function ProfileHeader({compact=false,editable=false,photoUrl,onPickPhoto}) { const background=uiPlaceholders.personalInfoBackground||uiPlaceholders.profileHeaderBackground; const frame={position:'absolute',height:compact?112:108,width:compact?112:108,borderRadius:54,overflow:'hidden',backgroundColor:'#E7EEFF',alignItems:'center',justifyContent:'center'}; const choose=()=>Alert.alert('Profile photo','Choose how you want to add your photo.',[{text:'Take a photo',onPress:async()=>{const permission=await ImagePicker.requestCameraPermissionsAsync();if(!permission.granted){Alert.alert('Camera permission needed','Allow camera access in your phone settings to take a photo.');return;}const result=await ImagePicker.launchCameraAsync({mediaTypes:['images'],allowsEditing:true,aspect:[1,1],quality:.85});if(!result.canceled&&result.assets?.[0])onPickPhoto?.(result.assets[0]);}},{text:'Choose from photos',onPress:async()=>{const result=await ImagePicker.launchImageLibraryAsync({mediaTypes:['images'],allowsEditing:true,aspect:[1,1],quality:.85});if(!result.canceled&&result.assets?.[0])onPickPhoto?.(result.assets[0]);}},{text:'Cancel',style:'cancel'}]); return <View style={{height:compact?118:114,marginBottom:compact?18:14,alignItems:'center',justifyContent:'center'}}>{background?<Image source={background} resizeMode="cover" style={frame}/>:<View style={frame}><Text style={{fontSize:7,fontWeight:'800',textAlign:'center',color:C.blue}}>PROFILE BACKGROUND{`\n`}PLACEHOLDER</Text></View>}<View style={{alignItems:'center'}}>{photoUrl?<Image source={{uri:photoUrl}} resizeMode="cover" style={{width:72,height:72,borderRadius:36,borderWidth:2,borderColor:C.blue}}/>:<ImagePlaceholder size={72} profile/>}{editable&&<TouchableOpacity accessibilityRole="button" accessibilityLabel="Change profile photo" onPress={choose} style={{position:'absolute',right:-5,top:-2,width:29,height:29,borderRadius:15,backgroundColor:C.mint,alignItems:'center',justifyContent:'center'}}><Text style={{fontSize:20,lineHeight:22,color:C.white,fontWeight:'700'}}>+</Text></TouchableOpacity>}</View></View>; }
-function ProfileRow({label,target,onNavigate,toggle=false,onToggle,Icon=UserRound}) { return <View style={{height:51,flexDirection:'row',alignItems:'center',paddingHorizontal:14}}><TouchableOpacity accessibilityRole="button" disabled={toggle} onPress={()=>onNavigate?.(target)} style={{flex:1,height:'100%',flexDirection:'row',alignItems:'center'}}><ImagePlaceholder size={22} label="ICON"/><Text style={{fontSize:14,marginLeft:12,flex:1}}>{label}</Text></TouchableOpacity>{toggle?<TouchableOpacity accessibilityRole="switch" onPress={onToggle} style={{width:42,height:24,borderRadius:12,backgroundColor:C.mint,padding:3,alignItems:'flex-end'}}><View style={{height:18,width:18,borderRadius:9,backgroundColor:C.white}}/></TouchableOpacity>:<ChevronRight size={18} color={C.ink}/>}</View>; }
-function ProfileRating({rating={average:0,count:0}}) { const average=Number(rating.average)||0; return <View accessibilityLabel={`${average.toFixed(1)} stars from ${rating.count||0} reviews`} style={{flexDirection:'row',alignItems:'center',justifyContent:'center',gap:2,marginTop:7,marginBottom:5}}>{Array.from({length:5},(_,index)=><Star key={index} size={16} color="#F2C400" fill="transparent" strokeWidth={1.8}/>)}<View style={{marginLeft:8,minWidth:48,paddingHorizontal:10,height:25,borderRadius:13,backgroundColor:C.white,alignItems:'center',justifyContent:'center',borderWidth:1,borderColor:C.line}}><Text style={{fontSize:11,fontWeight:'800',color:C.ink}}>{average.toFixed(1)}</Text></View><Text style={{fontSize:10,color:C.muted,marginLeft:3}}>({rating.count||0})</Text></View>; }
-function ProfileFlowFinal({role,profileDetails={},rating,onBack,onNavigate,onLogout,availableRoles=[],onBecomeRole}) { const [push,setPush]=useState(true); const otherRole=role==='pal'?'user':'pal'; const hasOtherRole=availableRoles.includes(otherRole); return <Shell back={onBack}><ProfileHeader photoUrl={profileDetails.photoUrl}/><View style={{alignItems:'center',marginBottom:23}}><Text style={{fontSize:17,fontWeight:'800',marginTop:24}}>{profileDetails.name||'Your profile'}</Text><ProfileRating rating={rating}/></View><View style={{backgroundColor:C.white,borderRadius:16,paddingVertical:3}}><ProfileRow label="Personal information" target="profile-personal" onNavigate={onNavigate}/><ProfileRow label="Password" target="profile-password" onNavigate={onNavigate}/><ProfileRow label="Theme" target="profile-theme" onNavigate={onNavigate}/><ProfileRow label="Push Notifications" toggle onToggle={()=>setPush(v=>!v)} onNavigate={onNavigate}/></View><View style={{height:18}}/><View style={{backgroundColor:C.white,borderRadius:16,paddingVertical:3}}><ProfileRow label="Terms & Conditions" target="profile-terms" onNavigate={onNavigate}/><ProfileRow label="Privacy Policy" target="profile-privacy" onNavigate={onNavigate}/><ProfileRow label="Support" target="profile-support" onNavigate={onNavigate}/>{role!=='pal'&&<ProfileRow label="Report a problem" target="profile-report" onNavigate={onNavigate}/>}<ProfileRow label="Log out" target="profile-logout" onNavigate={()=>onLogout()}/></View><TouchableOpacity onPress={()=>onNavigate('profile-delete')}><Text style={{textAlign:'center',marginTop:25,color:C.red,fontSize:13,fontWeight:'800'}}>Delete Profile</Text></TouchableOpacity><TouchableOpacity onPress={()=>onBecomeRole?.(otherRole)}><Text style={{textAlign:'center',marginTop:19,color:C.blue,fontWeight:'800'}}>{hasOtherRole?`Switch to ${otherRole==='pal'?'Pal':'User'} profile`:`Become a ${otherRole==='pal'?'Pal':'User'}`}</Text></TouchableOpacity></Shell>; }
-function PersonalInformation({onBack,onEdit,profileDetails={},onPickPhoto}) { const data=[['Name',profileDetails.name||'','name'],['Phone number',profileDetails.phone||'','phone'],['Email',profileDetails.email||'','email']]; return <Shell back={onBack}><Header title="Personal information"/><ProfileHeader compact editable photoUrl={profileDetails.photoUrl} onPickPhoto={onPickPhoto}/><View style={{height:27}}/><View style={{backgroundColor:C.white,borderRadius:16,paddingVertical:3}}>{data.map(([label,value,key])=><View key={key} style={{minHeight:key==='phone'||key==='email'?68:58,paddingHorizontal:14,flexDirection:'row',alignItems:'center'}}><ImagePlaceholder size={22} label="ICON"/><View style={{marginLeft:12,flex:1}}><Text style={{fontSize:11,color:C.muted}}>{label}</Text><Text style={{fontSize:14,marginTop:3}}>{value||'Not provided'}</Text>{key==='phone'&&<Text style={{fontSize:10,color:C.muted,marginTop:2}}>Phone verification not set up yet</Text>}{key==='email'&&profileDetails.emailVerified&&<View style={{flexDirection:'row',alignItems:'center',marginTop:3}}><CheckCircle2 size={12} color={C.mint}/><Text style={{fontSize:10,color:C.mint,marginLeft:4}}>Email verified</Text></View>}</View><TouchableOpacity onPress={()=>onEdit(key)}><Text style={{color:C.mint,fontWeight:'800',fontSize:13}}>Edit</Text></TouchableOpacity></View>)}</View></Shell>; }
-function ProfileEdit({field,onBack,onSave,profileDetails={}}) { const [value,setValue]=useState(profileDetails[field]||''),[busy,setBusy]=useState(false); useEffect(()=>{setValue(profileDetails[field]||'');},[field,profileDetails[field]]); const names={name:'Update your name',phone:'Update your phone number',email:'Update your email'}; const save=async()=>{if(busy)return;if(!value.trim()){Alert.alert('Enter your details','This field cannot be empty.');return;}if(field==='phone'){Alert.alert('Phone number unchanged','Phone number verification is not available yet. Your number has not been changed.');return;}setBusy(true);try{await onSave?.(value.trim());}catch(error){Alert.alert('Could not update',error?.message||'Please try again.');}finally{setBusy(false);}}; return <Shell back={onBack}><Header title={names[field]||'Update information'}/><Input label={field==='phone'?'Phone number':field==='email'?'Email address':'Full name'} value={value} onChangeText={setValue} keyboardType={field==='phone'?'phone-pad':field==='email'?'email-address':'default'} autoCapitalize={field==='email'?'none':'words'} placeholder="Enter your details"/>{field==='phone'&&<Text style={{fontSize:12,color:C.muted,marginBottom:20}}>Phone verification has not been set up yet, so your phone number cannot be changed here.</Text>}{field==='email'&&<View style={{flexDirection:'row',alignItems:'center',marginBottom:22}}><CheckCircle2 size={18} color={C.mint}/><Text style={{fontSize:12,color:C.muted,marginLeft:8,flex:1}}>Your current email is verified. We’ll send a confirmation link to the new address.</Text></View>}<Button title={busy?'Saving…':'Continue'} onPress={save}/></Shell>; }
-function ProfileTheme({onBack,mode='system',onChange}) { return <Shell back={onBack}><Header title="Themes"/><Choice label="Light Mode" sub="Use the light app appearance" selected={mode==='light'} onPress={()=>onChange?.('light')}/><Choice label="Dark Mode" sub="Use the dark app appearance" selected={mode==='dark'} onPress={()=>onChange?.('dark')}/><Choice label="System default" sub="Follow your device appearance" selected={mode==='system'} onPress={()=>onChange?.('system')}/></Shell>; }
-function ProfileSupport({onBack}) { return <Shell back={onBack}><Header title="Support Center"/><Input label="Chat" placeholder="Type your message" multiline/><Button title="Send message" onPress={()=>Alert.alert('Sent','Your support request has been sent.')}/><Text style={{fontSize:14,marginTop:20}}>Call: +234 701 234 5678</Text><Text style={{fontSize:14,marginTop:14}}>Email: support@palgo.com</Text></Shell>; }
-function ProfileSupportLatest({onBack}) { const row=(label,time,detail,Icon,action)=> <View style={{backgroundColor:C.white,borderRadius:17,padding:14,marginTop:9}}><Text style={{fontSize:10,color:C.muted}}>Avg. Response time: {time}</Text><View style={{flexDirection:'row',alignItems:'center',marginTop:11}}><Icon size={18} color={C.mint}/><Text style={{fontSize:12,marginLeft:9,flex:1}}>{detail}</Text>{action&&<TouchableOpacity onPress={action} style={{height:28,paddingHorizontal:10,borderRadius:14,backgroundColor:'#DDFBF1',justifyContent:'center'}}><Text style={{color:C.mint,fontSize:11,fontWeight:'800'}}>{label}</Text></TouchableOpacity>}</View></View>; return <Shell back={onBack}><Header title="Support Center"/><Text style={{fontSize:14,fontWeight:'800',marginTop:8}}>Chat</Text>{row('WhatsApp','1 min','Start a conversation on WhatsApp',MessageCircle,()=>Linking.openURL('https://wa.me/2342012345678'))}<Text style={{fontSize:14,fontWeight:'800',marginTop:22}}>Call</Text>{row('Call','2 min','+234 201 234 5678',Phone,()=>Linking.openURL('tel:+2342012345678'))}<Text style={{fontSize:14,fontWeight:'800',marginTop:22}}>Email</Text>{row('Email','12 hrs','support@palgo.com',Mail,()=>Linking.openURL('mailto:support@palgo.com'))}</Shell>; }
-function ReportProblem({onBack}) { const [name,setName]=useState(''),[email,setEmail]=useState(''),[issue,setIssue]=useState(''); const submit=()=>{if(!name.trim()||!email.trim()||!issue.trim()){Alert.alert('Complete the form','Enter your name, email and issue.');return;}Alert.alert('Support email not connected','Your report has not been sent yet. Support email delivery will be connected when the support inbox is set up.');}; return <Shell back={onBack}><Header title="Report a problem"/><Input label="Name" value={name} onChangeText={setName} placeholder="Name"/><Input label="Email" value={email} onChangeText={setEmail} placeholder="Email" keyboardType="email-address"/><Input label="Enter issue" value={issue} onChangeText={setIssue} placeholder="Tell us what happened" multiline/><View style={{marginTop:40}}><Button title="Continue" onPress={submit}/></View></Shell>; }
-function ProfilePassword({onBack,onSave}) { const [current,setCurrent]=useState(''),[next,setNext]=useState(''),[confirm,setConfirm]=useState(''),[busy,setBusy]=useState(false); const save=async()=>{if(!current||!next||next!==confirm||next.length<8){Alert.alert('Check your passwords','Enter your current password, use at least 8 characters for the new password, and make sure both new passwords match.');return;}setBusy(true);try{await onSave?.({current,next});Alert.alert('Password updated','Your password has been changed.',[{text:'Continue',onPress:onBack}]);}catch(error){Alert.alert('Could not update password',error?.message||'Check your current password and try again.');}finally{setBusy(false);}}; return <Shell back={onBack}><Header title="Change password"/><Input label="Current password" value={current} onChangeText={setCurrent} secure/><Input label="New password" value={next} onChangeText={setNext} secure/><Input label="Confirm new password" value={confirm} onChangeText={setConfirm} secure/><Button title={busy?'Updating…':'Continue'} onPress={save}/></Shell>; }
-function ProfilePin({isSet,currentPin,onBack,onSave}) { const [current,setCurrent]=useState(''),[next,setNext]=useState(''),[busy,setBusy]=useState(false); const save=async()=>{if((isSet&&(current.length!==4||current!==currentPin))||next.length!==4){Alert.alert('Check your PIN','Enter the correct current PIN and a new 4-digit PIN.');return;}setBusy(true);try{await onSave(next);}catch(error){Alert.alert('Could not save PIN',error?.message||'Please try again.');}finally{setBusy(false);}}; return <Shell back={onBack}><Header title="PIN settings" sub={isSet?'Update the PIN you use for withdrawals.':'Set a PIN to secure withdrawals.'}/>{isSet&&<Input label="Current PIN" value={current} onChangeText={value=>setCurrent(value.replace(/\D/g,'').slice(0,4))} secure keyboardType="numeric" placeholder="Enter current PIN"/>}<Input label="New PIN" value={next} onChangeText={value=>setNext(value.replace(/\D/g,'').slice(0,4))} secure keyboardType="numeric" placeholder="Enter 4-digit PIN"/><Button title={busy?'Saving…':'Continue'} onPress={save}/></Shell>; }
-function ProfileDelete({onBack,onContinue}) { return <Shell back={onBack}><Header title="Delete your profile"/><Text style={{fontSize:15,fontWeight:'800',marginBottom:18}}>Are you sure you want to delete this profile?</Text><View style={{backgroundColor:C.white,borderRadius:16,padding:16}}><Text style={{fontSize:13,lineHeight:21}}>Deleting your profile will remove your data and cannot be undone.</Text></View><View style={{height:28}}/><Button kind="danger" title="Delete Account" onPress={onContinue}/></Shell>; }
-function ProfileDeleteReason({onBack,onDelete}) { const reasons=['I have another errand app I prefer','Poor customer service','Security or privacy concerns','I no longer need the account','I created this account by mistake','Other']; return <Shell back={onBack}><Header title="Why are you deleting your Profile?"/>{reasons.map(reason=><Choice key={reason} label={reason} selected={false} onPress={()=>{}}/>)}<Button kind="danger" title="Delete Account" onPress={onDelete}/></Shell>; }
-function ProfileDeleteSuccess({onDone}) { return <Shell><View style={{alignItems:'center',marginTop:150}}><CheckCircle2 size={70} color={C.mint} fill={C.mint}/><Text style={{fontSize:24,fontWeight:'800',color:C.mint,marginTop:20}}>Profile Deleted</Text></View><View style={{height:60}}/><Button title="Close" onPress={onDone}/></Shell>; }
-function ProfileDeleteLatest({onBack,onContinue}) { return <Shell back={onBack}><Header title="Delete Account"/><View style={{alignItems:'center',marginTop:24}}><ImagePlaceholder size={72} label="DELETE ICON"/><Text style={{fontSize:16,fontWeight:'800',textAlign:'center',marginTop:24}}>Are you sure you want to delete this profile?</Text></View><View style={{backgroundColor:C.white,borderRadius:17,padding:16,marginTop:31}}><Text style={{fontSize:12,fontWeight:'800',marginBottom:12}}>Please Note:</Text><View style={{flexDirection:'row'}}><X size={17} color={C.red}/><Text style={{fontSize:12,lineHeight:18,flex:1,marginLeft:10}}>Deleting your PalGo profile does not delete your linked bank account.</Text></View><View style={{flexDirection:'row',marginTop:12}}><CheckCircle2 size={17} color={C.red}/><Text style={{fontSize:12,lineHeight:18,flex:1,marginLeft:10}}>You can create another profile whenever you return to the app.</Text></View></View><View style={{marginTop:75}}><Button title="Delete Account" onPress={onContinue}/></View></Shell>; }
-function ProfileDeleteReasonLatest({onBack,onDelete}) { const [selected,setSelected]=useState('I have another errand app I prefer'),[busy,setBusy]=useState(false); const reasons=['I have another errand app I prefer','Poor customer service','Security or privacy concerns','I no longer need the account','I created this account by mistake','High fees or charges','Limited features / missing services I need','Other']; const submit=async()=>{if(busy)return;setBusy(true);try{await onDelete?.(selected);}finally{setBusy(false);}}; return <Shell back={onBack}><Header title="Delete Account"/><View style={{alignItems:'center',marginTop:16}}><ImagePlaceholder size={58} label="DELETE ICON"/></View><Text style={{fontSize:14,fontWeight:'800',marginTop:23,marginBottom:15}}>What is the reason for deleting your Profile?</Text>{reasons.map(reason=><TouchableOpacity key={reason} onPress={()=>setSelected(reason)} style={{height:39,borderRadius:18,backgroundColor:C.white,marginBottom:9,paddingHorizontal:13,flexDirection:'row',alignItems:'center'}}><Text style={{fontSize:11,flex:1}}>{reason}</Text><View style={{height:16,width:16,borderRadius:8,borderWidth:1,borderColor:selected===reason?C.mint:C.ink,backgroundColor:selected===reason?C.mint:C.white}}/></TouchableOpacity>)}<View style={{marginTop:15}}><Button title={busy?'Deleting…':'Delete Account'} onPress={submit}/></View></Shell>; }
-function ProfileDeleteSuccessLatest({onDone}) { return <Shell><View style={{alignItems:'center',marginTop:142}}><CheckCircle2 size={74} color={C.mint} fill={C.mint}/><Text style={{fontSize:25,fontWeight:'800',color:C.mint,marginTop:22}}>Profile Deleted</Text><Text style={{fontSize:12,color:C.muted,marginTop:24}}>Your profile has been deleted successfully.</Text></View><View style={{height:142}}/><Button title="Okay" onPress={onDone}/></Shell>; }
-function PalProfileFlow({onBack,onNavigate,onSwitch,onLogout}) { const [push,setPush]=useState(true); return <Shell back={onBack}><ProfileHeader photoUrl={profileDetails.photoUrl}/><View style={{alignItems:'center',marginBottom:20}}><Text style={{fontSize:17,fontWeight:'800'}}>John Doe Chijioke</Text><Text style={{fontSize:14,color:'#FFD400',marginTop:5}}>★★★★★</Text><Text style={{fontSize:12,color:C.mint,marginTop:5}}>Verified Pal</Text></View><View style={{backgroundColor:C.white,borderRadius:16,paddingVertical:3}}><ProfileRow label="Personal information" target="profile-personal" onNavigate={onNavigate}/><ProfileRow label="Professional settings" target="profile-settings" onNavigate={onNavigate}/><ProfileRow label="Wallet & bank details" target="wallet" onNavigate={onNavigate}/><ProfileRow label="Password" target="profile-password" onNavigate={onNavigate}/><ProfileRow label="Push Notifications" toggle onToggle={()=>setPush(v=>!v)} onNavigate={onNavigate}/></View><View style={{height:18}}/><View style={{backgroundColor:C.white,borderRadius:16,paddingVertical:3}}><ProfileRow label="Terms & Conditions" target="profile-terms" onNavigate={onNavigate}/><ProfileRow label="Privacy Policy" target="profile-privacy" onNavigate={onNavigate}/><ProfileRow label="Support Centre" target="profile-support" onNavigate={onNavigate}/><ProfileRow label="Log out" onNavigate={onLogout}/></View><TouchableOpacity onPress={onSwitch}><Text style={{color:C.blue,fontWeight:'800',textAlign:'center',marginTop:22}}>Switch to User demo</Text></TouchableOpacity></Shell>; }
-function PalProfileLatest({profileDetails={},rating,onBack,onNavigate,onLogout,availableRoles=[],onBecomeRole}) {
-  const [available,setAvailable]=useState(true),[push,setPush]=useState(true);
-  const row=(label,target,toggle=false,onToggle)=> <ProfileRow label={label} target={target} toggle={toggle} onToggle={onToggle} onNavigate={onNavigate}/>;
-  const memberDate=profileDetails.memberSince?new Date(profileDetails.memberSince).toLocaleDateString(undefined,{month:'long',year:'numeric'}):'—';
-  return <Shell back={onBack}>
-    <ProfileHeader photoUrl={profileDetails.photoUrl}/>
-    <View style={{alignItems:'center',marginBottom:19}}>
-      <Text style={{fontSize:18,fontWeight:'800'}}>{profileDetails.name||'Your profile'}</Text>
-      {!!profileDetails.email&&<Text style={{fontSize:12,color:C.muted,marginTop:4}}>{profileDetails.email}</Text>}
-      <ProfileRating rating={rating}/>
-      <Text style={{fontSize:12,color:C.muted,marginTop:6}}>Member since {memberDate}</Text>
-    </View>
-    <View style={{backgroundColor:C.white,borderRadius:16,paddingVertical:3}}>
-      {row('Personal info','profile-personal')}
-      {row('ID Verification','profile-id')}
-      {row('Occupation / Skills','profile-skills')}
-      {row('Availability',null,true,()=>setAvailable(value=>!value))}
-    </View>
-    <View style={{height:17}}/>
-    <View style={{backgroundColor:C.white,borderRadius:16,paddingVertical:3}}>
-      {row('Language','profile-language')}
-      {row('Password Settings','profile-password')}
-      {row('PIN Settings','profile-pin')}
-      {row('Themes','profile-theme')}
-      {row('Push Notification',null,true,()=>setPush(value=>!value))}
-    </View>
-    <View style={{height:17}}/>
-    <View style={{backgroundColor:C.white,borderRadius:16,paddingVertical:3}}>
-      {row('Privacy Policy','profile-privacy')}
-      {row('Terms & Conditions','profile-terms')}
-      {row('Support','profile-support')}
-      {row('Report a problem','profile-report')}
-      <ProfileRow label="Logout" onNavigate={onLogout}/>
-    </View>
-    <TouchableOpacity onPress={()=>onNavigate('profile-delete')}><Text style={{textAlign:'center',color:C.red,fontWeight:'800',marginTop:22}}>Delete Profile</Text></TouchableOpacity>
-  <TouchableOpacity onPress={()=>onBecomeRole?.('user')}><Text style={{textAlign:'center',marginTop:19,color:C.blue,fontWeight:'800'}}>{availableRoles.includes('user')?'Switch to User profile':'Become a User'}</Text></TouchableOpacity>
-  </Shell>;
-}
-function PalIdVerification({idDetails={},verification={},onBack,onSave}) {
-  const [idType,setIdType]=useState(idDetails.id||'');
-  const [idNumber,setIdNumber]=useState(idDetails.idNumber||'');
-  const [open,setOpen]=useState(false);
-  const [editing,setEditing]=useState(!idDetails.submitted);
-  const [photo,setPhoto]=useState(null);
-  useEffect(()=>{setIdType(idDetails.id||'');setIdNumber(idDetails.idNumber||'');setEditing(!idDetails.submitted);},[idDetails.id,idDetails.idNumber,idDetails.submitted]);
-  const choices=['NIN','Driver’s license','International passport'];
-  const addPhoto=()=>Alert.alert('Update ID photo','Choose how to add the replacement ID photo.',[
-    {text:'Take a photo',onPress:async()=>{const permission=await ImagePicker.requestCameraPermissionsAsync();if(!permission.granted){Alert.alert('Camera permission needed','Allow camera access in your phone settings to take a photo.');return;}const result=await ImagePicker.launchCameraAsync({mediaTypes:['images'],allowsEditing:true,quality:.85});if(!result.canceled)setPhoto(result.assets?.[0]||null);}},
-    {text:'Choose from gallery',onPress:async()=>{const result=await ImagePicker.launchImageLibraryAsync({mediaTypes:['images'],allowsEditing:true,quality:.85});if(!result.canceled)setPhoto(result.assets?.[0]||null);}},
-    {text:'Cancel',style:'cancel'},
-  ]);
-  const save=async()=>{if(!idType){Alert.alert('Choose an ID type','Select the type of ID you submitted.');return;}if(!idNumber.trim()){Alert.alert('Enter the ID number',`Add your ${idType==='NIN'?'NIN':idType==='Driver’s license'?'license':'passport'} number.`);return;}if(editing&&!photo&&!idDetails.photoUri){Alert.alert('Add the ID photo','Choose an ID photo before saving.');return;}try{await onSave?.({id:idType,idNumber:idNumber.trim(),photo});}catch(error){Alert.alert('Could not update ID',error?.message||'Please try again.');}};
-  return <Shell back={onBack}><Header title="ID Verification"/>{idDetails.submitted&&!editing?<View style={{backgroundColor:C.white,borderRadius:17,padding:17,marginTop:10}}>
-    <View style={{flexDirection:'row',alignItems:'center'}}><ShieldCheck size={22} color={C.warning}/><Text style={{fontSize:14,fontWeight:'800',marginLeft:9}}>ID submitted</Text><View style={{marginLeft:'auto',backgroundColor:'#FFF4D6',borderRadius:12,paddingHorizontal:10,paddingVertical:5}}><Text style={{fontSize:10,fontWeight:'800',color:'#9A6900'}}>{verification.status==='verified'?'Verified':verification.status==='rejected'?'Needs update':'Under review'}</Text></View></View>
-    {idDetails.photoUri?<Image source={{uri:idDetails.photoUri}} resizeMode="cover" style={{height:160,width:'100%',borderRadius:12,marginTop:16,backgroundColor:C.canvas}}/>:<View style={{height:72,borderRadius:12,marginTop:16,backgroundColor:C.canvas,flexDirection:'row',alignItems:'center',justifyContent:'center'}}><ClipboardList size={19} color={C.blue}/><Text style={{fontSize:12,fontWeight:'700',color:C.blue,marginLeft:8}}>ID photo uploaded</Text></View>}
-    <Text style={{fontSize:12,color:C.muted,marginTop:14}}>Preferred ID type: {idType||'Submitted during signup'}</Text><Text style={{fontSize:12,color:C.muted,marginTop:8}}>ID number: {idNumber||'Not saved yet — update your ID to add it'}</Text><Text style={{fontSize:12,color:verification.status==='verified'?C.mint:C.warning,marginTop:8}}>Verification status: {verification.status==='verified'?'Verified':verification.status==='rejected'?'Needs update':'Under review'}</Text><Text style={{fontSize:11,color:C.muted,lineHeight:17,marginTop:10}}>Your submitted ID is awaiting review. You can replace the document or correct its details below.</Text><View style={{marginTop:16}}><Button kind="outline" title="Update ID" onPress={()=>setEditing(true)}/></View>
-  </View>:<View style={{backgroundColor:C.white,borderRadius:17,padding:17,marginTop:10}}><Text style={s.label}>Preferred ID type</Text><TouchableOpacity onPress={()=>setOpen(true)} style={{height:48,borderRadius:24,backgroundColor:C.canvas,paddingHorizontal:16,flexDirection:'row',alignItems:'center',marginBottom:16}}><Text style={{fontSize:14,color:idType?C.ink:C.muted,flex:1}}>{idType||'Select an ID type'}</Text><ChevronDown size={18} color={C.muted}/></TouchableOpacity>
-    {!!idType&&<Input label={idType==='NIN'?'NIN number':idType==='Driver’s license'?'License number':'Passport number'} value={idNumber} onChangeText={setIdNumber} placeholder="Enter ID number" autoCapitalize="characters"/>}
-    <Text style={[s.label,{marginTop:14}]}>Upload valid ID</Text><TouchableOpacity onPress={addPhoto} style={{minHeight:142,borderRadius:17,backgroundColor:C.canvas,alignItems:'center',justifyContent:'center',padding:15}}>{photo?<Image source={{uri:photo.uri}} resizeMode="cover" style={{width:'100%',height:130,borderRadius:12}}/>:idDetails.photoUri?<Image source={{uri:idDetails.photoUri}} resizeMode="cover" style={{width:'100%',height:130,borderRadius:12}}/>:<><ClipboardList size={34} color={C.blue}/><Text style={{fontSize:13,fontWeight:'800',marginTop:12}}>Tap to upload ID photo</Text><Text style={{fontSize:11,color:C.muted,textAlign:'center',marginTop:7}}>Choose from your gallery or take a photo.</Text></>}</TouchableOpacity>{photo&&<TouchableOpacity onPress={()=>setPhoto(null)} style={{alignSelf:'flex-end',padding:10}}><Text style={{fontSize:12,color:C.red,fontWeight:'700'}}>Remove selected photo</Text></TouchableOpacity>}<View style={{height:20}}/><Button title="Save ID update" onPress={save}/>
-  </View>}
-  <Modal transparent visible={open} animationType="fade" onRequestClose={()=>setOpen(false)}><TouchableOpacity activeOpacity={1} onPress={()=>setOpen(false)} style={{flex:1,justifyContent:'center',padding:28,backgroundColor:'rgba(0,0,0,.4)'}}><View style={{backgroundColor:C.white,borderRadius:20,padding:18}}><Text style={{fontSize:16,fontWeight:'800',marginBottom:9}}>Select preferred ID</Text>{choices.map(choice=><TouchableOpacity key={choice} onPress={()=>{setIdType(choice);setIdNumber('');setOpen(false)}} style={{minHeight:48,justifyContent:'center',borderBottomWidth:1,borderColor:C.line}}><Text style={{fontSize:14}}>{choice}</Text></TouchableOpacity>)}</View></TouchableOpacity></Modal></Shell>;
-}
-function PalMultiSelect({title,options,onBack,onSave,initialSelected=[],initialOther=''}) { const [selected,setSelected]=useState(initialSelected),[other,setOther]=useState(initialOther),[busy,setBusy]=useState(false); useEffect(()=>{setSelected(initialSelected);setOther(initialOther);},[initialSelected,initialOther]); const hasOthers=options.includes('Others')&&selected.includes('Others'); const save=async()=>{if(busy)return;setBusy(true);try{await onSave?.(selected,other);if(!onSave)onBack?.();}catch(error){Alert.alert('Could not save',error?.message||'Please try again.');}finally{setBusy(false);}}; return <Shell back={onBack}><Header title={title}/><View style={{backgroundColor:C.white,borderRadius:16,paddingVertical:4}}>{options.map(item=>{const on=selected.includes(item); return <TouchableOpacity key={item} onPress={()=>setSelected(v=>on?v.filter(x=>x!==item):[...v,item])} style={{minHeight:42,paddingHorizontal:14,flexDirection:'row',alignItems:'center'}}><Text style={{fontSize:13,flex:1}}>{item}</Text><View style={{height:16,width:16,borderRadius:8,borderWidth:1.5,borderColor:on?C.mint:C.blue,backgroundColor:on?C.mint:C.white}}/></TouchableOpacity>})}</View>{hasOthers&&<View style={{marginTop:16}}><Input label="Other service" value={other} onChangeText={setOther} placeholder="Add another service"/></View>}<View style={{marginTop:30}}><Button title={busy?'Saving…':'Save'} onPress={save}/></View></Shell>; }
-function ProfessionalSettings({onBack}) { const [available,setAvailable]=useState(true); return <Shell back={onBack}><Header title="Professional Settings"/><View style={{backgroundColor:C.white,borderRadius:16,padding:16}}><Text style={{fontSize:14,fontWeight:'800'}}>Availability</Text><TouchableOpacity onPress={()=>setAvailable(v=>!v)} style={{height:48,flexDirection:'row',alignItems:'center'}}><Text style={{fontSize:14,flex:1}}>Available for errands</Text><View style={{width:42,height:24,borderRadius:12,backgroundColor:available?C.mint:C.line,padding:3,alignItems:available?'flex-end':'flex-start'}}><View style={{height:18,width:18,borderRadius:9,backgroundColor:C.white}}/></View></TouchableOpacity></View></Shell>; }
-function ProfileNotifications({onBack}) { const [enabled,setEnabled]=useState(true); return <Shell back={onBack}><Header title="Push Notifications"/><TouchableOpacity onPress={()=>setEnabled(v=>!v)} style={{height:58,backgroundColor:C.white,borderRadius:16,paddingHorizontal:16,flexDirection:'row',alignItems:'center'}}><Text style={{fontSize:14,flex:1}}>Allow notifications</Text><View style={{width:42,height:24,borderRadius:12,backgroundColor:enabled?C.mint:C.line,padding:3,alignItems:enabled?'flex-end':'flex-start'}}><View style={{height:18,width:18,borderRadius:9,backgroundColor:C.white}}/></View></TouchableOpacity></Shell>; }
-function ProfileTerms({onBack,title='Terms & Conditions'}) { return <Shell back={onBack}><Header title={title}/><View style={{backgroundColor:C.white,borderRadius:16,padding:18}}><Text style={{fontSize:14,lineHeight:22}}>This information will be published here before PalGo launches.</Text></View></Shell>; }
+  Button,
+  Header,
 
-export { ProfileHeader, ProfileRow, ProfileRating, ProfileFlowFinal, PersonalInformation, ProfileEdit, ProfileTheme, ProfileSupport, ProfileSupportLatest, ReportProblem, ProfilePassword, ProfilePin, ProfileDelete, ProfileDeleteReason, ProfileDeleteSuccess, ProfileDeleteLatest, ProfileDeleteReasonLatest, ProfileDeleteSuccessLatest, PalProfileFlow, PalProfileLatest, PalIdVerification, PalMultiSelect, ProfessionalSettings, ProfileNotifications, ProfileTerms };
+  Shell,
+
+  Input,
+
+  Choice,
+
+  ImagePlaceholder,
+} = Shared;
+
+function ProfileHeader({ compact = false, editable = false, photoUrl, onPickPhoto }) {
+  const background =
+    uiPlaceholders.personalInfoBackground || uiPlaceholders.profileHeaderBackground;
+  const frame = {
+    position: 'absolute',
+    height: compact ? 112 : 108,
+    width: compact ? 112 : 108,
+    borderRadius: 54,
+    overflow: 'hidden',
+    backgroundColor: '#E7EEFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+  };
+  const choose = () =>
+    Alert.alert('Profile photo', 'Choose how you want to add your photo.', [
+      {
+        text: 'Take a photo',
+        onPress: async () => {
+          const permission = await ImagePicker.requestCameraPermissionsAsync();
+          if (!permission.granted) {
+            Alert.alert(
+              'Camera permission needed',
+              'Allow camera access in your phone settings to take a photo.',
+            );
+            return;
+          }
+          const result = await ImagePicker.launchCameraAsync({
+            mediaTypes: ['images'],
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 0.85,
+          });
+          if (!result.canceled && result.assets?.[0]) onPickPhoto?.(result.assets[0]);
+        },
+      },
+      {
+        text: 'Choose from photos',
+        onPress: async () => {
+          const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ['images'],
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 0.85,
+          });
+          if (!result.canceled && result.assets?.[0]) onPickPhoto?.(result.assets[0]);
+        },
+      },
+      { text: 'Cancel', style: 'cancel' },
+    ]);
+  return (
+    <View
+      style={{
+        height: compact ? 118 : 114,
+        marginBottom: compact ? 18 : 14,
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      {background ? (
+        <Image source={background} resizeMode="cover" style={frame} />
+      ) : (
+        <View style={frame}>
+          <Text style={{ fontSize: 7, fontWeight: '800', textAlign: 'center', color: C.blue }}>
+            PROFILE BACKGROUND{`\n`}PLACEHOLDER
+          </Text>
+        </View>
+      )}
+      <View style={{ alignItems: 'center' }}>
+        {photoUrl ? (
+          <Image
+            source={{ uri: photoUrl }}
+            resizeMode="cover"
+            style={{ width: 72, height: 72, borderRadius: 36, borderWidth: 2, borderColor: C.blue }}
+          />
+        ) : (
+          <ImagePlaceholder size={72} profile />
+        )}
+        {editable && (
+          <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel="Change profile photo"
+            onPress={choose}
+            style={{
+              position: 'absolute',
+              right: -5,
+              top: -2,
+              width: 29,
+              height: 29,
+              borderRadius: 15,
+              backgroundColor: C.mint,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Text style={{ fontSize: 20, lineHeight: 22, color: C.white, fontWeight: '700' }}>
+              +
+            </Text>
+          </TouchableOpacity>
+        )}
+      </View>
+    </View>
+  );
+}
+function ProfileRow({ label, target, onNavigate, toggle = false, onToggle, Icon = UserRound }) {
+  return (
+    <View style={{ height: 51, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14 }}>
+      <TouchableOpacity
+        accessibilityRole="button"
+        disabled={toggle}
+        onPress={() => onNavigate?.(target)}
+        style={{ flex: 1, height: '100%', flexDirection: 'row', alignItems: 'center' }}
+      >
+        <ImagePlaceholder size={22} label="ICON" />
+        <Text style={{ fontSize: 14, marginLeft: 12, flex: 1 }}>{label}</Text>
+      </TouchableOpacity>
+      {toggle ? (
+        <TouchableOpacity
+          accessibilityRole="switch"
+          onPress={onToggle}
+          style={{
+            width: 42,
+            height: 24,
+            borderRadius: 12,
+            backgroundColor: C.mint,
+            padding: 3,
+            alignItems: 'flex-end',
+          }}
+        >
+          <View style={{ height: 18, width: 18, borderRadius: 9, backgroundColor: C.white }} />
+        </TouchableOpacity>
+      ) : (
+        <ChevronRight size={18} color={C.ink} />
+      )}
+    </View>
+  );
+}
+function ProfileRating({ rating = { average: 0, count: 0 } }) {
+  const average = Number(rating.average) || 0;
+  return (
+    <View
+      accessibilityLabel={`${average.toFixed(1)} stars from ${rating.count || 0} reviews`}
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 2,
+        marginTop: 7,
+        marginBottom: 5,
+      }}
+    >
+      {Array.from({ length: 5 }, (_, index) => (
+        <Star key={index} size={16} color="#F2C400" fill="transparent" strokeWidth={1.8} />
+      ))}
+      <View
+        style={{
+          marginLeft: 8,
+          minWidth: 48,
+          paddingHorizontal: 10,
+          height: 25,
+          borderRadius: 13,
+          backgroundColor: C.white,
+          alignItems: 'center',
+          justifyContent: 'center',
+          borderWidth: 1,
+          borderColor: C.line,
+        }}
+      >
+        <Text style={{ fontSize: 11, fontWeight: '800', color: C.ink }}>{average.toFixed(1)}</Text>
+      </View>
+      <Text style={{ fontSize: 10, color: C.muted, marginLeft: 3 }}>({rating.count || 0})</Text>
+    </View>
+  );
+}
+function ProfileFlowFinal({
+  role,
+  profileDetails = {},
+  rating,
+  onBack,
+  onNavigate,
+  onLogout,
+  availableRoles = [],
+  onBecomeRole,
+}) {
+  const [push, setPush] = useState(true);
+  const otherRole = role === 'pal' ? 'user' : 'pal';
+  const hasOtherRole = availableRoles.includes(otherRole);
+  return (
+    <Shell back={onBack}>
+      <ProfileHeader photoUrl={profileDetails.photoUrl} />
+      <View style={{ alignItems: 'center', marginBottom: 23 }}>
+        <Text style={{ fontSize: 17, fontWeight: '800', marginTop: 24 }}>
+          {profileDetails.name || 'Your profile'}
+        </Text>
+        <ProfileRating rating={rating} />
+      </View>
+      <View style={{ backgroundColor: C.white, borderRadius: 16, paddingVertical: 3 }}>
+        <ProfileRow
+          label="Personal information"
+          target="profile-personal"
+          onNavigate={onNavigate}
+        />
+        <ProfileRow label="Password" target="profile-password" onNavigate={onNavigate} />
+        <ProfileRow label="Theme" target="profile-theme" onNavigate={onNavigate} />
+        <ProfileRow
+          label="Push Notifications"
+          toggle
+          onToggle={() => setPush((v) => !v)}
+          onNavigate={onNavigate}
+        />
+      </View>
+      <View style={{ height: 18 }} />
+      <View style={{ backgroundColor: C.white, borderRadius: 16, paddingVertical: 3 }}>
+        <ProfileRow label="Terms & Conditions" target="profile-terms" onNavigate={onNavigate} />
+        <ProfileRow label="Privacy Policy" target="profile-privacy" onNavigate={onNavigate} />
+        <ProfileRow label="Support" target="profile-support" onNavigate={onNavigate} />
+        {role !== 'pal' && (
+          <ProfileRow label="Report a problem" target="profile-report" onNavigate={onNavigate} />
+        )}
+        <ProfileRow label="Log out" target="profile-logout" onNavigate={() => onLogout()} />
+      </View>
+      <TouchableOpacity onPress={() => onNavigate('profile-delete')}>
+        <Text
+          style={{
+            textAlign: 'center',
+            marginTop: 25,
+            color: C.red,
+            fontSize: 13,
+            fontWeight: '800',
+          }}
+        >
+          Delete Profile
+        </Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => onBecomeRole?.(otherRole)}>
+        <Text style={{ textAlign: 'center', marginTop: 19, color: C.blue, fontWeight: '800' }}>
+          {hasOtherRole
+            ? `Switch to ${otherRole === 'pal' ? 'Pal' : 'User'} profile`
+            : `Become a ${otherRole === 'pal' ? 'Pal' : 'User'}`}
+        </Text>
+      </TouchableOpacity>
+    </Shell>
+  );
+}
+function PersonalInformation({ onBack, onEdit, profileDetails = {}, onPickPhoto }) {
+  const data = [
+    ['Name', profileDetails.name || '', 'name'],
+    ['Phone number', profileDetails.phone || '', 'phone'],
+    ['Email', profileDetails.email || '', 'email'],
+  ];
+  return (
+    <Shell back={onBack}>
+      <Header title="Personal information" />
+      <ProfileHeader
+        compact
+        editable
+        photoUrl={profileDetails.photoUrl}
+        onPickPhoto={onPickPhoto}
+      />
+      <View style={{ height: 27 }} />
+      <View style={{ backgroundColor: C.white, borderRadius: 16, paddingVertical: 3 }}>
+        {data.map(([label, value, key]) => (
+          <View
+            key={key}
+            style={{
+              minHeight: key === 'phone' || key === 'email' ? 68 : 58,
+              paddingHorizontal: 14,
+              flexDirection: 'row',
+              alignItems: 'center',
+            }}
+          >
+            <ImagePlaceholder size={22} label="ICON" />
+            <View style={{ marginLeft: 12, flex: 1 }}>
+              <Text style={{ fontSize: 11, color: C.muted }}>{label}</Text>
+              <Text style={{ fontSize: 14, marginTop: 3 }}>{value || 'Not provided'}</Text>
+              {key === 'phone' && (
+                <Text style={{ fontSize: 10, color: C.muted, marginTop: 2 }}>
+                  Phone verification not set up yet
+                </Text>
+              )}
+              {key === 'email' && profileDetails.emailVerified && (
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 3 }}>
+                  <CheckCircle2 size={12} color={C.mint} />
+                  <Text style={{ fontSize: 10, color: C.mint, marginLeft: 4 }}>Email verified</Text>
+                </View>
+              )}
+            </View>
+            <TouchableOpacity onPress={() => onEdit(key)}>
+              <Text style={{ color: C.mint, fontWeight: '800', fontSize: 13 }}>Edit</Text>
+            </TouchableOpacity>
+          </View>
+        ))}
+      </View>
+    </Shell>
+  );
+}
+function ProfileEdit({ field, onBack, onSave, profileDetails = {} }) {
+  const [value, setValue] = useState(profileDetails[field] || ''),
+    [busy, setBusy] = useState(false);
+  useEffect(() => {
+    setValue(profileDetails[field] || '');
+  }, [field, profileDetails[field]]);
+  const names = {
+    name: 'Update your name',
+    phone: 'Update your phone number',
+    email: 'Update your email',
+  };
+  const save = async () => {
+    if (busy) return;
+    if (!value.trim()) {
+      Alert.alert('Enter your details', 'This field cannot be empty.');
+      return;
+    }
+    if (field === 'phone') {
+      Alert.alert(
+        'Phone number unchanged',
+        'Phone number verification is not available yet. Your number has not been changed.',
+      );
+      return;
+    }
+    setBusy(true);
+    try {
+      await onSave?.(value.trim());
+    } catch (error) {
+      Alert.alert('Could not update', error?.message || 'Please try again.');
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <Shell back={onBack}>
+      <Header title={names[field] || 'Update information'} />
+      <Input
+        label={
+          field === 'phone' ? 'Phone number' : field === 'email' ? 'Email address' : 'Full name'
+        }
+        value={value}
+        onChangeText={setValue}
+        keyboardType={
+          field === 'phone' ? 'phone-pad' : field === 'email' ? 'email-address' : 'default'
+        }
+        autoCapitalize={field === 'email' ? 'none' : 'words'}
+        placeholder="Enter your details"
+      />
+      {field === 'phone' && (
+        <Text style={{ fontSize: 12, color: C.muted, marginBottom: 20 }}>
+          Phone verification has not been set up yet, so your phone number cannot be changed here.
+        </Text>
+      )}
+      {field === 'email' && (
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 22 }}>
+          <CheckCircle2 size={18} color={C.mint} />
+          <Text style={{ fontSize: 12, color: C.muted, marginLeft: 8, flex: 1 }}>
+            Your current email is verified. We’ll send a confirmation link to the new address.
+          </Text>
+        </View>
+      )}
+      <Button title={busy ? 'Saving…' : 'Continue'} onPress={save} />
+    </Shell>
+  );
+}
+function ProfileTheme({ onBack, mode = 'system', onChange }) {
+  return (
+    <Shell back={onBack}>
+      <Header title="Themes" />
+      <Choice
+        label="Light Mode"
+        sub="Use the light app appearance"
+        selected={mode === 'light'}
+        onPress={() => onChange?.('light')}
+      />
+      <Choice
+        label="Dark Mode"
+        sub="Use the dark app appearance"
+        selected={mode === 'dark'}
+        onPress={() => onChange?.('dark')}
+      />
+      <Choice
+        label="System default"
+        sub="Follow your device appearance"
+        selected={mode === 'system'}
+        onPress={() => onChange?.('system')}
+      />
+    </Shell>
+  );
+}
+function ProfileSupportLatest({ onBack }) {
+  const row = (label, time, detail, Icon, action) => (
+    <View style={{ backgroundColor: C.white, borderRadius: 17, padding: 14, marginTop: 9 }}>
+      <Text style={{ fontSize: 10, color: C.muted }}>Avg. Response time: {time}</Text>
+      <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 11 }}>
+        <Icon size={18} color={C.mint} />
+        <Text style={{ fontSize: 12, marginLeft: 9, flex: 1 }}>{detail}</Text>
+        {action && (
+          <TouchableOpacity
+            onPress={action}
+            style={{
+              height: 28,
+              paddingHorizontal: 10,
+              borderRadius: 14,
+              backgroundColor: '#DDFBF1',
+              justifyContent: 'center',
+            }}
+          >
+            <Text style={{ color: C.mint, fontSize: 11, fontWeight: '800' }}>{label}</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+    </View>
+  );
+  return (
+    <Shell back={onBack}>
+      <Header title="Support Center" />
+      <Text style={{ fontSize: 14, fontWeight: '800', marginTop: 8 }}>Chat</Text>
+      {row('WhatsApp', '1 min', 'Start a conversation on WhatsApp', MessageCircle, () =>
+        Linking.openURL('https://wa.me/2342012345678'),
+      )}
+      <Text style={{ fontSize: 14, fontWeight: '800', marginTop: 22 }}>Call</Text>
+      {row('Call', '2 min', '+234 201 234 5678', Phone, () =>
+        Linking.openURL('tel:+2342012345678'),
+      )}
+      <Text style={{ fontSize: 14, fontWeight: '800', marginTop: 22 }}>Email</Text>
+      {row('Email', '12 hrs', 'support@palgo.com', Mail, () =>
+        Linking.openURL('mailto:support@palgo.com'),
+      )}
+    </Shell>
+  );
+}
+function ReportProblem({ onBack }) {
+  const [name, setName] = useState(''),
+    [email, setEmail] = useState(''),
+    [issue, setIssue] = useState('');
+  const submit = () => {
+    if (!name.trim() || !email.trim() || !issue.trim()) {
+      Alert.alert('Complete the form', 'Enter your name, email and issue.');
+      return;
+    }
+    Alert.alert(
+      'Support email not connected',
+      'Your report has not been sent yet. Support email delivery will be connected when the support inbox is set up.',
+    );
+  };
+  return (
+    <Shell back={onBack}>
+      <Header title="Report a problem" />
+      <Input label="Name" value={name} onChangeText={setName} placeholder="Name" />
+      <Input
+        label="Email"
+        value={email}
+        onChangeText={setEmail}
+        placeholder="Email"
+        keyboardType="email-address"
+      />
+      <Input
+        label="Enter issue"
+        value={issue}
+        onChangeText={setIssue}
+        placeholder="Tell us what happened"
+        multiline
+      />
+      <View style={{ marginTop: 40 }}>
+        <Button title="Continue" onPress={submit} />
+      </View>
+    </Shell>
+  );
+}
+function ProfilePassword({ onBack, onSave }) {
+  const [current, setCurrent] = useState(''),
+    [next, setNext] = useState(''),
+    [confirm, setConfirm] = useState(''),
+    [busy, setBusy] = useState(false);
+  const save = async () => {
+    if (!current || !next || next !== confirm || next.length < 8) {
+      Alert.alert(
+        'Check your passwords',
+        'Enter your current password, use at least 8 characters for the new password, and make sure both new passwords match.',
+      );
+      return;
+    }
+    setBusy(true);
+    try {
+      await onSave?.({ current, next });
+      Alert.alert('Password updated', 'Your password has been changed.', [
+        { text: 'Continue', onPress: onBack },
+      ]);
+    } catch (error) {
+      Alert.alert(
+        'Could not update password',
+        error?.message || 'Check your current password and try again.',
+      );
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <Shell back={onBack}>
+      <Header title="Change password" />
+      <Input label="Current password" value={current} onChangeText={setCurrent} secure />
+      <Input label="New password" value={next} onChangeText={setNext} secure />
+      <Input label="Confirm new password" value={confirm} onChangeText={setConfirm} secure />
+      <Button title={busy ? 'Updating…' : 'Continue'} onPress={save} />
+    </Shell>
+  );
+}
+function ProfilePin({ isSet, currentPin, onBack, onSave }) {
+  const [current, setCurrent] = useState(''),
+    [next, setNext] = useState(''),
+    [busy, setBusy] = useState(false);
+  const save = async () => {
+    if ((isSet && (current.length !== 4 || current !== currentPin)) || next.length !== 4) {
+      Alert.alert('Check your PIN', 'Enter the correct current PIN and a new 4-digit PIN.');
+      return;
+    }
+    setBusy(true);
+    try {
+      await onSave(next);
+    } catch (error) {
+      Alert.alert('Could not save PIN', error?.message || 'Please try again.');
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <Shell back={onBack}>
+      <Header
+        title="PIN settings"
+        sub={isSet ? 'Update the PIN you use for withdrawals.' : 'Set a PIN to secure withdrawals.'}
+      />
+      {isSet && (
+        <Input
+          label="Current PIN"
+          value={current}
+          onChangeText={(value) => setCurrent(value.replace(/\D/g, '').slice(0, 4))}
+          secure
+          keyboardType="numeric"
+          placeholder="Enter current PIN"
+        />
+      )}
+      <Input
+        label="New PIN"
+        value={next}
+        onChangeText={(value) => setNext(value.replace(/\D/g, '').slice(0, 4))}
+        secure
+        keyboardType="numeric"
+        placeholder="Enter 4-digit PIN"
+      />
+      <Button title={busy ? 'Saving…' : 'Continue'} onPress={save} />
+    </Shell>
+  );
+}
+function ProfileDeleteLatest({ onBack, onContinue }) {
+  return (
+    <Shell back={onBack}>
+      <Header title="Delete Account" />
+      <View style={{ alignItems: 'center', marginTop: 24 }}>
+        <ImagePlaceholder size={72} label="DELETE ICON" />
+        <Text style={{ fontSize: 16, fontWeight: '800', textAlign: 'center', marginTop: 24 }}>
+          Are you sure you want to delete this profile?
+        </Text>
+      </View>
+      <View style={{ backgroundColor: C.white, borderRadius: 17, padding: 16, marginTop: 31 }}>
+        <Text style={{ fontSize: 12, fontWeight: '800', marginBottom: 12 }}>Please Note:</Text>
+        <View style={{ flexDirection: 'row' }}>
+          <X size={17} color={C.red} />
+          <Text style={{ fontSize: 12, lineHeight: 18, flex: 1, marginLeft: 10 }}>
+            Deleting your PalGo profile does not delete your linked bank account.
+          </Text>
+        </View>
+        <View style={{ flexDirection: 'row', marginTop: 12 }}>
+          <CheckCircle2 size={17} color={C.red} />
+          <Text style={{ fontSize: 12, lineHeight: 18, flex: 1, marginLeft: 10 }}>
+            You can create another profile whenever you return to the app.
+          </Text>
+        </View>
+      </View>
+      <View style={{ marginTop: 75 }}>
+        <Button title="Delete Account" onPress={onContinue} />
+      </View>
+    </Shell>
+  );
+}
+function ProfileDeleteReasonLatest({ onBack, onDelete }) {
+  const [selected, setSelected] = useState('I have another errand app I prefer'),
+    [busy, setBusy] = useState(false);
+  const reasons = [
+    'I have another errand app I prefer',
+    'Poor customer service',
+    'Security or privacy concerns',
+    'I no longer need the account',
+    'I created this account by mistake',
+    'High fees or charges',
+    'Limited features / missing services I need',
+    'Other',
+  ];
+  const submit = async () => {
+    if (busy) return;
+    setBusy(true);
+    try {
+      await onDelete?.(selected);
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <Shell back={onBack}>
+      <Header title="Delete Account" />
+      <View style={{ alignItems: 'center', marginTop: 16 }}>
+        <ImagePlaceholder size={58} label="DELETE ICON" />
+      </View>
+      <Text style={{ fontSize: 14, fontWeight: '800', marginTop: 23, marginBottom: 15 }}>
+        What is the reason for deleting your Profile?
+      </Text>
+      {reasons.map((reason) => (
+        <TouchableOpacity
+          key={reason}
+          onPress={() => setSelected(reason)}
+          style={{
+            height: 39,
+            borderRadius: 18,
+            backgroundColor: C.white,
+            marginBottom: 9,
+            paddingHorizontal: 13,
+            flexDirection: 'row',
+            alignItems: 'center',
+          }}
+        >
+          <Text style={{ fontSize: 11, flex: 1 }}>{reason}</Text>
+          <View
+            style={{
+              height: 16,
+              width: 16,
+              borderRadius: 8,
+              borderWidth: 1,
+              borderColor: selected === reason ? C.mint : C.ink,
+              backgroundColor: selected === reason ? C.mint : C.white,
+            }}
+          />
+        </TouchableOpacity>
+      ))}
+      <View style={{ marginTop: 15 }}>
+        <Button title={busy ? 'Deleting…' : 'Delete Account'} onPress={submit} />
+      </View>
+    </Shell>
+  );
+}
+function ProfileDeleteSuccessLatest({ onDone }) {
+  return (
+    <Shell>
+      <View style={{ alignItems: 'center', marginTop: 142 }}>
+        <CheckCircle2 size={74} color={C.mint} fill={C.mint} />
+        <Text style={{ fontSize: 25, fontWeight: '800', color: C.mint, marginTop: 22 }}>
+          Profile Deleted
+        </Text>
+        <Text style={{ fontSize: 12, color: C.muted, marginTop: 24 }}>
+          Your profile has been deleted successfully.
+        </Text>
+      </View>
+      <View style={{ height: 142 }} />
+      <Button title="Okay" onPress={onDone} />
+    </Shell>
+  );
+}
+function PalProfileLatest({
+  profileDetails = {},
+  rating,
+  onBack,
+  onNavigate,
+  onLogout,
+  availableRoles = [],
+  onBecomeRole,
+}) {
+  const [available, setAvailable] = useState(true),
+    [push, setPush] = useState(true);
+  const row = (label, target, toggle = false, onToggle) => (
+    <ProfileRow
+      label={label}
+      target={target}
+      toggle={toggle}
+      onToggle={onToggle}
+      onNavigate={onNavigate}
+    />
+  );
+  const memberDate = profileDetails.memberSince
+    ? new Date(profileDetails.memberSince).toLocaleDateString(undefined, {
+        month: 'long',
+        year: 'numeric',
+      })
+    : '—';
+  return (
+    <Shell back={onBack}>
+      <ProfileHeader photoUrl={profileDetails.photoUrl} />
+      <View style={{ alignItems: 'center', marginBottom: 19 }}>
+        <Text style={{ fontSize: 18, fontWeight: '800' }}>
+          {profileDetails.name || 'Your profile'}
+        </Text>
+        {!!profileDetails.email && (
+          <Text style={{ fontSize: 12, color: C.muted, marginTop: 4 }}>{profileDetails.email}</Text>
+        )}
+        <ProfileRating rating={rating} />
+        <Text style={{ fontSize: 12, color: C.muted, marginTop: 6 }}>
+          Member since {memberDate}
+        </Text>
+      </View>
+      <View style={{ backgroundColor: C.white, borderRadius: 16, paddingVertical: 3 }}>
+        {row('Personal info', 'profile-personal')}
+        {row('ID Verification', 'profile-id')}
+        {row('Occupation / Skills', 'profile-skills')}
+        {row('Availability', null, true, () => setAvailable((value) => !value))}
+      </View>
+      <View style={{ height: 17 }} />
+      <View style={{ backgroundColor: C.white, borderRadius: 16, paddingVertical: 3 }}>
+        {row('Language', 'profile-language')}
+        {row('Password Settings', 'profile-password')}
+        {row('PIN Settings', 'profile-pin')}
+        {row('Themes', 'profile-theme')}
+        {row('Push Notification', null, true, () => setPush((value) => !value))}
+      </View>
+      <View style={{ height: 17 }} />
+      <View style={{ backgroundColor: C.white, borderRadius: 16, paddingVertical: 3 }}>
+        {row('Privacy Policy', 'profile-privacy')}
+        {row('Terms & Conditions', 'profile-terms')}
+        {row('Support', 'profile-support')}
+        {row('Report a problem', 'profile-report')}
+        <ProfileRow label="Logout" onNavigate={onLogout} />
+      </View>
+      <TouchableOpacity onPress={() => onNavigate('profile-delete')}>
+        <Text style={{ textAlign: 'center', color: C.red, fontWeight: '800', marginTop: 22 }}>
+          Delete Profile
+        </Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => onBecomeRole?.('user')}>
+        <Text style={{ textAlign: 'center', marginTop: 19, color: C.blue, fontWeight: '800' }}>
+          {availableRoles.includes('user') ? 'Switch to User profile' : 'Become a User'}
+        </Text>
+      </TouchableOpacity>
+    </Shell>
+  );
+}
+function PalIdVerification({ idDetails = {}, verification = {}, onBack, onSave }) {
+  const [idType, setIdType] = useState(idDetails.id || '');
+  const [idNumber, setIdNumber] = useState(idDetails.idNumber || '');
+  const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState(!idDetails.submitted);
+  const [photo, setPhoto] = useState(null);
+  useEffect(() => {
+    setIdType(idDetails.id || '');
+    setIdNumber(idDetails.idNumber || '');
+    setEditing(!idDetails.submitted);
+  }, [idDetails.id, idDetails.idNumber, idDetails.submitted]);
+  const choices = ['NIN', 'Driver’s license', 'International passport'];
+  const addPhoto = () =>
+    Alert.alert('Update ID photo', 'Choose how to add the replacement ID photo.', [
+      {
+        text: 'Take a photo',
+        onPress: async () => {
+          const permission = await ImagePicker.requestCameraPermissionsAsync();
+          if (!permission.granted) {
+            Alert.alert(
+              'Camera permission needed',
+              'Allow camera access in your phone settings to take a photo.',
+            );
+            return;
+          }
+          const result = await ImagePicker.launchCameraAsync({
+            mediaTypes: ['images'],
+            allowsEditing: true,
+            quality: 0.85,
+          });
+          if (!result.canceled) setPhoto(result.assets?.[0] || null);
+        },
+      },
+      {
+        text: 'Choose from gallery',
+        onPress: async () => {
+          const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ['images'],
+            allowsEditing: true,
+            quality: 0.85,
+          });
+          if (!result.canceled) setPhoto(result.assets?.[0] || null);
+        },
+      },
+      { text: 'Cancel', style: 'cancel' },
+    ]);
+  const save = async () => {
+    if (!idType) {
+      Alert.alert('Choose an ID type', 'Select the type of ID you submitted.');
+      return;
+    }
+    if (!idNumber.trim()) {
+      Alert.alert(
+        'Enter the ID number',
+        `Add your ${idType === 'NIN' ? 'NIN' : idType === 'Driver’s license' ? 'license' : 'passport'} number.`,
+      );
+      return;
+    }
+    if (editing && !photo && !idDetails.photoUri) {
+      Alert.alert('Add the ID photo', 'Choose an ID photo before saving.');
+      return;
+    }
+    try {
+      await onSave?.({ id: idType, idNumber: idNumber.trim(), photo });
+    } catch (error) {
+      Alert.alert('Could not update ID', error?.message || 'Please try again.');
+    }
+  };
+  return (
+    <Shell back={onBack}>
+      <Header title="ID Verification" />
+      {idDetails.submitted && !editing ? (
+        <View style={{ backgroundColor: C.white, borderRadius: 17, padding: 17, marginTop: 10 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <ShieldCheck size={22} color={C.warning} />
+            <Text style={{ fontSize: 14, fontWeight: '800', marginLeft: 9 }}>ID submitted</Text>
+            <View
+              style={{
+                marginLeft: 'auto',
+                backgroundColor: '#FFF4D6',
+                borderRadius: 12,
+                paddingHorizontal: 10,
+                paddingVertical: 5,
+              }}
+            >
+              <Text style={{ fontSize: 10, fontWeight: '800', color: '#9A6900' }}>
+                {verification.status === 'verified'
+                  ? 'Verified'
+                  : verification.status === 'rejected'
+                    ? 'Needs update'
+                    : 'Under review'}
+              </Text>
+            </View>
+          </View>
+          {idDetails.photoUri ? (
+            <Image
+              source={{ uri: idDetails.photoUri }}
+              resizeMode="cover"
+              style={{
+                height: 160,
+                width: '100%',
+                borderRadius: 12,
+                marginTop: 16,
+                backgroundColor: C.canvas,
+              }}
+            />
+          ) : (
+            <View
+              style={{
+                height: 72,
+                borderRadius: 12,
+                marginTop: 16,
+                backgroundColor: C.canvas,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <ClipboardList size={19} color={C.blue} />
+              <Text style={{ fontSize: 12, fontWeight: '700', color: C.blue, marginLeft: 8 }}>
+                ID photo uploaded
+              </Text>
+            </View>
+          )}
+          <Text style={{ fontSize: 12, color: C.muted, marginTop: 14 }}>
+            Preferred ID type: {idType || 'Submitted during signup'}
+          </Text>
+          <Text style={{ fontSize: 12, color: C.muted, marginTop: 8 }}>
+            ID number: {idNumber || 'Not saved yet — update your ID to add it'}
+          </Text>
+          <Text
+            style={{
+              fontSize: 12,
+              color: verification.status === 'verified' ? C.mint : C.warning,
+              marginTop: 8,
+            }}
+          >
+            Verification status:{' '}
+            {verification.status === 'verified'
+              ? 'Verified'
+              : verification.status === 'rejected'
+                ? 'Needs update'
+                : 'Under review'}
+          </Text>
+          <Text style={{ fontSize: 11, color: C.muted, lineHeight: 17, marginTop: 10 }}>
+            Your submitted ID is awaiting review. You can replace the document or correct its
+            details below.
+          </Text>
+          <View style={{ marginTop: 16 }}>
+            <Button kind="outline" title="Update ID" onPress={() => setEditing(true)} />
+          </View>
+        </View>
+      ) : (
+        <View style={{ backgroundColor: C.white, borderRadius: 17, padding: 17, marginTop: 10 }}>
+          <Text style={s.label}>Preferred ID type</Text>
+          <TouchableOpacity
+            onPress={() => setOpen(true)}
+            style={{
+              height: 48,
+              borderRadius: 24,
+              backgroundColor: C.canvas,
+              paddingHorizontal: 16,
+              flexDirection: 'row',
+              alignItems: 'center',
+              marginBottom: 16,
+            }}
+          >
+            <Text style={{ fontSize: 14, color: idType ? C.ink : C.muted, flex: 1 }}>
+              {idType || 'Select an ID type'}
+            </Text>
+            <ChevronDown size={18} color={C.muted} />
+          </TouchableOpacity>
+          {!!idType && (
+            <Input
+              label={
+                idType === 'NIN'
+                  ? 'NIN number'
+                  : idType === 'Driver’s license'
+                    ? 'License number'
+                    : 'Passport number'
+              }
+              value={idNumber}
+              onChangeText={setIdNumber}
+              placeholder="Enter ID number"
+              autoCapitalize="characters"
+            />
+          )}
+          <Text style={[s.label, { marginTop: 14 }]}>Upload valid ID</Text>
+          <TouchableOpacity
+            onPress={addPhoto}
+            style={{
+              minHeight: 142,
+              borderRadius: 17,
+              backgroundColor: C.canvas,
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: 15,
+            }}
+          >
+            {photo ? (
+              <Image
+                source={{ uri: photo.uri }}
+                resizeMode="cover"
+                style={{ width: '100%', height: 130, borderRadius: 12 }}
+              />
+            ) : idDetails.photoUri ? (
+              <Image
+                source={{ uri: idDetails.photoUri }}
+                resizeMode="cover"
+                style={{ width: '100%', height: 130, borderRadius: 12 }}
+              />
+            ) : (
+              <>
+                <ClipboardList size={34} color={C.blue} />
+                <Text style={{ fontSize: 13, fontWeight: '800', marginTop: 12 }}>
+                  Tap to upload ID photo
+                </Text>
+                <Text style={{ fontSize: 11, color: C.muted, textAlign: 'center', marginTop: 7 }}>
+                  Choose from your gallery or take a photo.
+                </Text>
+              </>
+            )}
+          </TouchableOpacity>
+          {photo && (
+            <TouchableOpacity
+              onPress={() => setPhoto(null)}
+              style={{ alignSelf: 'flex-end', padding: 10 }}
+            >
+              <Text style={{ fontSize: 12, color: C.red, fontWeight: '700' }}>
+                Remove selected photo
+              </Text>
+            </TouchableOpacity>
+          )}
+          <View style={{ height: 20 }} />
+          <Button title="Save ID update" onPress={save} />
+        </View>
+      )}
+      <Modal transparent visible={open} animationType="fade" onRequestClose={() => setOpen(false)}>
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => setOpen(false)}
+          style={{
+            flex: 1,
+            justifyContent: 'center',
+            padding: 28,
+            backgroundColor: 'rgba(0,0,0,.4)',
+          }}
+        >
+          <View style={{ backgroundColor: C.white, borderRadius: 20, padding: 18 }}>
+            <Text style={{ fontSize: 16, fontWeight: '800', marginBottom: 9 }}>
+              Select preferred ID
+            </Text>
+            {choices.map((choice) => (
+              <TouchableOpacity
+                key={choice}
+                onPress={() => {
+                  setIdType(choice);
+                  setIdNumber('');
+                  setOpen(false);
+                }}
+                style={{
+                  minHeight: 48,
+                  justifyContent: 'center',
+                  borderBottomWidth: 1,
+                  borderColor: C.line,
+                }}
+              >
+                <Text style={{ fontSize: 14 }}>{choice}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </TouchableOpacity>
+      </Modal>
+    </Shell>
+  );
+}
+function PalMultiSelect({
+  title,
+  options,
+  onBack,
+  onSave,
+  initialSelected = [],
+  initialOther = '',
+}) {
+  const [selected, setSelected] = useState(initialSelected),
+    [other, setOther] = useState(initialOther),
+    [busy, setBusy] = useState(false);
+  useEffect(() => {
+    setSelected(initialSelected);
+    setOther(initialOther);
+  }, [initialSelected, initialOther]);
+  const hasOthers = options.includes('Others') && selected.includes('Others');
+  const save = async () => {
+    if (busy) return;
+    setBusy(true);
+    try {
+      await onSave?.(selected, other);
+      if (!onSave) onBack?.();
+    } catch (error) {
+      Alert.alert('Could not save', error?.message || 'Please try again.');
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <Shell back={onBack}>
+      <Header title={title} />
+      <View style={{ backgroundColor: C.white, borderRadius: 16, paddingVertical: 4 }}>
+        {options.map((item) => {
+          const on = selected.includes(item);
+          return (
+            <TouchableOpacity
+              key={item}
+              onPress={() => setSelected((v) => (on ? v.filter((x) => x !== item) : [...v, item]))}
+              style={{
+                minHeight: 42,
+                paddingHorizontal: 14,
+                flexDirection: 'row',
+                alignItems: 'center',
+              }}
+            >
+              <Text style={{ fontSize: 13, flex: 1 }}>{item}</Text>
+              <View
+                style={{
+                  height: 16,
+                  width: 16,
+                  borderRadius: 8,
+                  borderWidth: 1.5,
+                  borderColor: on ? C.mint : C.blue,
+                  backgroundColor: on ? C.mint : C.white,
+                }}
+              />
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+      {hasOthers && (
+        <View style={{ marginTop: 16 }}>
+          <Input
+            label="Other service"
+            value={other}
+            onChangeText={setOther}
+            placeholder="Add another service"
+          />
+        </View>
+      )}
+      <View style={{ marginTop: 30 }}>
+        <Button title={busy ? 'Saving…' : 'Save'} onPress={save} />
+      </View>
+    </Shell>
+  );
+}
+function ProfileTerms({ onBack, title = 'Terms & Conditions' }) {
+  return (
+    <Shell back={onBack}>
+      <Header title={title} />
+      <View style={{ backgroundColor: C.white, borderRadius: 16, padding: 18 }}>
+        <Text style={{ fontSize: 14, lineHeight: 22 }}>
+          This information will be published here before PalGo launches.
+        </Text>
+      </View>
+    </Shell>
+  );
+}
+
+export {
+  ProfileHeader,
+  ProfileRow,
+  ProfileRating,
+  ProfileFlowFinal,
+  PersonalInformation,
+  ProfileEdit,
+  ProfileTheme,
+  ProfileSupportLatest,
+  ReportProblem,
+  ProfilePassword,
+  ProfilePin,
+  ProfileDeleteLatest,
+  ProfileDeleteReasonLatest,
+  ProfileDeleteSuccessLatest,
+  PalProfileLatest,
+  PalIdVerification,
+  PalMultiSelect,
+  ProfileTerms,
+};
