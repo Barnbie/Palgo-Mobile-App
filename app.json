@@ -4,6 +4,13 @@
     "slug": "palgo",
     "scheme": "palgo",
     "version": "1.0.0",
+    "orientation": "portrait",
+    "android": {
+      "permissions": [
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
+      ]
+    },
     "extra": {
       "eas": {
         "projectId": "512720a8-6c2b-4915-8b9b-55636c6db5c9"
