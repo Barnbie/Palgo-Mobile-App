@@ -3,7 +3,8 @@ import { BackHandler, Text, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { PalGoBottomTabs, s } from './src/AppComponents';
 import { resolveRoute, TAB_SCREENS, tabFor } from './src/navigation';
-import { useAccount } from './src/state/useAccount';
+import { REMEMBERED_EMAIL_KEY, useAccount } from './src/state/useAccount';
+import { preferences as storedPreferences } from './src/lib/secureStorage';
 import { useErrands } from './src/state/useErrands';
 import { usePreferences } from './src/state/usePreferences';
 import { useRouter } from './src/state/useRouter';
@@ -51,6 +52,7 @@ export default function App() {
     go,
     notify,
     chooseAuthIntent,
+    rememberedEmail: storedPreferences.get(REMEMBERED_EMAIL_KEY, ''),
     wallet: EMPTY_WALLET,
     selectedTransaction,
     setSelectedTransaction,

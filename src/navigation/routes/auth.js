@@ -69,7 +69,17 @@ export const authRoutes = {
 
   login: (c) => {
     const back = () => c.go('entry');
-    return { back, view: <Login role={c.role} onBack={back} onLogin={c.loginAccount} /> };
+    return {
+      back,
+      view: (
+        <Login
+          role={c.role}
+          initialEmail={c.rememberedEmail}
+          onBack={back}
+          onLogin={c.loginAccount}
+        />
+      ),
+    };
   },
 
   'email-verify': (c) => {

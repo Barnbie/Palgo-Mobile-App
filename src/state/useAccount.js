@@ -26,6 +26,9 @@ import {
 import { getProfileRating } from '../lib/api/errands';
 import { palProfileFromRow, palVerificationFromRow, profileDetailsFromRow } from '../lib/mappers';
 
+export const REMEMBER_KEY = 'palgo.remember-me';
+export const REMEMBERED_EMAIL_KEY = 'palgo.remembered-email';
+
 const EMPTY_PROFILE = { name: '', phone: '', email: '' };
 const NOT_SUBMITTED = { status: 'not_submitted', reason: '' };
 const activeRoleKey = (userId) => `palgo.active-role.${userId}`;
@@ -144,6 +147,11 @@ export function useAccount({ go, notify, screen, screenRef }) {
       .then(async ({ data }) => {
         const session = data?.session;
         if (!mounted || !session) return;
+        // "Remember me" was unticked at login: don't restore the session on a fresh launch.
+        if (preferences.get(REMEMBER_KEY) === '0') {
+          await signOutDeadSession();
+          return;
+        }
         // Confirm the account still exists so a deleted account can't flash back.
         try {
           const { data: userData, error } = await supabase.auth.getUser(session.access_token);
@@ -339,7 +347,7 @@ export function useAccount({ go, notify, screen, screenRef }) {
     await resendSignupConfirmation(pendingSignup.email);
   }
 
-  async function loginAccount({ email, password, role: requestedRole }) {
+  async function loginAccount({ email, password, role: requestedRole, rememberMe = true }) {
     try {
       const { user } = await signInAccount({ email, password });
       if (!user?.email_confirmed_at) {
@@ -354,6 +362,8 @@ export function useAccount({ go, notify, screen, screenRef }) {
           `This email does not have a ${label} profile yet. Sign in using the account type you already have, then choose “Become a ${label}” in Profile.`,
         );
       }
+      preferences.set(REMEMBER_KEY, rememberMe ? '1' : '0');
+      preferences.set(REMEMBERED_EMAIL_KEY, rememberMe ? email.trim() : '');
       await loadAccount(user, requestedRole);
       setPendingSignup(null);
       go('home');

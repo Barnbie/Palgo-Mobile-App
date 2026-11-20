@@ -113,11 +113,11 @@ function AuthInput({ Icon, label, value, onChangeText, secure }) {
     </View>
   );
 }
-function Login({ role, onBack, onLogin }) {
-  const [email, setEmail] = useState(''),
+function Login({ role, onBack, onLogin, initialEmail = '' }) {
+  const [email, setEmail] = useState(initialEmail),
     [password, setPassword] = useState(''),
     [busy, setBusy] = useState(false),
-    [rememberMe, setRememberMe] = useState(false);
+    [rememberMe, setRememberMe] = useState(true);
   const submit = async () => {
     if (!email.trim() || !password) {
       Alert.alert('Enter your login details', 'Add your email address and password to continue.');
@@ -125,7 +125,7 @@ function Login({ role, onBack, onLogin }) {
     }
     setBusy(true);
     try {
-      await onLogin({ role: role || 'user', email, password });
+      await onLogin({ role: role || 'user', email, password, rememberMe });
     } catch (error) {
       Alert.alert('Login failed', error?.message || 'Please check your details and try again.');
     } finally {
