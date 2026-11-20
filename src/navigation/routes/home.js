@@ -10,7 +10,19 @@ export function homeRoute(c) {
         role={c.role}
         errand={c.errand}
         errands={c.accountErrands}
-        availableErrands={c.role === 'pal' ? availableForPal(c.accountErrands) : []}
+        availableErrands={
+          c.role === 'pal' && c.profileDetails.available !== false
+            ? availableForPal(c.accountErrands)
+            : []
+        }
+        palAvailable={c.profileDetails.available !== false}
+        onToggleAvailability={async () => {
+          try {
+            await c.saveAvailability(c.profileDetails.available === false);
+          } catch (error) {
+            c.notify(error?.message || 'Availability could not be saved.');
+          }
+        }}
         wallet={c.wallet}
         verification={c.palVerification}
         verificationDismissed={c.dismissedVerificationStatus === c.palVerification.status}

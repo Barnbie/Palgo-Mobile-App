@@ -61,9 +61,15 @@ export async function resendSignupConfirmation(email) {
   if (error) throw error;
 }
 
-export async function changePassword(password) {
+/** Checks the current password first, then sets the new one. */
+export async function changePassword({ email, current, next }) {
   const client = requireClient();
-  const { error } = await client.auth.updateUser({ password });
+  const { error: checkError } = await client.auth.signInWithPassword({
+    email: normalizeEmail(email),
+    password: current,
+  });
+  if (checkError) throw new Error('Your current password is not correct.');
+  const { error } = await client.auth.updateUser({ password: next });
   if (error) throw error;
 }
 

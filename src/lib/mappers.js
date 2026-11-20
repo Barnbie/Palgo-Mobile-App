@@ -69,6 +69,9 @@ export function profileDetailsFromRow(row, user) {
     email: user?.email || row?.email || '',
     emailVerified: Boolean(user?.email_confirmed_at),
     memberSince: user?.created_at || '',
+    pushEnabled: row?.push_enabled !== false,
+    emailNotifications: row?.email_notifications !== false,
+    available: row?.available !== false,
   };
 }
 

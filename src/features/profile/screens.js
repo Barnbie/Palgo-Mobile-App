@@ -1,6 +1,6 @@
 import { GradientButton } from '../../components/GradientButton';
 import { useEffect, useState } from 'react';
-import { Alert, Image, Modal, TouchableOpacity, View } from 'react-native';
+import { Alert, Image, Linking, Modal, TouchableOpacity, View } from 'react-native';
 import { Text } from '../../components/ThemedText';
 import {
   CheckCircle2,
@@ -13,9 +13,14 @@ import {
 } from '../../components/glyphs';
 import * as ImagePicker from 'expo-image-picker';
 import { colors as C } from '../../theme';
+import { LANGUAGES } from '../../i18n';
+import { LEGAL_UPDATED, PRIVACY, TERMS } from './legal';
+import { SUPPORT_EMAIL, SUPPORT_PHONE, SUPPORT_WHATSAPP } from '../../config/contact';
 import { uiPlaceholders } from '../../assets';
 import * as Shared from '../../AppComponents';
 import {
+  CheckCircleIcon,
+  ChatIcon,
   GlobeIcon,
   MailIcon,
   PhoneIcon,
@@ -160,6 +165,8 @@ const ROW_ICONS = {
   Theme: ThemeIcon,
   'Push Notification': NotificationIcon,
   'Push Notifications': NotificationIcon,
+  'Email Notifications': MailIcon,
+  Availability: CheckCircleIcon,
   'ID Verification': IdCardIcon,
   'Occupation / Skills': WrenchIcon,
   Language: GlobeIcon,
@@ -250,6 +257,34 @@ function ProfileRating({ rating = { average: 0, count: 0 } }) {
     </View>
   );
 }
+function AvailabilityBadge({ available }) {
+  return (
+    <View
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+        paddingHorizontal: 12,
+        height: 26,
+        borderRadius: 13,
+        backgroundColor: available ? C.soft('#DDF7EC') : C.line,
+        marginTop: 4,
+      }}
+    >
+      <View
+        style={{
+          height: 8,
+          width: 8,
+          borderRadius: 4,
+          backgroundColor: available ? C.mint : C.muted,
+        }}
+      />
+      <Text style={{ fontSize: 11, fontWeight: '800', color: available ? C.mint : C.muted }}>
+        {available ? 'Available' : 'Unavailable'}
+      </Text>
+    </View>
+  );
+}
 function DeleteProfileLink({ onPress }) {
   return (
     <TouchableOpacity
@@ -291,8 +326,8 @@ function ProfileFlowFinal({
   onLogout,
   availableRoles = [],
   onBecomeRole,
+  onSetting,
 }) {
-  const [push, setPush] = useState(true);
   const otherRole = role === 'pal' ? 'user' : 'pal';
   const hasOtherRole = availableRoles.includes(otherRole);
   return (
@@ -319,11 +354,27 @@ function ProfileFlowFinal({
         />
         <ProfileRow Icon={ThemeIcon} label="Theme" target="profile-theme" onNavigate={onNavigate} />
         <ProfileRow
+          Icon={GlobeIcon}
+          label="Language"
+          target="profile-language"
+          onNavigate={onNavigate}
+        />
+        <ProfileRow
           Icon={NotificationIcon}
           label="Push Notifications"
           toggle
-          value={push}
-          onToggle={() => setPush((v) => !v)}
+          value={profileDetails.pushEnabled !== false}
+          onToggle={() => onSetting?.('pushEnabled', profileDetails.pushEnabled === false)}
+          onNavigate={onNavigate}
+        />
+        <ProfileRow
+          Icon={MailIcon}
+          label="Email Notifications"
+          toggle
+          value={profileDetails.emailNotifications !== false}
+          onToggle={() =>
+            onSetting?.('emailNotifications', profileDetails.emailNotifications === false)
+          }
           onNavigate={onNavigate}
         />
       </View>
@@ -386,7 +437,7 @@ function PersonalInformation({ onBack, onEdit, profileDetails = {}, onPickPhoto 
               <Text style={{ fontSize: 14, marginTop: 3 }}>{value || 'Not provided'}</Text>
               {key === 'phone' && (
                 <Text style={{ fontSize: 10, color: C.muted, marginTop: 2 }}>
-                  Phone verification not set up yet
+                  Phone number is not verified yet
                 </Text>
               )}
               {key === 'email' && profileDetails.emailVerified && (
@@ -422,13 +473,6 @@ function ProfileEdit({ field, onBack, onSave, profileDetails = {} }) {
       Alert.alert('Enter your details', 'This field cannot be empty.');
       return;
     }
-    if (field === 'phone') {
-      Alert.alert(
-        'Phone number unchanged',
-        'Phone number verification is not available yet. Your number has not been changed.',
-      );
-      return;
-    }
     setBusy(true);
     try {
       await onSave?.(value.trim());
@@ -455,7 +499,8 @@ function ProfileEdit({ field, onBack, onSave, profileDetails = {} }) {
       />
       {field === 'phone' && (
         <Text style={{ fontSize: 12, color: C.muted, marginBottom: 20 }}>
-          Phone verification has not been set up yet, so your phone number cannot be changed here.
+          We do not verify phone numbers yet. Make sure the number is correct so Pals and Users can
+          reach you about an errand.
         </Text>
       )}
       {field === 'email' && (
@@ -495,11 +540,66 @@ function ProfileTheme({ onBack, mode = 'system', onChange }) {
     </Shell>
   );
 }
+function ContactCard({ Icon, title, detail, onPress }) {
+  return (
+    <TouchableOpacity
+      accessibilityRole="button"
+      onPress={onPress}
+      activeOpacity={0.8}
+      style={{
+        flex: 1,
+        minHeight: 108,
+        backgroundColor: C.paper,
+        borderRadius: 16,
+        padding: 12,
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      <Icon size={28} />
+      <Text style={{ fontSize: 13, fontWeight: '800', marginTop: 8 }}>{title}</Text>
+      <Text
+        numberOfLines={2}
+        style={{ fontSize: 10, color: C.muted, marginTop: 3, textAlign: 'center' }}
+      >
+        {detail}
+      </Text>
+    </TouchableOpacity>
+  );
+}
+function openLink(url) {
+  Linking.openURL(url).catch(() =>
+    Alert.alert('Could not open', 'Your phone could not open this link.'),
+  );
+}
 function ProfileSupportLatest({ onBack, onReport }) {
   return (
     <Shell back={onBack}>
       <Header title="Support Center" />
-      <View style={{ backgroundColor: C.paper, borderRadius: 17, padding: 16, marginTop: 12 }}>
+      <Text style={{ fontSize: 14, fontWeight: '800', marginTop: 8, marginBottom: 10 }}>
+        Contact us via
+      </Text>
+      <View style={{ flexDirection: 'row', gap: 10 }}>
+        <ContactCard
+          Icon={ChatIcon}
+          title="WhatsApp"
+          detail={`+${SUPPORT_WHATSAPP}`}
+          onPress={() => openLink(`https://wa.me/${SUPPORT_WHATSAPP}`)}
+        />
+        <ContactCard
+          Icon={PhoneIcon}
+          title="Phone"
+          detail={SUPPORT_PHONE}
+          onPress={() => openLink(`tel:${SUPPORT_PHONE}`)}
+        />
+        <ContactCard
+          Icon={MailIcon}
+          title="Email"
+          detail={SUPPORT_EMAIL}
+          onPress={() => openLink(`mailto:${SUPPORT_EMAIL}`)}
+        />
+      </View>
+      <View style={{ backgroundColor: C.paper, borderRadius: 17, padding: 16, marginTop: 18 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <SupportIcon size={26} />
           <Text style={{ fontSize: 15, fontWeight: '800', marginLeft: 12, color: C.ink }}>
@@ -511,7 +611,7 @@ function ProfileSupportLatest({ onBack, onReport }) {
           and replies to the email address you give us.
         </Text>
       </View>
-      <View style={{ marginTop: 30 }}>
+      <View style={{ marginTop: 26 }}>
         <Button title="Message support" onPress={onReport} />
       </View>
     </Shell>
@@ -767,9 +867,10 @@ function PalProfileLatest({
   onLogout,
   availableRoles = [],
   onBecomeRole,
+  onSetting,
+  onAvailability,
 }) {
-  const [available, setAvailable] = useState(true),
-    [push, setPush] = useState(true);
+  const available = profileDetails.available !== false;
   const row = (label, target, toggle = false, onToggle, value) => (
     <ProfileRow
       Icon={ROW_ICONS[label]}
@@ -798,6 +899,7 @@ function PalProfileLatest({
           <Text style={{ fontSize: 12, color: C.muted, marginTop: 4 }}>{profileDetails.email}</Text>
         )}
         <ProfileRating rating={rating} />
+        <AvailabilityBadge available={available} />
         <Text style={{ fontSize: 12, color: C.muted, marginTop: 6 }}>
           Member since {memberDate}
         </Text>
@@ -806,7 +908,7 @@ function PalProfileLatest({
         {row('Personal info', 'profile-personal')}
         {row('ID Verification', 'profile-id')}
         {row('Occupation / Skills', 'profile-skills')}
-        {row('Availability', null, true, () => setAvailable((value) => !value), available)}
+        {row('Availability', null, true, () => onAvailability?.(!available), available)}
       </View>
       <View style={{ height: 17 }} />
       <View style={{ backgroundColor: C.paper, borderRadius: 16, paddingVertical: 3 }}>
@@ -814,7 +916,20 @@ function PalProfileLatest({
         {row('Password Settings', 'profile-password')}
         {row('PIN Settings', 'profile-pin')}
         {row('Themes', 'profile-theme')}
-        {row('Push Notification', null, true, () => setPush((value) => !value), push)}
+        {row(
+          'Push Notification',
+          null,
+          true,
+          () => onSetting?.('pushEnabled', profileDetails.pushEnabled === false),
+          profileDetails.pushEnabled !== false,
+        )}
+        {row(
+          'Email Notifications',
+          null,
+          true,
+          () => onSetting?.('emailNotifications', profileDetails.emailNotifications === false),
+          profileDetails.emailNotifications !== false,
+        )}
       </View>
       <View style={{ height: 17 }} />
       <View style={{ backgroundColor: C.paper, borderRadius: 16, paddingVertical: 3 }}>
@@ -1119,10 +1234,12 @@ function PalMultiSelect({
   const [selected, setSelected] = useState(initialSelected),
     [other, setOther] = useState(initialOther),
     [busy, setBusy] = useState(false);
+  const initialKey = JSON.stringify(initialSelected);
   useEffect(() => {
-    setSelected(initialSelected);
+    setSelected(JSON.parse(initialKey));
     setOther(initialOther);
-  }, [initialSelected, initialOther]);
+    // Keyed by content so a fresh empty array on every render cannot re-trigger it.
+  }, [initialKey, initialOther]);
   const hasOthers = options.includes('Others') && selected.includes('Others');
   const save = async () => {
     if (busy) return;
@@ -1185,14 +1302,35 @@ function PalMultiSelect({
   );
 }
 function ProfileTerms({ onBack, title = 'Terms & Conditions' }) {
+  const sections = title === 'Privacy Policy' ? PRIVACY : TERMS;
   return (
     <Shell back={onBack}>
       <Header title={title} />
+      <Text style={{ fontSize: 11, color: C.muted, marginBottom: 12 }}>{LEGAL_UPDATED}</Text>
       <View style={{ backgroundColor: C.paper, borderRadius: 16, padding: 18 }}>
-        <Text style={{ fontSize: 14, lineHeight: 22 }}>
-          This information will be published here before PalGo launches.
-        </Text>
+        {sections.map(([heading, body]) => (
+          <View key={heading} style={{ marginBottom: 16 }}>
+            <Text style={{ fontSize: 14, fontWeight: '800', marginBottom: 5 }}>{heading}</Text>
+            <Text style={{ fontSize: 13, lineHeight: 20, color: C.muted }}>{body}</Text>
+          </View>
+        ))}
       </View>
+    </Shell>
+  );
+}
+function LanguageSelect({ onBack, language = 'en', onChange }) {
+  return (
+    <Shell back={onBack}>
+      <Header title="Language" />
+      <Text style={{ fontSize: 13, color: C.muted, marginBottom: 14 }}>Choose your language</Text>
+      {LANGUAGES.map((item) => (
+        <Choice
+          key={item.code}
+          label={item.label}
+          selected={language === item.code}
+          onPress={() => onChange?.(item.code)}
+        />
+      ))}
     </Shell>
   );
 }
@@ -1216,4 +1354,5 @@ export {
   PalIdVerification,
   PalMultiSelect,
   ProfileTerms,
+  LanguageSelect,
 };

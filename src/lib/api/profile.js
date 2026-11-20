@@ -29,6 +29,13 @@ export async function updateSharedProfileFields(userId, roles, patch) {
   );
 }
 
+/** Updates columns on one profile table (for settings that belong to a single role). */
+export async function updateRoleProfileFields(userId, role, patch) {
+  const client = requireClient();
+  const { error } = await client.from(tableFor(role)).update(patch).eq('id', userId);
+  if (error) throw error;
+}
+
 export async function updatePalServices(userId, selected, otherService) {
   const client = requireClient();
   const { error } = await client

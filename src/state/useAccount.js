@@ -19,6 +19,7 @@ import {
   getProfilePhotoUrl,
   savePalProfile,
   updatePalServices,
+  updateRoleProfileFields,
   updateSharedProfileFields,
   uploadPalIdentityDocument,
   uploadProfilePhoto,
@@ -433,6 +434,39 @@ export function useAccount({ go, notify, screen, screenRef }) {
     setProfileDetails((details) => ({ ...details, name: name.trim() }));
   }
 
+  async function saveProfilePhone(phone) {
+    const clean = phone.replace(/[^\d+]/g, '');
+    if (clean.replace(/\D/g, '').length < 10 || clean.length > 16) {
+      throw new Error('Enter a valid phone number, for example 08012345678.');
+    }
+    await updateSharedProfileFields(authUserId, accountRoles, { phone: clean });
+    setProfileDetails((details) => ({ ...details, phone: clean }));
+  }
+
+  /** `key` is 'pushEnabled' or 'emailNotifications'. */
+  async function saveNotificationSetting(key, value) {
+    const column = key === 'pushEnabled' ? 'push_enabled' : 'email_notifications';
+    const previous = profileDetails[key];
+    setProfileDetails((details) => ({ ...details, [key]: value }));
+    try {
+      await updateSharedProfileFields(authUserId, accountRoles, { [column]: value });
+    } catch (error) {
+      setProfileDetails((details) => ({ ...details, [key]: previous }));
+      throw error;
+    }
+  }
+
+  async function saveAvailability(value) {
+    const previous = profileDetails.available;
+    setProfileDetails((details) => ({ ...details, available: value }));
+    try {
+      await updateRoleProfileFields(authUserId, 'pal', { available: value });
+    } catch (error) {
+      setProfileDetails((details) => ({ ...details, available: previous }));
+      throw error;
+    }
+  }
+
   async function saveProfilePhoto(asset) {
     const { path, url } = await uploadProfilePhoto(asset, {
       roles: accountRoles,
@@ -484,7 +518,11 @@ export function useAccount({ go, notify, screen, screenRef }) {
     deleteAccount,
     saveProfileName,
     saveProfileEmail: requestEmailChange,
-    savePassword: changePassword,
+    savePassword: ({ current, next }) =>
+      changePassword({ email: profileDetails.email, current, next }),
+    saveProfilePhone,
+    saveNotificationSetting,
+    saveAvailability,
     saveProfilePhoto,
     savePalIdentity,
     savePalSkills,

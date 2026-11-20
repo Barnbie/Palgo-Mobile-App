@@ -3,6 +3,7 @@ import { BackHandler, Text, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { PalGoBottomTabs, rebuildStyles, s } from './src/AppComponents';
 import { applyColorScheme, colors } from './src/theme';
+import { setLanguage } from './src/i18n';
 import { isAuthScreen, resolveRoute, TAB_SCREENS, tabFor } from './src/navigation';
 import { REMEMBERED_EMAIL_KEY, useAccount } from './src/state/useAccount';
 import { preferences as storedPreferences } from './src/lib/secureStorage';
@@ -70,6 +71,7 @@ export default function App() {
     applyColorScheme(scheme);
     rebuildStyles();
   }
+  setLanguage(preferences.language);
   const route = resolveRoute(screen, context);
 
   // Android's back button follows the same route as the on-screen back arrow.

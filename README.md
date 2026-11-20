@@ -67,3 +67,12 @@ Deploy `supabase/functions/delete-account` (`supabase functions deploy delete-ac
 ## Removed in the refactor
 
 Unused chat, payment, receipt and counter-offer screens and the `commissionRate` helper were removed as dead code. They remain in git history at commit `82cba83`.
+
+## Progress: profile and settings (20 Nov 2026)
+- Look: code-drawn icons, 3D inputs, dark mode inside the app, gradient buttons.
+- Support page: WhatsApp, phone and email cards (placeholders live in `src/config/contact.js`).
+- Terms and Privacy drafts live in `src/features/profile/legal.js` (needs legal review).
+- Settings saved to Supabase: phone number, push and email notification switches, Pal availability (migration `202611200003`).
+- App language (English, Yoruba, Igbo, Hausa, Pidgin) in `src/i18n/index.js`; strings not in the list stay English.
+- Password change now checks the current password. `delete-account` edge function is deployed.
+- Not done yet: real push/email delivery (needs Firebase and a Brevo API key), phone verification, Pal ID review.

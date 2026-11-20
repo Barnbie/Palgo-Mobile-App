@@ -303,6 +303,8 @@ function VerificationStatusNotice({ verification = {}, dismissed, onDismiss, onR
 function PalHomeFinal({
   errand,
   availableErrands = [],
+  palAvailable = true,
+  onToggleAvailability,
   onErrands,
   onTrack,
   onNotify,
@@ -343,6 +345,39 @@ function PalHomeFinal({
           onPress={onNotify}
         />
       </View>
+      <TouchableOpacity
+        accessibilityRole="switch"
+        accessibilityLabel="Availability"
+        onPress={onToggleAvailability}
+        activeOpacity={0.85}
+        style={{
+          position: 'absolute',
+          top: 52,
+          alignSelf: 'center',
+          zIndex: 11,
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 7,
+          height: 32,
+          paddingHorizontal: 14,
+          borderRadius: 16,
+          backgroundColor: palAvailable ? C.mint : C.paper,
+          borderWidth: palAvailable ? 0 : 1,
+          borderColor: C.line,
+        }}
+      >
+        <View
+          style={{
+            height: 9,
+            width: 9,
+            borderRadius: 5,
+            backgroundColor: palAvailable ? C.white : C.muted,
+          }}
+        />
+        <Text style={{ fontSize: 12, fontWeight: '800', color: palAvailable ? C.white : C.muted }}>
+          {palAvailable ? 'Available' : 'Unavailable'}
+        </Text>
+      </TouchableOpacity>
       <VerificationStatusNotice
         verification={verification}
         dismissed={verificationDismissed}
@@ -382,7 +417,9 @@ function PalHomeFinal({
           ))
         ) : (
           <Text style={{ fontSize: 12, color: C.muted, marginTop: 10 }}>
-            No available errands right now
+            {palAvailable
+              ? 'No available errands right now'
+              : 'You are set to unavailable. Tap the badge at the top to start seeing errands again.'}
           </Text>
         )}
       </HomePanel>
@@ -395,6 +432,8 @@ function UserHomeLatest({
   errand,
   errands = [],
   availableErrands = [],
+  palAvailable = true,
+  onToggleAvailability,
   wallet,
   verification,
   verificationDismissed,
@@ -421,6 +460,8 @@ function UserHomeLatest({
       <PalHomeFinal
         errand={errand}
         availableErrands={availableErrands}
+        palAvailable={palAvailable}
+        onToggleAvailability={onToggleAvailability}
         onErrands={onErrands}
         onTrack={onTrack}
         onNotify={onNotify}

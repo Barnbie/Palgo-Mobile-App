@@ -9,6 +9,7 @@ import {
   ProfileDeleteLatest,
   ProfileDeleteReasonLatest,
   ProfileDeleteSuccessLatest,
+  LanguageSelect,
   ProfileEdit,
   ProfileFlowFinal,
   ProfilePassword,
@@ -35,7 +36,6 @@ const PAL_SKILL_OPTIONS = [
   'Tailor',
   'Others',
 ];
-const LANGUAGE_OPTIONS = ['English', 'Yoruba', 'Igbo', 'Hausa', 'Pidgin English'];
 
 const toProfile = (c) => () => c.go('profile');
 
@@ -55,6 +55,23 @@ export const profileRoutes = {
       onBack: () => c.go('home'),
       onNavigate: c.go,
       onLogout: c.logout,
+      onSetting: async (key, value) => {
+        try {
+          await c.saveNotificationSetting(key, value);
+        } catch (error) {
+          c.notify(error?.message || 'That setting could not be saved.');
+        }
+      },
+      onAvailability: async (value) => {
+        try {
+          await c.saveAvailability(value);
+          c.notify(
+            value ? 'You are available for errands.' : 'You are set to unavailable for errands.',
+          );
+        } catch (error) {
+          c.notify(error?.message || 'Availability could not be saved.');
+        }
+      },
     };
     return {
       back: shared.onBack,
@@ -176,7 +193,7 @@ export const profileRoutes = {
     const back = toProfile(c);
     return {
       back,
-      view: <PalMultiSelect title="Language" options={LANGUAGE_OPTIONS} onBack={back} />,
+      view: <LanguageSelect language={c.language} onChange={c.setLanguage} onBack={back} />,
     };
   },
 
@@ -254,9 +271,10 @@ export function profileEditRoute(c) {
         onBack={back}
         onSave={async (value) => {
           if (field === 'phone') {
-            throw new Error(
-              'Phone verification is not available yet, so the phone number has not been changed.',
-            );
+            await c.saveProfilePhone(value);
+            c.notify('Phone number updated.');
+            c.go('profile-personal');
+            return;
           }
           if (field === 'email') {
             await c.saveProfileEmail(value);
