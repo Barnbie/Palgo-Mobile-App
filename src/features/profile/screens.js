@@ -249,6 +249,48 @@ function ProfileRating({ rating = { average: 0, count: 0 } }) {
     </View>
   );
 }
+function DeleteProfileLink({ onPress }) {
+  return (
+    <TouchableOpacity
+      accessibilityRole="button"
+      onPress={onPress}
+      hitSlop={10}
+      style={{
+        alignSelf: 'center',
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 7,
+        marginTop: 24,
+        paddingVertical: 8,
+        paddingHorizontal: 12,
+      }}
+    >
+      <TrashIcon size={18} color={C.red} />
+      <Text style={{ color: C.red, fontWeight: '800', fontSize: 13 }}>Delete Profile</Text>
+    </TouchableOpacity>
+  );
+}
+/** Green in light mode, blue in dark mode. */
+function RoleSwitchButton({ title, onPress }) {
+  return (
+    <TouchableOpacity
+      accessibilityRole="button"
+      onPress={onPress}
+      activeOpacity={0.85}
+      style={{
+        height: 50,
+        borderRadius: 25,
+        marginTop: 18,
+        marginHorizontal: 20,
+        backgroundColor: C.selected(),
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      <Text style={{ color: C.white, fontSize: 14, fontWeight: '800' }}>{title}</Text>
+    </TouchableOpacity>
+  );
+}
 function ProfileFlowFinal({
   role,
   profileDetails = {},
@@ -304,26 +346,15 @@ function ProfileFlowFinal({
         )}
         <ProfileRow label="Log out" target="profile-logout" onNavigate={() => onLogout()} />
       </View>
-      <TouchableOpacity onPress={() => onNavigate('profile-delete')}>
-        <Text
-          style={{
-            textAlign: 'center',
-            marginTop: 25,
-            color: C.red,
-            fontSize: 13,
-            fontWeight: '800',
-          }}
-        >
-          Delete Profile
-        </Text>
-      </TouchableOpacity>
-      <TouchableOpacity onPress={() => onBecomeRole?.(otherRole)}>
-        <Text style={{ textAlign: 'center', marginTop: 19, color: C.blue, fontWeight: '800' }}>
-          {hasOtherRole
+      <DeleteProfileLink onPress={() => onNavigate('profile-delete')} />
+      <RoleSwitchButton
+        title={
+          hasOtherRole
             ? `Switch to ${otherRole === 'pal' ? 'Pal' : 'User'} profile`
-            : `Become a ${otherRole === 'pal' ? 'Pal' : 'User'}`}
-        </Text>
-      </TouchableOpacity>
+            : `Become a ${otherRole === 'pal' ? 'Pal' : 'User'}`
+        }
+        onPress={() => onBecomeRole?.(otherRole)}
+      />
     </Shell>
   );
 }
@@ -802,16 +833,11 @@ function PalProfileLatest({
         {row('Report a problem', 'profile-report')}
         <ProfileRow label="Logout" onNavigate={onLogout} />
       </View>
-      <TouchableOpacity onPress={() => onNavigate('profile-delete')}>
-        <Text style={{ textAlign: 'center', color: C.red, fontWeight: '800', marginTop: 22 }}>
-          Delete Profile
-        </Text>
-      </TouchableOpacity>
-      <TouchableOpacity onPress={() => onBecomeRole?.('user')}>
-        <Text style={{ textAlign: 'center', marginTop: 19, color: C.blue, fontWeight: '800' }}>
-          {availableRoles.includes('user') ? 'Switch to User profile' : 'Become a User'}
-        </Text>
-      </TouchableOpacity>
+      <DeleteProfileLink onPress={() => onNavigate('profile-delete')} />
+      <RoleSwitchButton
+        title={availableRoles.includes('user') ? 'Switch to User profile' : 'Become a User'}
+        onPress={() => onBecomeRole?.('user')}
+      />
     </Shell>
   );
 }

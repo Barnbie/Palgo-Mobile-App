@@ -75,3 +75,6 @@ colors.glass = (alpha) =>
 
 /** Default colour for code-drawn icons: brand blue in light mode, green in dark mode. */
 colors.icon = () => (colors.scheme === 'dark' ? '#34D399' : '#2563EB');
+
+/** Fill for selected chips, tiles and role buttons: green in light mode, blue in dark mode. */
+colors.selected = () => (colors.scheme === 'dark' ? colors.blue : colors.mint);

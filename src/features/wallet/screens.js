@@ -329,17 +329,17 @@ function PalWalletLatest({
             flex: 1,
             borderRadius: 30,
             justifyContent: 'center',
-            paddingHorizontal: 10,
+            paddingHorizontal: 16,
           }}
         >
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
             {profileDetails.photoUrl ? (
               <Image
                 source={{ uri: profileDetails.photoUrl }}
-                style={{ height: 48, width: 48, borderRadius: 24 }}
+                style={{ height: 38, width: 38, borderRadius: 19 }}
               />
             ) : (
-              <ImagePlaceholder size={48} profile />
+              <ImagePlaceholder size={38} profile />
             )}
             <Text style={{ color: C.white, fontSize: 13, fontWeight: '800', flex: 1 }}>
               {profileDetails.name ? `Hello ${profileDetails.name}` : 'Your wallet'}
