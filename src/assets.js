@@ -47,6 +47,7 @@ export const uiPlaceholders = {
   walletHelloBackground: null,
   walletBalanceBackground: null,
   walletPromoCard: null,
+  withdrawSuccessImage: null,
 };
 
 // Add the three central onboarding illustrations to `src/assets/`, then replace

@@ -7,10 +7,12 @@
 build/
 .idea
 .gradle
+.gradle-user-home/
 local.properties
 *.iml
 *.hprof
 .cxx/
+gradle/gradle-daemon-jvm.properties
 .expo/
 
 # Bundle artifacts

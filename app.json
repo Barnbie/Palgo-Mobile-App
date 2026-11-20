@@ -2,6 +2,12 @@
   "expo": {
     "name": "PalGo",
     "slug": "palgo",
-    "version": "1.0.0"
+    "scheme": "palgo",
+    "version": "1.0.0",
+    "extra": {
+      "eas": {
+        "projectId": "512720a8-6c2b-4915-8b9b-55636c6db5c9"
+      }
+    }
   }
 }

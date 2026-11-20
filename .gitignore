@@ -11,3 +11,10 @@ node_modules/
 # Build artifacts
 dist/
 web-build/
+
+# Local Android SDK installed for this workstation
+/.android-sdk/
+
+# Local credentials and app-specific environment values
+.env*
+!.env.example

@@ -81,6 +81,19 @@ def enableMinifyInReleaseBuilds = (findProperty('android.enableMinifyInReleaseBu
  */
 def jscFlavor = 'io.github.react-native-community:jsc-android:2026004.+'
 
+def readMapsKeyFromDotEnv = {
+    def envFile = rootProject.file('../.env')
+    if (!envFile.exists()) return null
+    def keyLine = envFile.readLines().find { it.trim().startsWith('GOOGLE_MAPS_API_KEY=') }
+    if (keyLine == null) return null
+    def value = keyLine.substring(keyLine.indexOf('=') + 1).trim()
+    if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+        value = value.substring(1, value.length() - 1)
+    }
+    return value ?: null
+}
+def googleMapsApiKey = System.getenv('GOOGLE_MAPS_API_KEY') ?: findProperty('GOOGLE_MAPS_API_KEY') ?: readMapsKeyFromDotEnv()
+
 android {
     ndkVersion rootProject.ext.ndkVersion
 
@@ -94,6 +107,13 @@ android {
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName "1.0.0"
+
+        // The checked-in Android project is used directly by EAS Build. Accept
+        // the EAS/local environment variable, a Gradle property, or local .env.
+        if (!googleMapsApiKey) {
+            throw new GradleException('GOOGLE_MAPS_API_KEY is missing. Add it to the EAS development environment or the local .env before building Android.')
+        }
+        manifestPlaceholders = [GOOGLE_MAPS_API_KEY: googleMapsApiKey]
 
         buildConfigField "String", "REACT_NATIVE_RELEASE_LEVEL", "\"${findProperty('reactNativeReleaseLevel') ?: 'stable'}\""
     }
@@ -116,7 +136,7 @@ android {
             def enableShrinkResources = findProperty('android.enableShrinkResourcesInReleaseBuilds') ?: 'false'
             shrinkResources enableShrinkResources.toBoolean()
             minifyEnabled enableMinifyInReleaseBuilds
-            proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
+            proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
             def enablePngCrunchInRelease = findProperty('android.enablePngCrunchInReleaseBuilds') ?: 'true'
             crunchPngs enablePngCrunchInRelease.toBoolean()
         }
