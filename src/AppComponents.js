@@ -1,3 +1,4 @@
+import { GradientButton } from './components/GradientButton';
 import React from 'react';
 import {
   Image,
@@ -82,25 +83,41 @@ const Logo = ({ style, variant = 'onboarding' }) =>
       )}
     </View>
   );
-const Button = ({ title, onPress, kind = 'primary', small = false }) => (
-  <TouchableOpacity
-    onPress={onPress}
-    style={[
-      s.button,
-      { height: 40, minHeight: 40, borderRadius: 20 },
-      kind === 'secondary' && s.secondary,
-      kind === 'outline' && s.outline,
-      kind === 'danger' && s.danger,
-      small && s.smallButton,
-    ]}
-  >
+const Button = ({ title, onPress, kind = 'primary', small = false }) => {
+  const filled = kind === 'primary' || kind === 'secondary';
+  const label = (
     <Text
       style={[s.buttonText, kind === 'outline' && s.outlineText, kind === 'danger' && s.dangerText]}
     >
       {title}
     </Text>
-  </TouchableOpacity>
-);
+  );
+  if (filled) {
+    return (
+      <GradientButton
+        onPress={onPress}
+        tone={kind === 'secondary' ? 'blue' : 'green'}
+        style={{ height: small ? 38 : 40, borderRadius: 20, paddingHorizontal: 14 }}
+      >
+        {label}
+      </GradientButton>
+    );
+  }
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      style={[
+        s.button,
+        { height: 40, minHeight: 40, borderRadius: 20 },
+        kind === 'outline' && s.outline,
+        kind === 'danger' && s.danger,
+        small && s.smallButton,
+      ]}
+    >
+      {label}
+    </TouchableOpacity>
+  );
+};
 const Header = ({ eyebrow, title, sub }) => (
   <>
     <Text style={s.eyebrow}>{eyebrow}</Text>

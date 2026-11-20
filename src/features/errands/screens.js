@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Alert, Image, TouchableOpacity, View } from 'react-native';
 import { Text } from '../../components/ThemedText';
+import { GradientButton } from '../../components/GradientButton';
 import {
   Banknote,
   Bell,
@@ -622,7 +623,7 @@ function ErrandsCardsUpdated({ role, errands = [], onBack, onOpen, onFilter }) {
                     <Text style={{ fontSize: 11, fontWeight: '800', color: C.white }}>Accept</Text>
                   </TouchableOpacity>
                 ) : null}
-                <TouchableOpacity
+                <GradientButton
                   onPress={() =>
                     onOpen(
                       state === 'Completed'
@@ -639,15 +640,12 @@ function ErrandsCardsUpdated({ role, errands = [], onBack, onOpen, onFilter }) {
                     height: 38,
                     flex: 1,
                     borderRadius: 19,
-                    backgroundColor: C.blue,
-                    alignItems: 'center',
-                    justifyContent: 'center',
                   }}
                 >
                   <Text style={{ fontSize: 11, fontWeight: '800', color: C.white }}>
                     View details
                   </Text>
-                </TouchableOpacity>
+                </GradientButton>
                 {role === 'user' && item.status === 'PENDING' && (
                   <TouchableOpacity
                     onPress={() => onOpen('cancel', item)}

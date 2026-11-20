@@ -1,3 +1,4 @@
+import { GradientButton } from '../../components/GradientButton';
 import { useEffect, useState } from 'react';
 import { Alert, Image, Modal, TouchableOpacity, View } from 'react-native';
 import { Text } from '../../components/ThemedText';
@@ -273,22 +274,12 @@ function DeleteProfileLink({ onPress }) {
 /** Green in light mode, blue in dark mode. */
 function RoleSwitchButton({ title, onPress }) {
   return (
-    <TouchableOpacity
-      accessibilityRole="button"
+    <GradientButton
       onPress={onPress}
-      activeOpacity={0.85}
-      style={{
-        height: 50,
-        borderRadius: 25,
-        marginTop: 18,
-        marginHorizontal: 20,
-        backgroundColor: C.selected(),
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
+      style={{ height: 50, borderRadius: 25, marginTop: 18, marginHorizontal: 20 }}
     >
       <Text style={{ color: C.white, fontSize: 14, fontWeight: '800' }}>{title}</Text>
-    </TouchableOpacity>
+    </GradientButton>
   );
 }
 function ProfileFlowFinal({
