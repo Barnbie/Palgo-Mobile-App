@@ -220,6 +220,21 @@ function ProfileRow({
     </View>
   );
 }
+/** One star: outlined when empty, half filled for a half, fully filled when earned. */
+function RatingStar({ fill }) {
+  const size = 16;
+  const gold = '#F2C400';
+  if (fill >= 0.75) return <Star size={size} color={gold} />;
+  if (fill < 0.25) return <Star size={size} color={gold} variant="outline" />;
+  return (
+    <View style={{ width: size, height: size }}>
+      <Star size={size} color={gold} variant="outline" />
+      <View style={{ position: 'absolute', left: 0, top: 0, width: size / 2, overflow: 'hidden' }}>
+        <Star size={size} color={gold} />
+      </View>
+    </View>
+  );
+}
 function ProfileRating({ rating = { average: 0, count: 0 } }) {
   const average = Number(rating.average) || 0;
   return (
@@ -235,7 +250,7 @@ function ProfileRating({ rating = { average: 0, count: 0 } }) {
       }}
     >
       {Array.from({ length: 5 }, (_, index) => (
-        <Star key={index} size={16} color="#F2C400" fill="transparent" strokeWidth={1.8} />
+        <RatingStar key={index} fill={Math.max(0, Math.min(1, average - index))} />
       ))}
       <View
         style={{
