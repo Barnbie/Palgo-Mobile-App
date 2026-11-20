@@ -4,9 +4,6 @@ import { Alert } from 'react-native';
 export const showMessagingNotice = () =>
   Alert.alert('Messaging is not connected', 'Messages will be connected in the messaging stage.');
 
-export const showCounterOfferNotice = () =>
-  Alert.alert('Counter offers', 'Counter offers will be connected after the basic errand flow.');
-
 export const showWithdrawalNotice = () =>
   Alert.alert(
     'Withdrawals not connected',

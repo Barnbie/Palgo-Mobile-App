@@ -1,10 +1,18 @@
 import React from 'react';
 import { fetchNotifications, markNotificationsRead } from '../../lib/api/notifications';
 import { Alert } from 'react-native';
-import { CompletionConfirm, Notifications, PalCompleteWaiting, Success } from '../../AppComponents';
+import {
+  CompletionConfirm,
+  Notifications,
+  PalCompleteWaiting,
+  Success,
+  money,
+} from '../../AppComponents';
 import { CreateCategoryFinal, CreateErrandFormFinal } from '../../features/auth/screens';
 import {
   CompletedErrandDetail,
+  CounterOfferDetail,
+  CounterOfferForm,
   ErrandsUpdated,
   PalDetailFinal,
   PalTrackingHomeLatest,
@@ -13,7 +21,7 @@ import {
   TrackingHomeActive,
 } from '../../features/errands/screens';
 import { DateFilter } from '../../features/wallet/screens';
-import { showCounterOfferNotice, showMessagingNotice } from '../notices';
+import { showMessagingNotice } from '../notices';
 
 export const errandRoutes = {
   'create-category': (c) => {
@@ -73,7 +81,22 @@ export const errandRoutes = {
       <ErrandsUpdated
         role={c.role}
         errands={c.accountErrands}
+        offers={c.offers}
         errand={c.errand}
+        onOpenOffer={(offer, item, acceptNow) => {
+          c.setFocusedErrand(item);
+          c.setFocusedOffer(offer);
+          if (acceptNow) {
+            Alert.alert(
+              'Accept this offer?',
+              `${offer.pal?.name || 'This Pal'} will do it for ${money(offer.amount)}.`,
+              [
+                { text: 'Not now', style: 'cancel' },
+                { text: 'Accept', onPress: () => c.acceptOffer(offer) },
+              ],
+            );
+          } else c.go('offer-detail');
+        }}
         onBack={() => c.go('home')}
         onFilter={() => c.go('errand-filter')}
         onOpen={(kind, item) => {
@@ -83,11 +106,23 @@ export const errandRoutes = {
           }
           if (kind === 'active') c.go(c.role === 'pal' ? 'pal-active' : 'tracking');
           else if (kind === 'completed') c.go('completed-detail');
-          else if (kind === 'complete')
-            c.go(c.role === 'pal' ? 'pal-complete' : 'complete-confirm');
-          else if (kind === 'accept') c.acceptAvailableErrand(item);
-          else if (kind === 'cancel') c.cancelErrand(item);
-          else c.go('pending-detail');
+          else if (kind === 'complete') {
+            if (c.role === 'pal') c.go('pal-complete');
+            else if (item?.status === 'PAL_COMPLETED') {
+              c.setErrand(item);
+              c.go('complete-confirm');
+            } else
+              Alert.alert(
+                'Waiting for your Pal',
+                'Your Pal needs to mark the errand complete before you can confirm it.',
+              );
+          } else if (kind === 'accept') c.acceptAvailableErrand(item);
+          else if (kind === 'cancel')
+            Alert.alert('Cancel this errand?', 'Pals will no longer see it.', [
+              { text: 'Keep it', style: 'cancel' },
+              { text: 'Cancel errand', style: 'destructive', onPress: () => c.cancelErrand(item) },
+            ]);
+          else c.go(c.role === 'pal' ? 'pal-detail' : 'pending-detail');
         }}
       />
     ),
@@ -108,6 +143,38 @@ export const errandRoutes = {
           role={c.role}
           onBack={back}
           onAccept={() => c.acceptAvailableErrand(c.focusedErrand || c.current)}
+        />
+      ),
+    };
+  },
+
+  'offer-detail': (c) => {
+    const back = () => c.go('errands');
+    const offer = c.focusedOffer || {};
+    return {
+      back,
+      view: (
+        <CounterOfferDetail
+          offer={offer}
+          errand={c.focusedErrand || {}}
+          onBack={back}
+          onAccept={() => c.acceptOffer(offer)}
+          onDecline={() => c.declineOffer(offer)}
+        />
+      ),
+    };
+  },
+
+  'counter-offer': (c) => {
+    const item = c.focusedErrand || c.current;
+    const back = () => c.go('pal-detail');
+    return {
+      back,
+      view: (
+        <CounterOfferForm
+          errand={item}
+          onBack={back}
+          onSubmit={(amount, message) => c.submitCounterOffer(item, amount, message)}
         />
       ),
     };
@@ -203,7 +270,7 @@ export const errandRoutes = {
           errand={c.focusedErrand || c.current}
           onBack={back}
           onAccept={() => c.acceptAvailableErrand(c.focusedErrand || c.current)}
-          onCounter={showCounterOfferNotice}
+          onCounter={() => c.go('counter-offer')}
         />
       ),
     };

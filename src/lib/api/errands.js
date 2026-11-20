@@ -87,3 +87,45 @@ export async function getProfileRating(profileId, role = 'user') {
   const row = Array.isArray(data) ? data[0] : data;
   return { average: Number(row?.average_rating) || 0, count: Number(row?.review_count) || 0 };
 }
+
+/** Counter offers: the requester sees offers on their errands, a Pal sees the ones they sent. */
+export async function getCounterOffers() {
+  const client = requireClient();
+  const { data, error } = await client.rpc('get_counter_offers');
+  if (error) throw explainMissingAuthUser(error);
+  return Promise.all(
+    (data || []).map(async (offer) => {
+      const pal = { ...offer.pal };
+      if (Array.isArray(pal.skills)) pal.skills = pal.skills.join(' · ');
+      if (pal.profilePhotoPath) {
+        const { data: signed } = await client.storage
+          .from(PHOTO_BUCKET)
+          .createSignedUrl(pal.profilePhotoPath, 60 * 30)
+          .catch(() => ({ data: null }));
+        pal.image = signed?.signedUrl || null;
+      }
+      return { ...offer, amount: Number(offer.amount), pal };
+    }),
+  );
+}
+
+export async function sendCounterOffer(errandId, amount, message) {
+  const client = requireClient();
+  const { data, error } = await client.rpc('make_counter_offer', {
+    errand_to_offer: errandId,
+    offer_amount: Number(amount),
+    offer_message: message || null,
+  });
+  if (error) throw error;
+  return data;
+}
+
+export async function acceptCounterOfferRecord(offerId) {
+  return callErrandRpc('accept_counter_offer', { offer_to_accept: offerId });
+}
+
+export async function declineCounterOfferRecord(offerId) {
+  const client = requireClient();
+  const { error } = await client.rpc('decline_counter_offer', { offer_to_decline: offerId });
+  if (error) throw error;
+}

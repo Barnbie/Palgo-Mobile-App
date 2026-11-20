@@ -81,3 +81,8 @@ Unused chat, payment, receipt and counter-offer screens and the `commissionRate`
 - In-app feed: `notifications` table, shown on the bell screen. Errand status changes create rows through a database trigger.
 - Delivery: each new row calls the `send-notification` edge function, which sends an Expo push (to tokens in `push_tokens`) and a Brevo email, depending on the person's switches.
 - To finish setup: add `BREVO_API_KEY` and `MAIL_FROM_EMAIL` as Supabase Edge Function secrets; for Android push add a Firebase `google-services.json` (EAS file variable `GOOGLE_SERVICES_JSON`) and upload the FCM credentials with `eas credentials`; then make a new EAS development build (adds `expo-notifications`).
+
+## Counter offers and errand cards (20 Nov 2026)
+- A Pal can answer a pending errand with their own price and note (`make_counter_offer`). The User sees each offer as a card with the Pal's photo, name, rating and amount, opens the details, and accepts or declines (`accept_counter_offer`, `decline_counter_offer`). Accepting assigns that Pal at the offered price and declines the other offers. Migration `202611200005_counter_offers.sql` (applied live).
+- Errand cards: larger amount, two equal buttons. View details (blue, left) plus Cancel (pending), Complete (active) or Accept (offer / Pal pending, green, right).
+- Pals see "Offer sent" on errands they offered on. New alerts go through the existing notification pipeline.

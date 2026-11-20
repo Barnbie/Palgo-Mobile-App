@@ -484,7 +484,74 @@ function PalDetailFinal({ errand, onBack, onAccept, onCounter }) {
     </Shell>
   );
 }
-function ErrandsCardsUpdated({ role, errands = [], onBack, onOpen, onFilter }) {
+function StarLine({ person = {} }) {
+  const count = person.reviewCount || 0;
+  return (
+    <Text style={{ fontSize: 11, color: C.muted, marginTop: 4 }}>
+      {count ? `★ ${Number(person.rating || 0).toFixed(1)} · ${count} reviews` : 'No reviews yet'}
+    </Text>
+  );
+}
+
+/** Two equal pills: View details (blue, left) and the main action (green, right). */
+function CardButtons({ onView, actionLabel, onAction }) {
+  const base = { height: 34, flex: 1, borderRadius: 17 };
+  const label = { fontSize: 11, fontWeight: '800', color: C.white };
+  return (
+    <View style={{ flexDirection: 'row', gap: 10, marginTop: 14 }}>
+      <GradientButton tone="blue" onPress={onView} style={base}>
+        <Text style={label}>View details</Text>
+      </GradientButton>
+      {actionLabel ? (
+        <GradientButton tone="green" onPress={onAction} style={base}>
+          <Text style={label}>{actionLabel}</Text>
+        </GradientButton>
+      ) : null}
+    </View>
+  );
+}
+
+const cardStyle = { backgroundColor: C.paper, borderRadius: 18, padding: 15, marginBottom: 12 };
+const amountStyle = { fontSize: 22, fontWeight: '800', color: C.blue };
+
+function OfferCard({ offer, errand, onView, onAccept }) {
+  return (
+    <View style={cardStyle}>
+      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        <ImagePlaceholder size={48} profile image={offer.pal?.image} />
+        <View style={{ flex: 1, marginLeft: 12 }}>
+          <Text style={{ fontSize: 14, fontWeight: '800', color: C.ink }}>
+            {offer.pal?.name || 'Pal'}
+          </Text>
+          <StarLine person={offer.pal} />
+        </View>
+        <View style={{ alignItems: 'flex-end' }}>
+          <Text style={amountStyle}>{money(offer.amount)}</Text>
+          <Text style={{ fontSize: 10, color: C.muted, marginTop: 2 }}>
+            Your offer {money(errand.fee)}
+          </Text>
+        </View>
+      </View>
+      <Text style={{ fontSize: 11, fontWeight: '800', color: C.mint, marginTop: 10 }}>
+        Counter offer
+      </Text>
+      <Text numberOfLines={1} style={{ fontSize: 11, color: C.muted, marginTop: 4 }}>
+        {errand.title}
+      </Text>
+      <CardButtons onView={onView} actionLabel="Accept" onAction={onAccept} />
+    </View>
+  );
+}
+
+function ErrandsCardsUpdated({
+  role,
+  errands = [],
+  offers = [],
+  onBack,
+  onOpen,
+  onOpenOffer,
+  onFilter,
+}) {
   const [filter, setFilter] = useState('All'),
     [query, setQuery] = useState('');
   const filters = ['All', 'Completed', 'Active', 'Pending', 'Canceled'];
@@ -563,111 +630,205 @@ function ErrandsCardsUpdated({ role, errands = [], onBack, onOpen, onFilter }) {
       ) : (
         visible.map((item) => {
           const state = stateOf(item),
-            palPending = role === 'pal' && item.status === 'PENDING',
-            cancelled = item.status === 'CANCELLED';
+            isPal = role === 'pal',
+            pending = item.status === 'PENDING',
+            cancelled = item.status === 'CANCELLED',
+            itemOffers = offers.filter((o) => o.errandId === item.id),
+            userOffers = !isPal && pending ? itemOffers.filter((o) => o.status === 'pending') : [],
+            myOffer = isPal && pending ? itemOffers[0] : null;
+          const viewKind =
+            state === 'Completed' ? 'completed' : state === 'Active' ? 'active' : 'pending-detail';
+          // The green button on the right depends on where the errand is.
+          let actionLabel = null;
+          let actionKind = null;
+          if (pending) {
+            actionLabel = isPal ? (myOffer?.status === 'pending' ? null : 'Accept') : 'Cancel';
+            actionKind = isPal ? 'accept' : 'cancel';
+          } else if (state === 'Active') {
+            actionLabel = 'Complete';
+            actionKind = isPal ? 'active' : 'complete';
+          }
+          let stateLabel = state;
+          if (userOffers.length)
+            stateLabel = `Pending · ${userOffers.length} counter offer${userOffers.length > 1 ? 's' : ''}`;
+          if (myOffer?.status === 'pending') stateLabel = `Offer sent · ${money(myOffer.amount)}`;
+          if (myOffer?.status === 'declined') stateLabel = 'Offer declined';
           return (
-            <View
-              key={item.id}
-              style={{ backgroundColor: C.paper, borderRadius: 18, padding: 15, marginBottom: 12 }}
-            >
-              <View
-                style={{
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
-                  alignItems: 'flex-start',
-                }}
-              >
-                <Text
-                  style={{ fontSize: 14, fontWeight: '800', color: C.ink, flex: 1, marginRight: 8 }}
-                >
-                  {item.title}
-                </Text>
-                <Text style={{ fontSize: 13, fontWeight: '800', color: C.blue }}>
-                  {money(item.fee)}
-                </Text>
-              </View>
-              <Text
-                numberOfLines={2}
-                style={{ fontSize: 11, color: C.muted, lineHeight: 17, marginTop: 7 }}
-              >
-                {item.description}
-              </Text>
-              <Text style={{ fontSize: 11, color: C.muted, marginTop: 8 }}>
-                {item.location}
-                {item.city ? `, ${item.city}` : ''}
-                {item.state ? `, ${item.state}` : ''}
-              </Text>
-              <Text
-                style={{
-                  fontSize: 11,
-                  fontWeight: '800',
-                  color: cancelled ? C.red : state === 'Completed' ? C.mint : C.blue,
-                  marginTop: 8,
-                }}
-              >
-                {state}
-              </Text>
-              <View style={{ flexDirection: 'row', gap: 9, marginTop: 13 }}>
-                {palPending ? (
-                  <TouchableOpacity
-                    onPress={() => onOpen('accept', item)}
-                    style={{
-                      height: 38,
-                      flex: 1,
-                      borderRadius: 19,
-                      backgroundColor: C.mint,
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                  >
-                    <Text style={{ fontSize: 11, fontWeight: '800', color: C.white }}>Accept</Text>
-                  </TouchableOpacity>
-                ) : null}
-                <GradientButton
-                  tone="blue"
-                  tone="blue"
-                  onPress={() =>
-                    onOpen(
-                      state === 'Completed'
-                        ? 'completed'
-                        : state === 'Active'
-                          ? 'active'
-                          : palPending
-                            ? 'pending-detail'
-                            : 'pending-detail',
-                      item,
-                    )
-                  }
+            <View key={item.id}>
+              <View style={cardStyle}>
+                <View
                   style={{
-                    height: 38,
-                    flex: 1,
-                    borderRadius: 19,
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    alignItems: 'flex-start',
                   }}
                 >
-                  <Text style={{ fontSize: 11, fontWeight: '800', color: C.white }}>
-                    View details
-                  </Text>
-                </GradientButton>
-                {role === 'user' && item.status === 'PENDING' && (
-                  <TouchableOpacity
-                    onPress={() => onOpen('cancel', item)}
+                  <Text
                     style={{
-                      height: 38,
-                      paddingHorizontal: 14,
-                      borderRadius: 19,
-                      backgroundColor: C.canvas,
-                      alignItems: 'center',
-                      justifyContent: 'center',
+                      fontSize: 15,
+                      fontWeight: '800',
+                      color: C.ink,
+                      flex: 1,
+                      marginRight: 10,
                     }}
                   >
-                    <Text style={{ fontSize: 11, fontWeight: '800', color: C.red }}>Cancel</Text>
-                  </TouchableOpacity>
-                )}
+                    {item.title}
+                  </Text>
+                  <Text style={amountStyle}>{money(item.fee)}</Text>
+                </View>
+                <Text
+                  numberOfLines={2}
+                  style={{ fontSize: 11, color: C.muted, lineHeight: 17, marginTop: 7 }}
+                >
+                  {item.description}
+                </Text>
+                <Text style={{ fontSize: 11, color: C.muted, marginTop: 8 }}>
+                  {item.location}
+                  {item.city ? `, ${item.city}` : ''}
+                  {item.state ? `, ${item.state}` : ''}
+                </Text>
+                <Text
+                  style={{
+                    fontSize: 11,
+                    fontWeight: '800',
+                    color:
+                      cancelled || myOffer?.status === 'declined'
+                        ? C.red
+                        : state === 'Completed'
+                          ? C.mint
+                          : C.blue,
+                    marginTop: 8,
+                  }}
+                >
+                  {stateLabel}
+                </Text>
+                <CardButtons
+                  onView={() => onOpen(viewKind, item)}
+                  actionLabel={actionLabel}
+                  onAction={() => onOpen(actionKind, item)}
+                />
               </View>
+              {userOffers.map((offer) => (
+                <OfferCard
+                  key={offer.id}
+                  offer={offer}
+                  errand={item}
+                  onView={() => onOpenOffer(offer, item, false)}
+                  onAccept={() => onOpenOffer(offer, item, true)}
+                />
+              ))}
             </View>
           );
         })
       )}
+    </Shell>
+  );
+}
+
+/** What the requester sees when they open a counter offer: the Pal, the price and the errand. */
+function CounterOfferDetail({ offer = {}, errand = {}, onBack, onAccept, onDecline }) {
+  const pal = offer.pal || {};
+  return (
+    <Shell back={onBack}>
+      <Text style={{ fontSize: 23, fontWeight: '800', color: C.muted, marginBottom: 22 }}>
+        Counter offer
+      </Text>
+      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 18 }}>
+        <ImagePlaceholder size={72} profile image={pal.image} />
+        <View style={{ marginLeft: 14, flex: 1 }}>
+          <Text style={{ fontSize: 16, fontWeight: '800', color: C.ink }}>{pal.name || 'Pal'}</Text>
+          <StarLine person={pal} />
+          {!!pal.skills && (
+            <Text numberOfLines={2} style={{ fontSize: 11, color: C.muted, marginTop: 4 }}>
+              {pal.skills}
+            </Text>
+          )}
+        </View>
+      </View>
+      <View style={{ backgroundColor: C.paper, borderRadius: 18, padding: 16, marginBottom: 16 }}>
+        <Text style={{ fontSize: 12, color: C.muted }}>The Pal is asking for</Text>
+        <Text style={{ ...amountStyle, fontSize: 28, marginTop: 4 }}>{money(offer.amount)}</Text>
+        <Text style={{ fontSize: 12, color: C.muted, marginTop: 4 }}>
+          Your offer was {money(errand.fee)}
+        </Text>
+        {!!offer.message && (
+          <Text style={{ fontSize: 13, lineHeight: 20, color: C.ink, marginTop: 12 }}>
+            “{offer.message}”
+          </Text>
+        )}
+      </View>
+      <Text style={{ fontSize: 16, fontWeight: '800', marginBottom: 8 }}>
+        {errand.title || '—'}
+      </Text>
+      <Text style={{ fontSize: 13, color: C.muted, lineHeight: 20, marginBottom: 8 }}>
+        {errand.description || '—'}
+      </Text>
+      <DetailRow Icon={MapPinned} label="Location" value={errand.location || '—'} />
+      <DetailRow
+        Icon={Clock3}
+        label="Requested time"
+        value={
+          errand.requested_time ||
+          (errand.scheduled_for ? new Date(errand.scheduled_for).toLocaleString() : 'Not specified')
+        }
+      />
+      <View style={{ flexDirection: 'row', gap: 16, marginTop: 28 }}>
+        <View style={{ flex: 1 }}>
+          <Button kind="outline" title="Decline" onPress={onDecline} />
+        </View>
+        <View style={{ flex: 1 }}>
+          <Button title="Accept" kind="secondary" onPress={onAccept} />
+        </View>
+      </View>
+    </Shell>
+  );
+}
+
+/** A Pal proposes a different price (and an optional note) for a pending errand. */
+function CounterOfferForm({ errand = {}, onBack, onSubmit }) {
+  const [amount, setAmount] = useState(''),
+    [message, setMessage] = useState(''),
+    [busy, setBusy] = useState(false);
+  const value = Number(String(amount).replace(/[^0-9.]/g, ''));
+  const submit = async () => {
+    if (!value || value < 2000) {
+      Alert.alert('Check the amount', 'The minimum amount is 2,000.');
+      return;
+    }
+    setBusy(true);
+    await onSubmit(value, message.trim());
+    setBusy(false);
+  };
+  return (
+    <Shell back={onBack}>
+      <Text style={{ fontSize: 23, fontWeight: '800', color: C.muted, marginBottom: 20 }}>
+        Counter offer
+      </Text>
+      <Text style={{ fontSize: 16, fontWeight: '800', marginBottom: 6 }}>
+        {errand.title || '—'}
+      </Text>
+      <Text style={{ fontSize: 13, color: C.muted, marginBottom: 20 }}>
+        The User is offering {money(errand.fee)}. Suggest the amount you would do it for.
+      </Text>
+      <Input
+        label="Your price"
+        value={amount}
+        onChangeText={setAmount}
+        placeholder="e.g. 5000"
+        keyboardType="number-pad"
+        maxLength={9}
+      />
+      <Input
+        label="Note to the User (optional)"
+        value={message}
+        onChangeText={setMessage}
+        placeholder="Why this price?"
+        multiline
+        maxLength={300}
+      />
+      <View style={{ marginTop: 20 }}>
+        <Button title={busy ? 'Sending...' : 'Send offer'} onPress={busy ? undefined : submit} />
+      </View>
     </Shell>
   );
 }
@@ -680,4 +841,6 @@ export {
   PalTrackingHomeLatest,
   PalDetailFinal,
   ErrandsCardsUpdated as ErrandsUpdated,
+  CounterOfferDetail,
+  CounterOfferForm,
 };

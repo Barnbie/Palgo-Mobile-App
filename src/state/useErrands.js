@@ -2,9 +2,13 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Alert, AppState } from 'react-native';
 import { supabase } from '../lib/supabase';
 import {
+  acceptCounterOfferRecord,
   acceptErrandRecord,
   createErrandRecord,
+  declineCounterOfferRecord,
   getAccountErrands,
+  getCounterOffers,
+  sendCounterOffer,
   submitErrandReview,
   updateErrandRecordStatus,
 } from '../lib/api/errands';
@@ -34,6 +38,8 @@ export function useErrands({ role, authUserId, screen, screenRef, go, notify }) 
   const [errand, setErrand] = useState(null);
   const [accountErrands, setAccountErrands] = useState([]);
   const [focusedErrand, setFocusedErrand] = useState(null);
+  const [offers, setOffers] = useState([]);
+  const [focusedOffer, setFocusedOffer] = useState(null);
   const [form, setForm] = useState(EMPTY_FORM);
   const lastErrorRef = useRef('');
   const current = errand || {};
@@ -61,6 +67,8 @@ export function useErrands({ role, authUserId, screen, screenRef, go, notify }) 
     if (!signedIn) return;
     try {
       applyRows(await getAccountErrands(role));
+      // Offers are secondary: a failure here must not hide the errands.
+      setOffers(await getCounterOffers().catch(() => []));
       lastErrorRef.current = '';
     } catch (error) {
       const message = error?.message || 'Your errands could not be loaded.';
@@ -73,8 +81,10 @@ export function useErrands({ role, authUserId, screen, screenRef, go, notify }) 
   // Reset when the signed-in profile changes.
   useEffect(() => {
     setAccountErrands([]);
+    setOffers([]);
     setErrand(null);
     setFocusedErrand(null);
+    setFocusedOffer(null);
   }, [authUserId, role]);
 
   // Load on sign-in, then keep fresh in the background and on foreground.
@@ -192,6 +202,44 @@ export function useErrands({ role, authUserId, screen, screenRef, go, notify }) 
     }
   }
 
+  async function submitCounterOffer(item, amount, message) {
+    try {
+      await sendCounterOffer(item.id, amount, message);
+      await refresh();
+      notify('Your counter offer was sent.');
+      go('errands');
+    } catch (error) {
+      Alert.alert('Could not send offer', error?.message || 'Please try again.');
+    }
+  }
+
+  async function acceptOffer(offer) {
+    try {
+      const accepted = await acceptCounterOfferRecord(offer.id);
+      const base = accountErrands.find((item) => item.id === offer.errandId) || {};
+      const updated = { ...base, ...accepted, pal: offer.pal };
+      setErrand(updated);
+      setFocusedOffer(null);
+      await refresh();
+      notify('Offer accepted. Your Pal is on the way.');
+      go('tracking');
+    } catch (error) {
+      Alert.alert('Could not accept offer', error?.message || 'Please try again.');
+      refresh();
+    }
+  }
+
+  async function declineOffer(offer) {
+    try {
+      await declineCounterOfferRecord(offer.id);
+      setFocusedOffer(null);
+      await refresh();
+      go('errands');
+    } catch (error) {
+      Alert.alert('Could not decline offer', error?.message || 'Please try again.');
+    }
+  }
+
   async function saveErrandReview(errandId, targetId, stars, words) {
     if (!supabase || !authUserId || !errandId || !targetId) {
       Alert.alert('Review not saved', 'This errand is not connected to both real account IDs yet.');
@@ -217,6 +265,12 @@ export function useErrands({ role, authUserId, screen, screenRef, go, notify }) 
     accountErrands,
     focusedErrand,
     setFocusedErrand,
+    offers,
+    focusedOffer,
+    setFocusedOffer,
+    submitCounterOffer,
+    acceptOffer,
+    declineOffer,
     form,
     setForm,
     refreshErrands: refresh,
