@@ -624,6 +624,8 @@ function ErrandsCardsUpdated({ role, errands = [], onBack, onOpen, onFilter }) {
                   </TouchableOpacity>
                 ) : null}
                 <GradientButton
+                  tone="blue"
+                  tone="blue"
                   onPress={() =>
                     onOpen(
                       state === 'Completed'

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { TouchableOpacity, View } from 'react-native';
+import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 import { colors } from '../theme';
 
@@ -30,6 +30,12 @@ export function GradientButton({
   const palette = TONES[tone] || TONES.green;
   const [top, bottom] = colors.scheme === 'dark' ? palette.dark : palette.light;
   const radius = size.height / 2;
+  const {
+    backgroundColor: _bg,
+    borderWidth: _bw,
+    borderColor: _bc,
+    ...rest
+  } = StyleSheet.flatten(style) || {};
   return (
     <TouchableOpacity
       accessibilityRole="button"
@@ -49,7 +55,8 @@ export function GradientButton({
           shadowRadius: 6,
           shadowOffset: { width: 0, height: 3 },
         },
-        style,
+        rest,
+        { backgroundColor: bottom },
       ]}
     >
       {size.width > 0 && (

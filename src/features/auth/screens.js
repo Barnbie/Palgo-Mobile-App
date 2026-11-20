@@ -12,6 +12,7 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
+import { GradientButton } from '../../components/GradientButton';
 import { Text } from '../../components/ThemedText';
 import {
   Bike,
@@ -242,13 +243,14 @@ function Login({ role, onBack, onLogin, initialEmail = '' }) {
                 <Text style={a.forgot}>Forgot Password</Text>
               </TouchableOpacity>
             </View>
-            <TouchableOpacity
+            <GradientButton
+              tone="blue"
               disabled={busy}
               style={[a.pillPrimary, { height: 40, borderRadius: 20, opacity: busy ? 0.65 : 1 }]}
               onPress={submit}
             >
               <Text style={a.pillPrimaryText}>{busy ? 'Checking…' : 'Login'}</Text>
-            </TouchableOpacity>
+            </GradientButton>
           </ScrollView>
         </View>
       </KeyboardAvoidingView>
@@ -675,7 +677,8 @@ function RegistrationFlow({ role, onBack, onContinue, onLogin, initialValues = {
                 I agree to the Terms &amp; Conditions and Privacy Policy
               </Text>
             </TouchableOpacity>
-            <TouchableOpacity
+            <GradientButton
+              tone="blue"
               disabled={!ready || loading}
               style={[
                 a.pillPrimary,
@@ -689,7 +692,7 @@ function RegistrationFlow({ role, onBack, onContinue, onLogin, initialValues = {
               onPress={submit}
             >
               <Text style={a.pillPrimaryText}>{loading ? 'Creating account…' : 'Sign Up'}</Text>
-            </TouchableOpacity>
+            </GradientButton>
             <TouchableOpacity onPress={onLogin}>
               <Text style={a.authLink}>
                 Have an account? <Text style={a.linkText}>Sign In Here</Text>
@@ -841,7 +844,8 @@ function UserEmailConfirmation({ email, onBack, onVerify, onResend }) {
                 }}
               />
             </View>
-            <TouchableOpacity
+            <GradientButton
+              tone="blue"
               disabled={busy || token.length !== 6}
               style={[
                 a.pillPrimary,
@@ -850,7 +854,7 @@ function UserEmailConfirmation({ email, onBack, onVerify, onResend }) {
               onPress={() => run(() => onVerify(token))}
             >
               <Text style={a.pillPrimaryText}>{busy ? 'Verifying…' : 'Verify email'}</Text>
-            </TouchableOpacity>
+            </GradientButton>
             <TouchableOpacity
               disabled={busy}
               style={{ marginTop: 20, padding: 10 }}
@@ -875,12 +879,13 @@ function UserEmailVerified({ onContinue }) {
         <Text style={[a.authCopy, { marginBottom: 28 }]}>
           Your email address is confirmed. Your account is ready.
         </Text>
-        <TouchableOpacity
+        <GradientButton
+          tone="blue"
           style={[a.pillPrimary, { height: 44, borderRadius: 22 }]}
           onPress={onContinue}
         >
           <Text style={a.pillPrimaryText}>Continue</Text>
-        </TouchableOpacity>
+        </GradientButton>
       </View>
     </AuthBackground>
   );
@@ -1370,12 +1375,16 @@ function RolePickerFinal({ onPick, onDismiss }) {
         <TouchableOpacity onPress={onDismiss} style={a.close}>
           <X size={17} color={C.muted} />
         </TouchableOpacity>
-        <TouchableOpacity style={a.pillPrimary} onPress={() => onPick('user')}>
+        <GradientButton tone="blue" style={a.pillPrimary} onPress={() => onPick('user')}>
           <Text style={a.pillPrimaryText}>User</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={[a.pillPrimary, { marginTop: 16 }]} onPress={() => onPick('pal')}>
+        </GradientButton>
+        <GradientButton
+          tone="blue"
+          style={[a.pillPrimary, { marginTop: 16 }]}
+          onPress={() => onPick('pal')}
+        >
           <Text style={a.pillPrimaryText}>Pal</Text>
-        </TouchableOpacity>
+        </GradientButton>
       </View>
     </AuthBackground>
   );

@@ -1,3 +1,4 @@
+import { GradientButton } from '../../components/GradientButton';
 import { useMemo, useState } from 'react';
 import {
   Modal,
@@ -467,7 +468,8 @@ function UserHomeLatest({
         collapsedBottomPadding={9}
         contentBottomPadding={0}
       >
-        <TouchableOpacity
+        <GradientButton
+          tone="green"
           style={[
             s.homeRequestButton,
             {
@@ -481,7 +483,7 @@ function UserHomeLatest({
           onPress={() => onCreate()}
         >
           <Text style={s.homeRequestText}>Request an errand</Text>
-        </TouchableOpacity>
+        </GradientButton>
         {panelState > 0 && (
           <>
             <Text style={s.homeSectionTitle}>Active errand</Text>

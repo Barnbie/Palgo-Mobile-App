@@ -96,7 +96,7 @@ const Button = ({ title, onPress, kind = 'primary', small = false }) => {
     return (
       <GradientButton
         onPress={onPress}
-        tone={kind === 'secondary' ? 'blue' : 'green'}
+        tone={kind === 'secondary' ? 'green' : 'blue'}
         style={{ height: small ? 38 : 40, borderRadius: 20, paddingHorizontal: 14 }}
       >
         {label}
