@@ -937,7 +937,8 @@ function PalProfileLatest({
       <Text
         style={{ fontSize: 11, color: C.muted, lineHeight: 16, marginTop: 8, marginHorizontal: 6 }}
       >
-        Off: you only receive errands that match the skills you chose. On: you receive every errand.
+        Off: you only receive errands near you that match your skills. On: you receive every errand,
+        anywhere.
       </Text>
       <View style={{ height: 17 }} />
       <View style={{ backgroundColor: C.paper, borderRadius: 16, paddingVertical: 3 }}>

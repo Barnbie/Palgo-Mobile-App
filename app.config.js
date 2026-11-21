@@ -6,6 +6,10 @@ export default ({ config }) => {
     '@react-native-community/datetimepicker',
     'expo-splash-screen',
     'expo-notifications',
+    [
+      'expo-location',
+      { locationWhenInUsePermission: 'PalGo uses your location to fill in where your errand is.' },
+    ],
   ];
 
   // This configures Maps in a custom native build. Expo Go already bundles

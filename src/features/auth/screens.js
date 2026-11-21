@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import { GradientButton } from '../../components/GradientButton';
 import { PAL_SKILL_OPTIONS, parseList } from '../../config/skills';
+import { getCurrentPlace } from '../../lib/currentLocation';
 import { PotIcon } from '../../components/icons';
 import { Text } from '../../components/ThemedText';
 import {
@@ -311,6 +312,7 @@ function CreateCategoryFinal({ form, setForm, onBack, onContinue }) {
   );
 }
 function CreateErrandFormFinal({ form, setForm, onBack, onSubmit }) {
+  const [locating, setLocating] = useState(false);
   const valid =
     !!form.title?.trim() &&
     !!form.description?.trim() &&
@@ -363,13 +365,24 @@ function CreateErrandFormFinal({ form, setForm, onBack, onSubmit }) {
         <Button
           kind="outline"
           small
-          title="Use current location"
-          onPress={() =>
-            Alert.alert(
-              'Location access not connected',
-              'Enter the errand location manually for now.',
-            )
-          }
+          title={locating ? 'Finding you…' : 'Use current location'}
+          onPress={async () => {
+            if (locating) return;
+            setLocating(true);
+            try {
+              const place = await getCurrentPlace();
+              setForm({
+                ...form,
+                location: place.location || form.location,
+                area: place.area || form.area,
+                state: place.state || form.state,
+              });
+            } catch (error) {
+              Alert.alert('Could not get your location', error?.message || 'Please try again.');
+            } finally {
+              setLocating(false);
+            }
+          }}
         />
         <View style={{ height: 13 }} />
         <Input

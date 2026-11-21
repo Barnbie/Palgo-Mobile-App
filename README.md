@@ -102,3 +102,8 @@ Unused chat, payment, receipt and counter-offer screens and the `commissionRate`
 - New categories Styling and Cooking; new Pal skills Makeup artist and Caterer.
 - Whatever a Pal types under "Others" becomes one of their skills and is collected in `skill_suggestions` for the team.
 - Errand detail icons sit in a very light circle of their own colour.
+
+## Spelling tolerance, vicinity, current location (21 Nov 2026)
+- Place matching forgives small spelling mistakes (`place_matches` uses `fuzzystrmatch`). A Pal's vicinity is the areas they listed plus the city and address from sign-up (migration `202611200008`).
+- "Receive all errands" now means every errand, any skill, anywhere.
+- "Use current location" on the errand form fills the address, area and state from the phone's GPS (`src/lib/currentLocation.js`, `expo-location`). It needs a new EAS development build.
