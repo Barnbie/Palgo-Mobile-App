@@ -1,5 +1,5 @@
 import { GradientButton } from '../../components/GradientButton';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   Modal,
   PanResponder,
@@ -18,7 +18,7 @@ import {
   X,
 } from '../../components/glyphs';
 import * as Shared from '../../AppComponents';
-import { ErrandSummaryCard } from '../errands/screens';
+import { CompletionPrompt, ErrandSummaryCard } from '../errands/screens';
 import { colors as C } from '../../theme';
 import { homeActionImages } from '../../assets';
 
@@ -31,6 +31,15 @@ const {
 
   HomeActionImage,
 } = Shared;
+
+/** Sheet height: medium (1) when there is something to act on, otherwise the lowest (0). */
+function useDefaultSheet(wantsMedium) {
+  const [panelState, setPanelState] = useState(wantsMedium ? 1 : 0);
+  useEffect(() => {
+    setPanelState(wantsMedium ? 1 : 0);
+  }, [wantsMedium]);
+  return [panelState, setPanelState];
+}
 
 function HomePanel({
   state,
@@ -100,7 +109,7 @@ function PalHomeErrandCard({ item, available = false, onCounter, onStart, onComp
       errand={item}
       person={person}
       state="Active"
-      actionLabel={start ? 'Start' : 'Complete'}
+      actionLabel={start ? 'Start' : item.status === 'PAL_COMPLETED' ? null : 'Complete'}
       onView={onView}
       onAction={start ? onStart : onComplete}
     />
@@ -114,7 +123,7 @@ function UserActiveErrandCard({ errand, onComplete, onView }) {
       errand={errand}
       person={pal}
       state="Active"
-      actionLabel="Complete"
+      actionLabel={errand.status === 'PAL_COMPLETED' ? 'Confirm' : null}
       onView={onView}
       onAction={onComplete}
     />
@@ -292,7 +301,7 @@ function PalHomeFinal({
   onDismissVerification,
   onResumeVerification,
 }) {
-  const [panelState, setPanelState] = useState(0);
+  const [panelState, setPanelState] = useDefaultSheet(availableErrands.length > 0);
   return (
     <View
       style={s.homeScreen}
@@ -305,6 +314,7 @@ function PalHomeFinal({
       }
     >
       <HomeMap />
+      <CompletionPrompt errand={errand} onConfirm={onComplete} />
       <View style={[s.homeTop, { top: 42, zIndex: 10 }]}>
         <HomeActionImage
           source={homeActionImages.profile}
@@ -424,11 +434,11 @@ function UserHomeLatest({
   onCounterAvailable,
   onViewAvailable,
 }) {
-  const [panelState, setPanelState] = useState(0);
   const recent = errands[0];
   const isActive =
     errand &&
     ['ACCEPTED', 'ACTIVE', 'PAL_COMPLETED', 'PAL_SELECTED', 'PAL_ARRIVED'].includes(errand.status);
+  const [panelState, setPanelState] = useDefaultSheet(!!isActive);
   if (role === 'pal')
     return (
       <PalHomeFinal

@@ -13,6 +13,12 @@ import {
 } from 'react-native';
 import { Text } from './components/ThemedText';
 import Constants from 'expo-constants';
+import Svg, {
+  Defs,
+  LinearGradient as SvgLinearGradient,
+  Rect as SvgRect,
+  Stop as SvgStop,
+} from 'react-native-svg';
 import MapView, { Marker, PROVIDER_GOOGLE, UrlTile } from 'react-native-maps';
 import {
   BellDot,
@@ -1032,11 +1038,6 @@ const buildStyles = () =>
       flexDirection: 'row',
       justifyContent: 'space-around',
       alignItems: 'center',
-      shadowColor: '#0F2F8A',
-      shadowOpacity: 0.45,
-      shadowRadius: 14,
-      shadowOffset: { width: 0, height: -6 },
-      elevation: 24,
     },
     tab: { alignItems: 'center', minWidth: 58 },
     tabIconWrap: {
@@ -1213,21 +1214,27 @@ function PalGoBottomTabs({ role, screen, go }) {
         ];
   return (
     <View style={[s.tabs, { backgroundColor: '#2563EB' }]}>
-      {/* Soft shade above the bar, so the shadow shows on Android too. */}
-      {[0.1, 0.06, 0.03].map((alpha, index) => (
-        <View
-          key={alpha}
-          pointerEvents="none"
-          style={{
-            position: 'absolute',
-            left: 0,
-            right: 0,
-            top: -(index + 1) * 4,
-            height: 4,
-            backgroundColor: `rgba(15,47,138,${alpha})`,
-          }}
-        />
-      ))}
+      {/* Smooth blurred shade above the bar (a gradient with eased stops, so there are no visible lines). */}
+      <Svg
+        pointerEvents="none"
+        width="100%"
+        height={16}
+        style={{ position: 'absolute', left: 0, right: 0, top: -16 }}
+      >
+        <Defs>
+          <SvgLinearGradient id="tabShade" x1="0" y1="0" x2="0" y2="1">
+            {[0, 0.2, 0.4, 0.6, 0.8, 1].map((t) => (
+              <SvgStop
+                key={t}
+                offset={t}
+                stopColor="#0F2F8A"
+                stopOpacity={0.12 * t * t * (3 - 2 * t)}
+              />
+            ))}
+          </SvgLinearGradient>
+        </Defs>
+        <SvgRect x="0" y="0" width="100%" height="16" fill="url(#tabShade)" />
+      </Svg>
       {tabs.map(([id, Icon, label]) => {
         const active = screen === id,
           iconColor = active ? C.mint : C.white;

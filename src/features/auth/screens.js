@@ -483,13 +483,16 @@ function RegistrationFlow({ role, onBack, onContinue, onLogin, initialValues = {
   });
   const set = (key, value) => setValues((v) => ({ ...v, [key]: value }));
   const emailIsValid = /^\S+@\S+\.\S+$/.test(values.email.trim());
+  const phoneDigits = values.phone.replace(/\D/g, '');
+  const phoneIsValid = phoneDigits.length >= 7 && phoneDigits.length <= 15;
   const ready =
     !!values.name.trim() &&
     emailIsValid &&
     !!values.password &&
     values.password === values.confirmPassword &&
     acceptedTerms &&
-    (!pal || (!!values.phone.trim() && !!birth && !!gender));
+    phoneIsValid &&
+    (!pal || (!!birth && !!gender));
   const submit = async () => {
     const name = values.name.trim(),
       email = values.email.trim();
@@ -500,7 +503,8 @@ function RegistrationFlow({ role, onBack, onContinue, onLogin, initialValues = {
       !values.password ||
       !values.confirmPassword ||
       values.password !== values.confirmPassword ||
-      !emailIsValid
+      !emailIsValid ||
+      !phoneIsValid
     )
       return;
     setLoading(true);
@@ -577,15 +581,15 @@ function RegistrationFlow({ role, onBack, onContinue, onLogin, initialValues = {
               keyboardType="email-address"
               autoCapitalize="none"
             />
+            <FlowField
+              glass
+              label="Phone number"
+              value={values.phone}
+              onChange={(v) => set('phone', v)}
+              keyboardType="phone-pad"
+            />
             {pal && (
               <>
-                <FlowField
-                  glass
-                  label="Phone number"
-                  value={values.phone}
-                  onChange={(v) => set('phone', v)}
-                  keyboardType="phone-pad"
-                />
                 <View style={{ width: '100%', marginBottom: 15 }}>
                   <Text style={{ fontSize: 13, fontWeight: '700', marginBottom: 7 }}>
                     Date of birth

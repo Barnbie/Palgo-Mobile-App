@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Alert,
   Linking,
+  Modal,
   ScrollView,
   Share,
   TouchableOpacity,
@@ -242,6 +243,69 @@ function Handle({ onPress }) {
   );
 }
 
+/**
+ * Pop-up shown to the User when their Pal has marked the errand complete.
+ * The errand only finishes once the User confirms; "Not yet" keeps it open.
+ */
+function CompletionPrompt({ errand, onConfirm }) {
+  const waiting = errand?.status === 'PAL_COMPLETED';
+  const [dismissedFor, setDismissedFor] = useState(null);
+  useEffect(() => {
+    if (!waiting) setDismissedFor(null);
+  }, [waiting]);
+  const visible = waiting && dismissedFor !== errand.id;
+  return (
+    <Modal
+      visible={visible}
+      transparent
+      animationType="fade"
+      onRequestClose={() => setDismissedFor(errand.id)}
+    >
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: 'rgba(0,0,0,0.45)',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: 28,
+        }}
+      >
+        <View style={{ width: '100%', borderRadius: 24, padding: 22, backgroundColor: C.white }}>
+          <Text style={{ fontSize: 18, fontWeight: '800', color: C.ink, textAlign: 'center' }}>
+            Is your errand complete?
+          </Text>
+          <Text
+            style={{
+              fontSize: 13,
+              color: C.muted,
+              textAlign: 'center',
+              lineHeight: 20,
+              marginTop: 10,
+            }}
+          >
+            Your Pal says “{errand?.title}” is done. Confirm only if you have received it.
+          </Text>
+          <View style={{ marginTop: 18 }}>
+            <Button
+              title="Confirm completion"
+              onPress={() => {
+                setDismissedFor(errand.id);
+                onConfirm();
+              }}
+            />
+          </View>
+          <TouchableOpacity
+            onPress={() => setDismissedFor(errand.id)}
+            style={{ alignItems: 'center', paddingTop: 12 }}
+          >
+            <Text style={{ fontSize: 13, fontWeight: '700', color: C.muted }}>Not yet</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
 /** Active errand as the User sees it. */
 function TrackingHomeActive({ errand = {}, pal = {}, onProfile, onChat, onConfirm, onCancel }) {
   const [expanded, setExpanded] = useState(true);
@@ -295,6 +359,7 @@ function TrackingHomeActive({ errand = {}, pal = {}, onProfile, onChat, onConfir
     );
   return (
     <ActiveScreen onProfile={onProfile} markers={markers.length ? markers : undefined}>
+      <CompletionPrompt errand={errand} onConfirm={onConfirm} />
       <Handle onPress={() => setExpanded((v) => !v)} />
       <ScrollView
         style={{ flexGrow: 0 }}
@@ -489,4 +554,4 @@ function PalTrackingHomeLatest({ errand, onProfile, onChat, onStart, onComplete,
   );
 }
 
-export { TrackingHomeActive, PalTrackingHomeLatest };
+export { TrackingHomeActive, PalTrackingHomeLatest, CompletionPrompt };

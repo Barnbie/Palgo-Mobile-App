@@ -157,3 +157,10 @@ Unused chat, payment, receipt and counter-offer screens and the `commissionRate`
 - Map colours: you are blue, the other person is green (both sides).
 - Tab bar has a shadow; the Errands tab uses the Material Symbols "moped_package" icon (solid when active, hollow when inactive).
 - Chat bubbles use the raised input look on a white body (`RaisedBubble`). The contact button shows a red unread-count badge on both sides (`chat_reads`, `get_unread_message_count`, migration `202611210004_chat_unread.sql`).
+
+## Stage: required phone, sheet heights, completion confirm
+
+- **Phone is required** on sign-up for both User and Pal (screen + database: `202611210005_require_phone_signup.sql` rejects new sign-ups without a valid number). Existing accounts without one can add it in Profile.
+- Tab bar shadow is a soft eased gradient (low and short).
+- Home sheet opens at medium height when there is something to act on: User = an active errand; Pal = available errands. Otherwise it opens at the lowest height.
+- **Completion:** only the Pal completes. The User has no Complete button; when the Pal marks complete the User gets an "Is your errand complete?" pop-up (and a Confirm button on the card/details). Payment steps follow in the payments stage.

@@ -498,8 +498,14 @@ function ErrandsCardsUpdated({
               : 'Cancel';
             actionKind = isPal ? 'counter' : 'cancel';
           } else if (state === 'Active') {
-            actionLabel = 'Complete';
-            actionKind = isPal ? 'active' : 'complete';
+            // Only the Pal completes. The User just confirms once the Pal has finished.
+            if (isPal) {
+              actionLabel = item.status === 'PAL_COMPLETED' ? null : 'Complete';
+              actionKind = 'active';
+            } else if (item.status === 'PAL_COMPLETED') {
+              actionLabel = 'Confirm';
+              actionKind = 'complete';
+            }
           }
           let stateLabel = state;
           if (userOffers.length)
@@ -699,7 +705,7 @@ function CounterOfferForm({ errand = {}, onBack, onSubmit }) {
   );
 }
 
-export { TrackingHomeActive, PalTrackingHomeLatest } from './activeErrand';
+export { TrackingHomeActive, PalTrackingHomeLatest, CompletionPrompt } from './activeErrand';
 export {
   Rating,
   CompletedErrandDetail,
