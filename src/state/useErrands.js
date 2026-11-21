@@ -264,8 +264,8 @@ export function useErrands({ role, authUserId, screen, screenRef, go, notify }) 
   }
 
   async function saveErrandReview(errandId, targetId, stars, words) {
-    if (!supabase || !authUserId || !errandId || !targetId) {
-      Alert.alert('Review not saved', 'This errand is not connected to both real account IDs yet.');
+    if (!supabase || !authUserId || !errandId) {
+      Alert.alert('Review not saved', 'This errand is not connected to a saved request yet.');
       return;
     }
     try {

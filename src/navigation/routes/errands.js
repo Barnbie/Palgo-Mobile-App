@@ -196,10 +196,6 @@ export const errandRoutes = {
           pal={c.activePal}
           role={c.role}
           onBack={back}
-          onChat={() => {
-            chatReturn = 'completed-detail';
-            c.go('chat');
-          }}
           onRate={() => {
             c.setErrand(item);
             c.go(c.role === 'pal' ? 'rating-customer' : 'rating');
@@ -235,11 +231,12 @@ export const errandRoutes = {
   },
 
   rating: (c) => ({
-    back: () => c.go('home'),
+    back: () => c.go('completed-detail'),
     view: (
       <Rating
-        name={c.current.pal?.name || c.activePal.name}
-        image={c.current.pal?.image}
+        onBack={() => c.go('completed-detail')}
+        name={(c.focusedErrand || c.current).pal?.name || c.activePal.name}
+        image={(c.focusedErrand || c.current).pal?.image || c.activePal?.image}
         onDone={(stars, words) =>
           c.saveErrandReview(
             c.current.id,
@@ -253,11 +250,12 @@ export const errandRoutes = {
   }),
 
   'rating-customer': (c) => ({
-    back: () => c.go('home'),
+    back: () => c.go('completed-detail'),
     view: (
       <Rating
-        name={c.current.person?.name || 'the customer'}
-        image={c.current.person?.image}
+        onBack={() => c.go('completed-detail')}
+        name={(c.focusedErrand || c.current).person?.name || 'the customer'}
+        image={(c.focusedErrand || c.current).person?.image}
         onDone={(stars, words) =>
           c.saveErrandReview(
             c.current.id,

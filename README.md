@@ -164,3 +164,8 @@ Unused chat, payment, receipt and counter-offer screens and the `commissionRate`
 - Tab bar shadow is a soft eased gradient (low and short).
 - Home sheet opens at medium height when there is something to act on: User = an active errand; Pal = available errands. Otherwise it opens at the lowest height.
 - **Completion:** only the Pal completes. The User has no Complete button; when the Pal marks complete the User gets an "Is your errand complete?" pop-up (and a Confirm button on the card/details). Payment steps follow in the payments stage.
+
+## Stage: review page fixes
+
+- Completed errand page: no Contact button (only Rate). Rating page: empty outlined stars by default (tap to fill), back button, the real profile photo.
+- Reviews: one per errand per role. Reviewing yourself is blocked unless the testing switch `allow_self_errands` is on. `has_reviewed_errand()` hides the Rate button after reviewing (migration `202611210006_reviews_fix.sql`).

@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { hasReviewedErrand } from '../../lib/api/errands';
 import { Alert, TouchableOpacity, View } from 'react-native';
 import { Text } from '../../components/ThemedText';
 import { GradientButton } from '../../components/GradientButton';
@@ -27,20 +28,18 @@ const {
 
   Input,
 
-  Avatar,
-
   DetailRow,
 
   ImagePlaceholder,
 } = Shared;
 
-function Rating({ name, image, onDone }) {
+function Rating({ name, image, onDone, onBack }) {
   const [review, setReview] = useState(''),
     [rating, setRating] = useState(0);
   return (
-    <Shell>
+    <Shell back={onBack}>
       <View style={s.profileHead}>
-        <Avatar big image={image ? { uri: image } : undefined} />
+        <ImagePlaceholder size={76} profile image={image} />
         <Header
           title={`How was your experience with ${String(name || 'your counterpart').split(' ')[0]}?`}
         />
@@ -55,12 +54,7 @@ function Rating({ name, image, onDone }) {
               accessibilityLabel={`Rate ${i + 1} stars`}
               onPress={() => setRating(i + 1)}
             >
-              <Star
-                size={30}
-                color="#F2C400"
-                fill={i < rating ? '#F2C400' : 'transparent'}
-                strokeWidth={2}
-              />
+              <Star size={36} color="#F2C400" variant={rating >= i + 1 ? 'filled' : 'outline'} />
             </TouchableOpacity>
           ))}
         </View>
@@ -86,7 +80,18 @@ function Rating({ name, image, onDone }) {
     </Shell>
   );
 }
-function CompletedErrandDetail({ errand = {}, pal, role, onBack, onChat, onRate }) {
+function CompletedErrandDetail({ errand = {}, pal, role, onBack, onRate }) {
+  const [reviewed, setReviewed] = useState(!!errand.reviewedByCurrentUser);
+  useEffect(() => {
+    let alive = true;
+    if (errand.id)
+      hasReviewedErrand(errand.id, role === 'pal' ? 'pal' : 'user').then((done) => {
+        if (alive && done) setReviewed(true);
+      });
+    return () => {
+      alive = false;
+    };
+  }, [errand.id, role]);
   const counterpart = role === 'pal' ? errand.person : errand.pal || pal;
   const person = counterpart?.name || (role === 'pal' ? 'User' : 'Pal');
   const fee = Number(errand.fee || 0);
@@ -140,16 +145,13 @@ function CompletedErrandDetail({ errand = {}, pal, role, onBack, onChat, onRate 
         <Text>Agreed service fee</Text>
         <Text style={{ fontWeight: '800' }}>{money(fee)}</Text>
       </View>
-      {errand.reviewedByCurrentUser ? (
+      {reviewed ? (
         <Text style={{ fontSize: 13, color: C.muted, textAlign: 'center', marginTop: 18 }}>
           You have reviewed this errand.
         </Text>
       ) : (
         <Button title={`Rate ${role === 'pal' ? 'User' : 'Pal'}`} onPress={onRate} />
       )}
-      <View style={{ marginTop: 12 }}>
-        <Button kind="outline" title="Contact" onPress={onChat} />
-      </View>
     </Shell>
   );
 }

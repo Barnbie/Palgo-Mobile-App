@@ -90,6 +90,17 @@ export async function submitErrandReview(errandId, rating, review = '', role = '
   return data;
 }
 
+export async function hasReviewedErrand(errandId, role = 'user') {
+  if (!errandId) return false;
+  const client = requireClient();
+  const { data, error } = await client.rpc('has_reviewed_errand', {
+    errand_to_check: errandId,
+    as_role: role,
+  });
+  if (error) return false;
+  return !!data;
+}
+
 export async function getProfileRating(profileId, role = 'user') {
   if (!profileId) return { average: 0, count: 0 };
   const client = requireClient();
