@@ -202,6 +202,7 @@ function PendingErrandDetail({ errand = {}, role = 'user', onBack, onAccept }) {
           (errand.scheduled_for ? new Date(errand.scheduled_for).toLocaleString() : 'Not specified')
         }
       />
+      <DetailRow Icon={Clock3} label="Duration" value={errand.estimated_time || 'Not specified'} />
       <Text style={heading}>Special notes</Text>
       <Text style={{ fontSize: 13, color: C.muted, lineHeight: 20 }}>
         {errand.special_notes || 'No special notes provided.'}
@@ -484,6 +485,13 @@ function PalDetailFinal({ errand, onBack, onAccept, onCounter }) {
     </Shell>
   );
 }
+/** The time the User asked for, e.g. "12pm" or a scheduled date. */
+function requestedTimeText(e = {}) {
+  if (e.requested_time && String(e.requested_time).trim()) return String(e.requested_time).trim();
+  if (e.scheduled_for) return new Date(e.scheduled_for).toLocaleString();
+  return '';
+}
+
 function StarLine({ person = {} }) {
   const count = person.reviewCount || 0;
   return (
@@ -705,16 +713,33 @@ function ErrandsCardsUpdated({
                   {item.city ? `, ${item.city}` : ''}
                   {item.state ? `, ${item.state}` : ''}
                 </Text>
-                <Text
+                <View
                   style={{
-                    fontSize: 11,
-                    fontWeight: '800',
-                    color: myOffer?.status === 'declined' ? C.red : statusColor(state),
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
                     marginTop: 8,
                   }}
                 >
-                  {stateLabel}
-                </Text>
+                  <Text
+                    style={{
+                      fontSize: 11,
+                      fontWeight: '800',
+                      color: myOffer?.status === 'declined' ? C.red : statusColor(state),
+                      flexShrink: 1,
+                    }}
+                  >
+                    {stateLabel}
+                  </Text>
+                  {!!requestedTimeText(item) && (
+                    <Text
+                      numberOfLines={1}
+                      style={{ fontSize: 11, color: C.muted, marginLeft: 10, flexShrink: 1 }}
+                    >
+                      {requestedTimeText(item)}
+                    </Text>
+                  )}
+                </View>
                 <CardButtons
                   onView={() => onOpen(viewKind, item)}
                   actionLabel={actionLabel}
@@ -785,6 +810,7 @@ function CounterOfferDetail({ offer = {}, errand = {}, onBack, onAccept, onDecli
           (errand.scheduled_for ? new Date(errand.scheduled_for).toLocaleString() : 'Not specified')
         }
       />
+      <DetailRow Icon={Clock3} label="Duration" value={errand.estimated_time || 'Not specified'} />
       <View style={{ flexDirection: 'row', gap: 16, marginTop: 28 }}>
         <View style={{ flex: 1 }}>
           <Button kind="outline" title="Decline" onPress={onDecline} />

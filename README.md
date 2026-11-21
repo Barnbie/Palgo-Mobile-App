@@ -116,3 +116,9 @@ Unused chat, payment, receipt and counter-offer screens and the `commissionRate`
 ## Speed: pictures (21 Nov 2026)
 - The splash stays up until the app's pictures are loaded (`src/lib/preloadAssets.js`), so backgrounds and illustrations are ready when a screen opens. Profile photos are prefetched and fade in; while loading, only the quiet user icon shows (no placeholder words). Placeholder labels remain only for artwork that has not been added yet.
 - In development, pictures are fetched from the computer over wifi, so first loads are slower than in an installed release build.
+
+## Stage: requested time on cards + testing with one account
+
+- Errand cards show the requested time (for example "12pm") on the right, opposite the status. The duration shows in the details pages.
+- **Testing switch:** while one account is both the User and the Pal, the Pal feed would hide your own errands. `public.app_flags.allow_self_errands` (now `true`) lets an account see, accept and counter-offer its own errands, and notifies it. **Before launch run:** `update public.app_flags set allow_self_errands = false;`
+- Pal ID verification is not required (`require_verified_pals()` is false); it will be switched on when ID verification is built.
