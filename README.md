@@ -107,3 +107,8 @@ Unused chat, payment, receipt and counter-offer screens and the `commissionRate`
 - Place matching forgives small spelling mistakes (`place_matches` uses `fuzzystrmatch`). A Pal's vicinity is the areas they listed plus the city and address from sign-up (migration `202611200008`).
 - "Receive all errands" now means every errand, any skill, anywhere.
 - "Use current location" on the errand form fills the address, area and state from the phone's GPS (`src/lib/currentLocation.js`, `expo-location`). It needs a new EAS development build.
+
+## One location field (21 Nov 2026)
+- The errand form has a single required location field: typed by hand, or filled by Use current location (street, area, local government area, city, state). Area and State inputs were removed.
+- Matching uses the location text: its parts are compared (with spelling tolerance) with the Pal's sign-up address, city and listed areas. The state is worked out from the text (`infer_state`). Pals see the address without its first (street) line. Migration `202611200009`.
+- `expo-location` is loaded only when the button is tapped, so older builds still start.

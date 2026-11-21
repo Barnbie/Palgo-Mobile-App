@@ -317,8 +317,6 @@ function CreateErrandFormFinal({ form, setForm, onBack, onSubmit }) {
     !!form.title?.trim() &&
     !!form.description?.trim() &&
     !!form.location?.trim() &&
-    !!form.area?.trim() &&
-    !!form.state?.trim() &&
     Number(form.fee) >= 2000;
   return (
     <KeyboardAvoidingView
@@ -346,21 +344,9 @@ function CreateErrandFormFinal({ form, setForm, onBack, onSubmit }) {
         />
         <Input
           label="Your location *"
-          placeholder="Enter your pickup/delivery location"
+          placeholder="Street, area, city and state, or tap Use current location"
           value={form.location}
-          onChangeText={(location) => setForm({ ...form, location })}
-        />
-        <Input
-          label="Area / neighbourhood *"
-          placeholder="e.g. Amuwo Odofin"
-          value={form.area || ''}
-          onChangeText={(area) => setForm({ ...form, area })}
-        />
-        <Input
-          label="State *"
-          placeholder="e.g. Lagos"
-          value={form.state || ''}
-          onChangeText={(state) => setForm({ ...form, state })}
+          onChangeText={(location) => setForm({ ...form, location, area: '', state: '' })}
         />
         <Button
           kind="outline"
@@ -374,8 +360,8 @@ function CreateErrandFormFinal({ form, setForm, onBack, onSubmit }) {
               setForm({
                 ...form,
                 location: place.location || form.location,
-                area: place.area || form.area,
-                state: place.state || form.state,
+                area: place.area,
+                state: place.state,
               });
             } catch (error) {
               Alert.alert('Could not get your location', error?.message || 'Please try again.');
@@ -420,7 +406,7 @@ function CreateErrandFormFinal({ form, setForm, onBack, onSubmit }) {
               : () =>
                   Alert.alert(
                     'Complete the required details',
-                    'Add the errand name, details, location, area, state and a budget of at least ₦2,000.',
+                    'Add the errand name, details, location and a budget of at least ₦2,000.',
                   )
           }
         />

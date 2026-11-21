@@ -23,7 +23,7 @@ const EMPTY_FORM = {
   description: '',
   location: '',
   area: '',
-  state: 'Lagos',
+  state: '',
   schedule: 'Now',
   fee: '',
 };
