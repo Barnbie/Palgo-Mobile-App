@@ -169,3 +169,9 @@ Unused chat, payment, receipt and counter-offer screens and the `commissionRate`
 
 - Completed errand page: no Contact button (only Rate). Rating page: empty outlined stars by default (tap to fill), back button, the real profile photo.
 - Reviews: one per errand per role. Reviewing yourself is blocked unless the testing switch `allow_self_errands` is on. `has_reviewed_errand()` hides the Rate button after reviewing (migration `202611210006_reviews_fix.sql`).
+
+## Stage: tablets + Pal setup
+
+- **Android navigation bar:** the app is wrapped in `SafeAreaProvider` (`react-native-safe-area-context`) and the root leaves room for the system navigation bar, so it no longer covers the tab bar or bottom buttons. **Needs a new EAS development build** (new native package).
+- 3D inputs (and the auth fields, terms and remember rows) now use the full available width instead of a fixed 367px. The date-of-birth field uses the same 3D look.
+- Pal setup: "Full address" (house number, street, estate) plus city and state; About me and at least one preferred errand type are required; occupation is optional.

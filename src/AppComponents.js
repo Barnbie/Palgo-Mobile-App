@@ -1643,8 +1643,7 @@ const a = StyleSheet.create({
   authCopy: { fontSize: 12, lineHeight: 17, color: '#34415C', textAlign: 'center', maxWidth: 276 },
   authField: {
     height: 47,
-    width: 367,
-    maxWidth: '100%',
+    width: '100%',
     alignSelf: 'center',
     borderRadius: 24,
     backgroundColor: C.paper,
@@ -1660,16 +1659,14 @@ const a = StyleSheet.create({
   },
   authInput: { flex: 1, fontSize: 14, color: C.ink, paddingHorizontal: 10, paddingVertical: 0 },
   terms: {
-    width: 367,
-    maxWidth: '100%',
+    width: '100%',
     flexDirection: 'row',
     alignItems: 'flex-start',
     marginTop: 2,
     marginBottom: 21,
   },
   remember: {
-    width: 367,
-    maxWidth: '100%',
+    width: '100%',
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 21,

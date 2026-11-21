@@ -131,9 +131,8 @@ export function RaisedField({
       style={[
         {
           height,
-          width: 367,
-          maxWidth: '100%',
-          alignSelf: 'center',
+          width: '100%',
+          alignSelf: 'stretch',
           marginBottom: 14,
           flexDirection: 'row',
           alignItems: multiline ? 'flex-start' : 'center',

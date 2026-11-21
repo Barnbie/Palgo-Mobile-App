@@ -599,21 +599,12 @@ function RegistrationFlow({ role, onBack, onContinue, onLogin, initialValues = {
                     accessibilityLabel="Choose date of birth"
                     onPress={openBirthDatePicker}
                     activeOpacity={0.75}
-                    style={{
-                      height: 48,
-                      borderRadius: 24,
-                      backgroundColor: C.paper,
-                      paddingHorizontal: 16,
-                      justifyContent: 'center',
-                      shadowColor: '#8592B1',
-                      shadowOpacity: 0.12,
-                      shadowRadius: 5,
-                      elevation: 1,
-                    }}
                   >
-                    <Text style={{ fontSize: 14, color: dateText ? C.ink : C.muted }}>
-                      {dateText || 'Select date of birth'}
-                    </Text>
+                    <RaisedField glass style={{ marginBottom: 0 }}>
+                      <Text style={{ fontSize: 14, color: dateText ? '#16202E' : '#5F6B7A' }}>
+                        {dateText || 'Select date of birth'}
+                      </Text>
+                    </RaisedField>
                   </TouchableOpacity>
                 </View>
                 <Text style={{ fontSize: 13, fontWeight: '700', marginBottom: 7 }}>Gender</Text>
@@ -1094,10 +1085,10 @@ function PalVerification({ onBack, onNext, initialValue = {} }) {
               profile
             />
             <FlowField
-              label="Address"
+              label="Full address"
               value={address}
               onChange={setAddress}
-              placeholder="Enter your street address"
+              placeholder="House number, street, estate / area"
             />
             <View style={{ flexDirection: 'row', gap: 12 }}>
               <View style={{ flex: 1 }}>
@@ -1179,10 +1170,10 @@ function PalOccupation({ onBack, onNext, initialValue = {} }) {
       value.includes(item) ? value.filter((x) => x !== item) : [...value, item],
     );
   const continueSetup = () => {
-    if (!occupation.trim() || selected.length === 0) {
+    if (selected.length === 0 || !about.trim()) {
       Alert.alert(
         'Complete your work profile',
-        'Enter your occupation and choose at least one preferred service.',
+        'Choose at least one errand you want to do, and write a short About me.',
       );
       return;
     }
@@ -1217,7 +1208,7 @@ function PalOccupation({ onBack, onNext, initialValue = {} }) {
             automaticallyAdjustKeyboardInsets
           >
             <FlowField
-              label="Occupation / skill set"
+              label="Occupation / skill set (optional)"
               value={occupation}
               onChange={setOccupation}
               placeholder="e.g. Errand shopper, driver, delivery"
@@ -1274,7 +1265,7 @@ function PalOccupation({ onBack, onNext, initialValue = {} }) {
               placeholder="e.g. Amuwo Odofin, Festac"
             />
             <FlowField
-              label={`About me (${about.length}/1,000)`}
+              label={`About me (${about.length}/1,000) *`}
               value={about}
               onChange={(value) => setAbout(value.slice(0, 1000))}
               multiline

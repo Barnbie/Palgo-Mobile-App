@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { BackHandler, Text, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
+import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as SplashScreen from 'expo-splash-screen';
 import { preloadAssets } from './src/lib/preloadAssets';
 import { PalGoBottomTabs, rebuildStyles, s } from './src/AppComponents';
@@ -22,6 +23,16 @@ const TOAST_MS = 2200;
 const EMPTY_WALLET = { available: 0, total: 0, withdrawn: 0 };
 
 export default function App() {
+  return (
+    <SafeAreaProvider>
+      <AppContent />
+    </SafeAreaProvider>
+  );
+}
+
+function AppContent() {
+  // Phones/tablets with an on-screen Android navigation bar: keep the app above it.
+  const insets = useSafeAreaInsets();
   const { screen, screenRef, go } = useRouter('splash');
   const preferences = usePreferences();
   const [toast, setToast] = useState('');
@@ -129,17 +140,25 @@ export default function App() {
 
   return (
     <UnreadContext.Provider value={unreadCount}>
-      <View style={[s.safe, { backgroundColor: colors.canvas }]}>
-        <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
-        {route.view}
-        {account.role && TAB_SCREENS.includes(screen) && (
-          <PalGoBottomTabs role={account.role} screen={tabFor(screen)} go={go} />
-        )}
-        {toast ? (
-          <View style={s.toast}>
-            <Text style={s.toastText}>{toast}</Text>
-          </View>
-        ) : null}
+      <View
+        style={{
+          flex: 1,
+          paddingBottom: insets.bottom,
+          backgroundColor: account.role && TAB_SCREENS.includes(screen) ? '#2563EB' : colors.canvas,
+        }}
+      >
+        <View style={[s.safe, { backgroundColor: colors.canvas }]}>
+          <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
+          {route.view}
+          {account.role && TAB_SCREENS.includes(screen) && (
+            <PalGoBottomTabs role={account.role} screen={tabFor(screen)} go={go} />
+          )}
+          {toast ? (
+            <View style={s.toast}>
+              <Text style={s.toastText}>{toast}</Text>
+            </View>
+          ) : null}
+        </View>
       </View>
     </UnreadContext.Provider>
   );
