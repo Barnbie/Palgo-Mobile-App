@@ -335,7 +335,7 @@ function TrackingHomeActive({ errand = {}, pal = {}, onProfile, onChat, onConfir
   const line = eta
     ? eta.arrived
       ? 'Your Pal has arrived at the errand location'
-      : `Your Pal is on the way. Estimated arrival: about ${eta.minutes} min`
+      : 'On the way'
     : {
         ACCEPTED: running
           ? 'Accepted. Waiting for your Pal’s live location. You can chat to agree when to start.'
@@ -367,7 +367,16 @@ function TrackingHomeActive({ errand = {}, pal = {}, onProfile, onChat, onConfir
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingHorizontal: 22, paddingBottom: 20 }}
       >
-        <Text style={{ fontSize: 17, fontWeight: '800', color: C.ink }}>{headline}</Text>
+        <StatusLine text={line} />
+        {staleMinutes > 0 && (
+          <Text style={{ fontSize: 11, color: C.muted, marginTop: 6, marginLeft: 32 }}>
+            Last location update {staleMinutes} min ago. Your Pal may be in traffic or have a weak
+            network.
+          </Text>
+        )}
+        <Text style={{ fontSize: 17, fontWeight: '800', color: C.ink, marginTop: 14 }}>
+          {headline}
+        </Text>
         <Text style={{ fontSize: 13, color: C.blue, marginTop: 7 }}>
           {person.name || 'Your Pal'}
         </Text>
@@ -392,15 +401,7 @@ function TrackingHomeActive({ errand = {}, pal = {}, onProfile, onChat, onConfir
         </View>
         {expanded && (
           <>
-            <View style={{ marginTop: 22 }}>
-              <StatusLine text={line} />
-              {staleMinutes > 0 && (
-                <Text style={{ fontSize: 11, color: C.muted, marginTop: 6, marginLeft: 32 }}>
-                  Last location update {staleMinutes} min ago. Your Pal may be in traffic or have a
-                  weak network.
-                </Text>
-              )}
-            </View>
+            <View style={{ marginTop: 22 }} />
             <View style={{ marginTop: 20 }}>
               <ServiceDetails errand={errand} />
             </View>

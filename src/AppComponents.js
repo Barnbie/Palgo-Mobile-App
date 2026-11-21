@@ -408,6 +408,25 @@ function MapAttribution({ home = false }) {
     </View>
   ) : null;
 }
+// The map follows the app's light/dark choice, not the phone's.
+const LIGHT_MAP_STYLE = [];
+const DARK_MAP_STYLE = [
+  { elementType: 'geometry', stylers: [{ color: '#1d2433' }] },
+  { elementType: 'labels.text.fill', stylers: [{ color: '#9aa6bf' }] },
+  { elementType: 'labels.text.stroke', stylers: [{ color: '#1d2433' }] },
+  { featureType: 'administrative', elementType: 'geometry', stylers: [{ color: '#3a4560' }] },
+  { featureType: 'poi', elementType: 'geometry', stylers: [{ color: '#232c40' }] },
+  { featureType: 'poi', elementType: 'labels.text.fill', stylers: [{ color: '#8792ab' }] },
+  { featureType: 'poi.park', elementType: 'geometry', stylers: [{ color: '#1f3a33' }] },
+  { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#2b3550' }] },
+  { featureType: 'road', elementType: 'geometry.stroke', stylers: [{ color: '#1d2433' }] },
+  { featureType: 'road', elementType: 'labels.text.fill', stylers: [{ color: '#a3aec6' }] },
+  { featureType: 'road.highway', elementType: 'geometry', stylers: [{ color: '#3a4766' }] },
+  { featureType: 'transit', elementType: 'geometry', stylers: [{ color: '#232c40' }] },
+  { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#0f1626' }] },
+  { featureType: 'water', elementType: 'labels.text.fill', stylers: [{ color: '#5f6b85' }] },
+];
+
 function HomeMap({ markers, showUser = false }) {
   const { width, height } = useWindowDimensions();
   const mapRef = React.useRef(null);
@@ -459,6 +478,8 @@ function HomeMap({ markers, showUser = false }) {
         style={{ width, height }}
         provider={mapProvider}
         googleRenderer={renderer}
+        userInterfaceStyle={C.scheme === 'dark' ? 'dark' : 'light'}
+        customMapStyle={C.scheme === 'dark' ? DARK_MAP_STYLE : LIGHT_MAP_STYLE}
         initialRegion={initialRegion}
         mapType={useDevelopmentMapTiles ? 'none' : 'standard'}
         toolbarEnabled={false}

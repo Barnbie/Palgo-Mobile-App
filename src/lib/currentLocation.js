@@ -1,3 +1,5 @@
+import { distanceKm } from './eta';
+
 // expo-location is a native module. It is loaded only when the button is tapped, so an app
 // build made before it was added still starts normally and shows a clear message instead.
 function loadLocation() {
@@ -83,8 +85,13 @@ export async function watchPosition(onPosition) {
 
 const geocodeCache = new Map();
 
+let lastOpenStreetMapCall = 0;
 async function lookupOpenStreetMap(address) {
   try {
+    // OpenStreetMap asks for at most one request per second.
+    const wait = lastOpenStreetMapCall + 1100 - Date.now();
+    if (wait > 0) await new Promise((resolve) => setTimeout(resolve, wait));
+    lastOpenStreetMapCall = Date.now();
     const url =
       'https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=ng&q=' +
       encodeURIComponent(address);
@@ -120,14 +127,21 @@ export async function geocodeAddress(address) {
   const key = candidates.join('|').toLowerCase();
   if (!key) return null;
   if (geocodeCache.has(key)) return geocodeCache.get(key);
-  for (const candidate of candidates) {
-    // OpenStreetMap first: every phone gets the same answer. The phone's own geocoder is the
-    // fallback (it differs between devices and is missing on some).
-    const hit = (await lookupOpenStreetMap(candidate)) || (await lookupDevice(candidate));
-    if (hit) {
-      geocodeCache.set(key, hit);
-      return hit;
-    }
+  // The last (least exact) address is the anchor: the general area. A more exact match that lands
+  // far from it (another part of the city) is a wrong match and is ignored.
+  const lookup = async (candidate) =>
+    (await lookupOpenStreetMap(candidate)) || (await lookupDevice(candidate));
+  const anchor = candidates.length > 1 ? await lookup(candidates[candidates.length - 1]) : null;
+  for (const candidate of candidates.slice(0, anchor ? -1 : undefined)) {
+    const hit = await lookup(candidate);
+    if (!hit) continue;
+    if (anchor && distanceKm(anchor, hit) > 15) continue;
+    geocodeCache.set(key, hit);
+    return hit;
+  }
+  if (anchor) {
+    geocodeCache.set(key, anchor);
+    return anchor;
   }
   return null; // not remembered, so a later try (better network) can succeed
 }

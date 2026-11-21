@@ -181,3 +181,9 @@ Unused chat, payment, receipt and counter-offer screens and the `commissionRate`
 - Onboarding, entry and role screens get a blue strip under the app (under the Android nav bar). On tablets the logo sits lower and the image, title and dots are centred together. Primary buttons (Next, Sign Up, Login, User, Pal, Request an errand) stretch to the available width.
 - Map: the pin for the User is the address typed on the errand (not the User's phone location). The address is looked up with fallbacks (full address, then street, area, city) and retried; the Pal's own blue pin is drawn from their live position.
 - "On the way, estimated arrival" is shown on the User's screen only; the Pal sees their status.
+
+## Stage: map theme, wrong-pin guard, User status layout
+
+- The map follows the app's light/dark setting (not the phone's): `userInterfaceStyle` + a dark `customMapStyle`.
+- Address lookup uses the area (e.g. Amuwo Odofin, Lagos) as an anchor; a match more than 15 km from it is ignored, so a pin can no longer land in another part of the city. If nothing exact is found the pin sits on the area.
+- User tracking screen: top line (dot + "On the way" / "Accepted…" / "Arrived"), then "Pal is about N min away from you", then the Pal's name — same order as the Pal screen.
