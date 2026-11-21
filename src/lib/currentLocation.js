@@ -82,6 +82,34 @@ export async function watchPosition(onPosition) {
 }
 
 const geocodeCache = new Map();
+
+async function lookupOpenStreetMap(address) {
+  try {
+    const url =
+      'https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=ng&q=' +
+      encodeURIComponent(address);
+    const response = await fetch(url, {
+      headers: { Accept: 'application/json', 'User-Agent': 'PalGo/1.0 (errand marketplace app)' },
+    });
+    if (!response.ok) return null;
+    const [hit] = await response.json();
+    if (!hit) return null;
+    return { latitude: Number(hit.lat), longitude: Number(hit.lon) };
+  } catch {
+    return null;
+  }
+}
+
+async function lookupDevice(address) {
+  const Location = loadLocation();
+  if (!Location) return null;
+  try {
+    const [hit] = await Location.geocodeAsync(address);
+    return hit ? { latitude: hit.latitude, longitude: hit.longitude } : null;
+  } catch {
+    return null;
+  }
+}
 /**
  * Turns an address into { latitude, longitude }, or null if it cannot be found. Pass a list of
  * addresses (most exact first) and the first one that is found is used, so a house in an estate
@@ -92,18 +120,13 @@ export async function geocodeAddress(address) {
   const key = candidates.join('|').toLowerCase();
   if (!key) return null;
   if (geocodeCache.has(key)) return geocodeCache.get(key);
-  const Location = loadLocation();
-  if (!Location) return null;
   for (const candidate of candidates) {
-    try {
-      const [hit] = await Location.geocodeAsync(candidate);
-      if (hit) {
-        const result = { latitude: hit.latitude, longitude: hit.longitude };
-        geocodeCache.set(key, result);
-        return result;
-      }
-    } catch {
-      // try the next, less exact, address
+    // OpenStreetMap first: every phone gets the same answer. The phone's own geocoder is the
+    // fallback (it differs between devices and is missing on some).
+    const hit = (await lookupOpenStreetMap(candidate)) || (await lookupDevice(candidate));
+    if (hit) {
+      geocodeCache.set(key, hit);
+      return hit;
     }
   }
   return null; // not remembered, so a later try (better network) can succeed
