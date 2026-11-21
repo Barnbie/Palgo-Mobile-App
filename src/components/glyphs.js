@@ -40,4 +40,5 @@ export {
   ShareIcon,
   CancelCircleIcon,
   SendIcon as Send,
+  ErrandsBikeIcon,
 } from './icons';

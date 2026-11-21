@@ -70,7 +70,7 @@ export async function watchPosition(onPosition) {
     throw new Error('Turn on your phone location (GPS) so your User can see you on the way.');
   }
   const subscription = await Location.watchPositionAsync(
-    { accuracy: Location.Accuracy.Balanced, timeInterval: 8000, distanceInterval: 10 },
+    { accuracy: Location.Accuracy.Balanced, timeInterval: 8000, distanceInterval: 0 },
     (position) =>
       onPosition({
         latitude: position.coords.latitude,

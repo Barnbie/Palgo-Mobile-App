@@ -10,11 +10,12 @@ import {
 } from 'react-native';
 import { Text } from '../../components/ThemedText';
 import { ChevronLeft, Phone, Send } from '../../components/glyphs';
-import { RaisedField, RaisedTextInput } from '../../components/Input3D';
+import { RaisedBubble, RaisedField, RaisedTextInput } from '../../components/Input3D';
 import { colors as C } from '../../theme';
 import {
   fetchMessages,
   getContactPhone,
+  markChatRead,
   sendMessage,
   subscribeToMessages,
 } from '../../lib/api/chat';
@@ -26,33 +27,19 @@ const dayLabel = (iso) =>
   new Date(iso).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
 
 function Bubble({ message, mine }) {
-  const bg = C.scheme === 'dark' ? C.paper : '#FFFFFF';
   return (
     <View style={{ alignItems: mine ? 'flex-end' : 'flex-start', marginBottom: 14 }}>
-      <View
-        style={{
-          maxWidth: '78%',
-          backgroundColor: bg,
-          borderRadius: 18,
-          borderBottomLeftRadius: mine ? 18 : 4,
-          borderBottomRightRadius: mine ? 4 : 18,
-          paddingHorizontal: 15,
-          paddingVertical: 12,
-          shadowColor: '#8592B1',
-          shadowOpacity: 0.3,
-          shadowRadius: 5,
-          shadowOffset: { width: 0, height: 2 },
-          elevation: 2,
-        }}
-      >
-        <Text style={{ fontSize: 13, lineHeight: 20, color: C.ink }}>{message.body}</Text>
-        <Text style={{ fontSize: 9, color: C.muted, marginTop: 5, textAlign: 'right' }}>
-          {new Date(message.created_at).toLocaleTimeString(undefined, {
-            hour: 'numeric',
-            minute: '2-digit',
-          })}
-        </Text>
-      </View>
+      <RaisedBubble style={{ maxWidth: '78%' }}>
+        <View style={{ paddingHorizontal: 17, paddingVertical: 13 }}>
+          <Text style={{ fontSize: 13, lineHeight: 20, color: C.ink }}>{message.body}</Text>
+          <Text style={{ fontSize: 9, color: C.muted, marginTop: 5, textAlign: 'right' }}>
+            {new Date(message.created_at).toLocaleTimeString(undefined, {
+              hour: 'numeric',
+              minute: '2-digit',
+            })}
+          </Text>
+        </View>
+      </RaisedBubble>
     </View>
   );
 }
@@ -76,6 +63,18 @@ export function ChatScreen({ errand = {}, role, onBack }) {
         : previous;
     });
   }, []);
+
+  // Opening the chat, and every message that arrives while it is open, counts as read.
+  const incoming = messages.filter((m) => m.sender_role !== role).length;
+  useEffect(() => {
+    if (errand.id && role) markChatRead(errand.id, role).catch(() => {});
+  }, [errand.id, role, incoming]);
+  useEffect(
+    () => () => {
+      if (errand.id && role) markChatRead(errand.id, role).catch(() => {});
+    },
+    [errand.id, role],
+  );
 
   useEffect(() => {
     if (!errand.id) return undefined;

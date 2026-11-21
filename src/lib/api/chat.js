@@ -66,3 +66,20 @@ export async function cancelErrandWithReason(errandId, role, reason, note) {
   if (error) throw error;
   return data || {};
 }
+
+/** Marks the chat as read for this role (also clears its message notification). */
+export async function markChatRead(errandId, role) {
+  const client = requireClient();
+  const { error } = await client.rpc('mark_chat_read', { errand_to_read: errandId, as_role: role });
+  if (error) throw error;
+}
+
+export async function getUnreadMessageCount(errandId, role) {
+  const client = requireClient();
+  const { data, error } = await client.rpc('get_unread_message_count', {
+    errand_to_check: errandId,
+    as_role: role,
+  });
+  if (error) throw error;
+  return Number(data) || 0;
+}

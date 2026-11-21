@@ -3,9 +3,12 @@ import { Alert } from 'react-native';
 import { geocodeAddress, watchPosition } from '../lib/currentLocation';
 import { getPalLocation, sharePalLocation } from '../lib/api/liveLocation';
 import { setLatestPosition } from '../lib/liveLocation';
+import { startBackgroundSharing, stopBackgroundSharing } from '../lib/backgroundLocation';
 
 const RUNNING = ['ACCEPTED', 'ACTIVE'];
 const SEND_EVERY_MS = 7000;
+// A Pal standing still (market, traffic) still reports, so the User keeps seeing a live dot.
+const HEARTBEAT_MS = 15000;
 const POLL_MS = 6000;
 
 /**
@@ -19,35 +22,58 @@ export function usePalLocationSharing({ role, authUserId, errands }) {
       : null;
   const errandId = active?.id || null;
   const warned = useRef('');
+  const backgroundWarned = useRef('');
   useEffect(() => {
     if (!errandId) {
       setLatestPosition(null);
+      stopBackgroundSharing();
       return undefined;
     }
     let cancelled = false;
     let stop = null;
     let lastSent = 0;
-    watchPosition((position) => {
-      setLatestPosition(position);
-      const now = Date.now();
-      if (now - lastSent < SEND_EVERY_MS) return;
-      lastSent = now;
+    let lastPosition = null;
+    const send = (position) => {
+      lastSent = Date.now();
       sharePalLocation(errandId, position.latitude, position.longitude, position.accuracy).catch(
         () => {},
       );
+    };
+    watchPosition((position) => {
+      lastPosition = position;
+      setLatestPosition(position);
+      if (Date.now() - lastSent >= SEND_EVERY_MS) send(position);
     })
       .then((stopWatching) => {
-        if (cancelled) stopWatching();
-        else stop = stopWatching;
+        if (cancelled) {
+          stopWatching();
+          return;
+        }
+        stop = stopWatching;
+        // Keep going when the Pal switches to another app (needs "allow all the time").
+        startBackgroundSharing(errandId).then((running) => {
+          if (!running && !cancelled && backgroundWarned.current !== errandId) {
+            backgroundWarned.current = errandId;
+            Alert.alert(
+              'Keep location on in the background',
+              'To keep sharing your location when you switch to another app, set PalGo’s location permission to “Allow all the time” in your phone settings.',
+            );
+          }
+        });
       })
       .catch((error) => {
         if (warned.current === errandId) return;
         warned.current = errandId;
         Alert.alert('Live location is off', error?.message || 'We could not read your location.');
       });
+    const heartbeat = setInterval(() => {
+      if (lastPosition && Date.now() - lastSent >= HEARTBEAT_MS) send(lastPosition);
+    }, HEARTBEAT_MS);
     return () => {
       cancelled = true;
+      clearInterval(heartbeat);
       if (stop) stop();
+      stopBackgroundSharing();
     };
   }, [errandId]);
 }

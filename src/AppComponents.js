@@ -19,6 +19,7 @@ import {
   CheckCircle2,
   ChevronLeft,
   ClipboardList,
+  ErrandsBikeIcon,
   CreditCard,
   House,
   UserRound,
@@ -1031,6 +1032,11 @@ const buildStyles = () =>
       flexDirection: 'row',
       justifyContent: 'space-around',
       alignItems: 'center',
+      shadowColor: '#0F2F8A',
+      shadowOpacity: 0.45,
+      shadowRadius: 14,
+      shadowOffset: { width: 0, height: -6 },
+      elevation: 24,
     },
     tab: { alignItems: 'center', minWidth: 58 },
     tabIconWrap: {
@@ -1196,17 +1202,32 @@ function PalGoBottomTabs({ role, screen, go }) {
     role === 'pal'
       ? [
           ['home', House, 'Home'],
-          ['errands', ClipboardList, 'Errands'],
+          ['errands', ErrandsBikeIcon, 'Errands'],
           ['wallet', CreditCard, 'Wallet'],
           ['profile', UserRound, 'Profile'],
         ]
       : [
           ['home', House, 'Home'],
-          ['errands', ClipboardList, 'Errands'],
+          ['errands', ErrandsBikeIcon, 'Errands'],
           ['profile', UserRound, 'Profile'],
         ];
   return (
     <View style={[s.tabs, { backgroundColor: '#2563EB' }]}>
+      {/* Soft shade above the bar, so the shadow shows on Android too. */}
+      {[0.1, 0.06, 0.03].map((alpha, index) => (
+        <View
+          key={alpha}
+          pointerEvents="none"
+          style={{
+            position: 'absolute',
+            left: 0,
+            right: 0,
+            top: -(index + 1) * 4,
+            height: 4,
+            backgroundColor: `rgba(15,47,138,${alpha})`,
+          }}
+        />
+      ))}
       {tabs.map(([id, Icon, label]) => {
         const active = screen === id,
           iconColor = active ? C.mint : C.white;

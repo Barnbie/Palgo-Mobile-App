@@ -72,6 +72,28 @@ const LOOKS = {
   },
 };
 
+// Chat bubbles: the same raised look as the inputs, on a white (or deep navy) body.
+const BUBBLE = {
+  light: {
+    body: [
+      ['0', '#FFFFFF', 1],
+      ['1', '#F6F8FC', 1],
+    ],
+    rim: LOOKS.plainLight.rim,
+    inner: LOOKS.plainLight.inner,
+    shadow: '#8592B1',
+  },
+  dark: {
+    body: [
+      ['0', '#1A2342', 1],
+      ['1', '#222D50', 1],
+    ],
+    rim: LOOKS.plainDark.rim,
+    inner: LOOKS.plainDark.inner,
+    shadow: '#000000',
+  },
+};
+
 const currentLook = (glass) => {
   if (glass) return LOOKS.glass;
   return colors.scheme === 'dark' ? LOOKS.plainDark : LOOKS.plainLight;
@@ -268,6 +290,67 @@ export function Raised3D({ children, style }) {
             rx={radius}
             fill="none"
             stroke="url(#panelRim)"
+            strokeWidth={2}
+          />
+        </Svg>
+      )}
+      {children}
+    </View>
+  );
+}
+
+/** A raised, rounded panel that grows with its content (chat bubbles). */
+export function RaisedBubble({ children, style, radius = 20 }) {
+  const [size, setSize] = useState({ width: 0, height: 0 });
+  const look = colors.scheme === 'dark' ? BUBBLE.dark : BUBBLE.light;
+  const { width, height } = size;
+  return (
+    <View
+      onLayout={(event) => setSize(event.nativeEvent.layout)}
+      style={[
+        {
+          shadowColor: look.shadow,
+          shadowOpacity: 0.22,
+          shadowRadius: 6,
+          shadowOffset: { width: 0, height: 3 },
+          elevation: 2,
+        },
+        style,
+      ]}
+    >
+      {width > 0 && (
+        <Svg width={width} height={height} style={{ position: 'absolute', left: 0, top: 0 }}>
+          <Defs>
+            <Stops id="bubbleBody" stops={look.body} />
+            <Stops id="bubbleRim" stops={look.rim} />
+            <Stops id="bubbleInner" stops={look.inner} />
+          </Defs>
+          <Rect
+            x={1}
+            y={1}
+            width={width - 2}
+            height={height - 2}
+            rx={radius}
+            fill="url(#bubbleBody)"
+          />
+          <Rect
+            x={4}
+            y={4}
+            width={width - 8}
+            height={height - 8}
+            rx={Math.max(radius - 3, 4)}
+            fill="none"
+            stroke="url(#bubbleInner)"
+            strokeWidth={2.5}
+          />
+          <Rect
+            x={1}
+            y={1}
+            width={width - 2}
+            height={height - 2}
+            rx={radius}
+            fill="none"
+            stroke="url(#bubbleRim)"
             strokeWidth={2}
           />
         </Svg>

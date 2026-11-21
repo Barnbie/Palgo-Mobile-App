@@ -149,3 +149,11 @@ Unused chat, payment, receipt and counter-offer screens and the `commissionRate`
 - **Estimated arrival:** `src/lib/eta.js`: straight-line distance × 1.3 road factor at 20 km/h city speed, always shown as "about N min". The errand address is turned into a map point with the phone's geocoder. For real road times connect a routing service (Google Directions) later.
 - Foreground only: the position stops sending when the app is closed. Background tracking needs extra permissions and a new build, planned for later.
 - Migration `live_location` (applied). Also applied: `chat_and_cancel`.
+
+## Stage: background location, polish, unread badge
+
+- **Background location:** while a Pal has an accepted or running errand, `expo-task-manager` + `expo-location` keep sending the position when the Pal switches to another app (`src/lib/backgroundLocation.js`, task defined in `index.js`). Android shows "PalGo errand in progress". The Pal must set location to "Allow all the time"; otherwise sharing continues only while the app is open and a message explains how. **Needs a new EAS development build** (new native module + permissions). Google Play will ask for a background-location declaration when publishing.
+- Location never "goes stale": a Pal standing still (hold-up, market) keeps reporting every ~15 s; the User keeps the last known position and estimate, with a small "last update N min ago" note if reports stop.
+- Map colours: you are blue, the other person is green (both sides).
+- Tab bar has a shadow; the Errands tab uses the Material Symbols "moped_package" icon (solid when active, hollow when inactive).
+- Chat bubbles use the raised input look on a white body (`RaisedBubble`). The contact button shows a red unread-count badge on both sides (`chat_reads`, `get_unread_message_count`, migration `202611210004_chat_unread.sql`).

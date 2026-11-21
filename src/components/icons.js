@@ -348,15 +348,17 @@ export function SafetyIcon({ cutout = '#2563EB', ...props }) {
     <Glyph {...props}>
       {(paint, color) => (
         <>
-          <Path
-            d="M12 2 4 5v6c0 5 3.4 9.7 8 11 4.6-1.3 8-6 8-11V5z"
-            transform="translate(-1.5 -1.5) scale(.82)"
-            {...paint}
-          />
-          <Circle cx={15.2} cy={15.4} r={4.4} fill={cutout} />
-          <Circle cx={15.2} cy={15.4} r={3.4} fill={paint.fill === 'none' ? color : paint.fill} />
-          <Circle cx={15.2} cy={14.3} r={1} fill={cutout} />
-          <Path d="M13.3 17.2c0-1 1.3-1.5 1.9-1.5s1.9.5 1.9 1.5z" fill={cutout} />
+          <G transform="translate(1.3 2)">
+            <Path
+              d="M12 2 4 5v6c0 5 3.4 9.7 8 11 4.6-1.3 8-6 8-11V5z"
+              transform="translate(-1.5 -1.5) scale(.82)"
+              {...paint}
+            />
+            <Circle cx={15.2} cy={15.4} r={4.4} fill={cutout} />
+            <Circle cx={15.2} cy={15.4} r={3.4} fill={paint.fill === 'none' ? color : paint.fill} />
+            <Circle cx={15.2} cy={14.3} r={1} fill={cutout} />
+            <Path d="M13.3 17.2c0-1 1.3-1.5 1.9-1.5s1.9.5 1.9 1.5z" fill={cutout} />
+          </G>
         </>
       )}
     </Glyph>
@@ -372,3 +374,25 @@ export const CancelCircleIcon = shape(
 );
 
 export const SendIcon = shape('M3 20.5v-6.7l9-1.8-9-1.8V3.5L22 12z');
+
+// Material Symbols "moped_package" (Apache 2.0): a delivery moped with a package on the back.
+const MOPED_SOLID =
+  'M3 8V3h7v5zm4 11q-1.25 0-2.125-.875T4 16H2v-3q0-1.65 1.175-2.825T6 9h4v5h3.5L17 9.65V7h-3V5h3q.825 0 1.413.588T19 7v3.35L14.5 16H10q0 1.25-.875 2.125T7 19m0-2q.425 0 .713-.288T8 16H6q0 .425.288.713T7 17m12 2q-1.25 0-2.125-.875T16 16t.875-2.125T19 13t2.125.875T22 16t-.875 2.125T19 19m0-2q.425 0 .713-.288T20 16t-.288-.712T19 15t-.712.288T18 16t.288.713T19 17';
+const MOPED_HOLLOW =
+  'M3 8V3h7v5zm2-2h3V5H5zm2 13q-1.25 0-2.125-.875T4 16H2v-3q0-1.65 1.175-2.825T6 9h4v5h3.5L17 9.65V7h-3V5h3q.825 0 1.413.588T19 7v3.35L14.5 16H10q0 1.25-.875 2.125T7 19m0-2q.425 0 .713-.288T8 16H6q0 .425.288.713T7 17m12 2q-1.25 0-2.125-.875T16 16t.875-2.125T19 13t2.125.875T22 16t-.875 2.125T19 19m0-2q.425 0 .713-.288T20 16t-.288-.712T19 15t-.712.288T18 16t.288.713T19 17M4 14h4v-3H6q-.825 0-1.412.588T4 13zm4-8V5zm0 8';
+
+/** Errands tab icon: solid when active, hollow when inactive. */
+export function ErrandsBikeIcon(props) {
+  const hollow = props.variant === 'outline';
+  return (
+    <Glyph {...props} variant="filled">
+      {(paint, color) => (
+        <Path
+          d={hollow ? MOPED_HOLLOW : MOPED_SOLID}
+          fill={hollow ? color : paint.fill}
+          fillRule="evenodd"
+        />
+      )}
+    </Glyph>
+  );
+}

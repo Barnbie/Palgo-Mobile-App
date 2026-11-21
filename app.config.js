@@ -11,6 +11,10 @@ export default ({ config }) => {
       {
         locationWhenInUsePermission:
           'PalGo uses your location to fill in where your errand is, and to show your User where you are while you run their errand.',
+        locationAlwaysAndWhenInUsePermission:
+          'PalGo keeps sharing your location with your User while you run their errand, even when you switch to another app.',
+        isAndroidBackgroundLocationEnabled: true,
+        isAndroidForegroundServiceEnabled: true,
       },
     ],
   ];

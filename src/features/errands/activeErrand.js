@@ -29,12 +29,23 @@ import * as Shared from '../../AppComponents';
 import { RaisedField } from '../../components/Input3D';
 import { colors as C } from '../../theme';
 import { homeActionImages } from '../../assets';
-import { describeEta, distanceKm, isFresh } from '../../lib/eta';
+import { describeEta, distanceKm, STALE_MS } from '../../lib/eta';
 import { useLatestPosition } from '../../lib/liveLocation';
 import { useGeocoded, usePalLocation } from '../../state/useLiveLocation';
+import { useUnreadMessages } from '../../state/useUnreadMessages';
 
-const { s, Button, DetailRow, HomeActionImage, HomeMap, ImagePlaceholder, money } = Shared;
+const {
+  s,
+  Button,
+  DetailRow,
+  HomeActionImage,
+  HomeMap,
+  ImagePlaceholder,
+  NotificationBadge,
+  money,
+} = Shared;
 
+const PEER_GREEN = '#16A34A';
 const GREEN_DOT = '#7FA882';
 const GREEN_DOT_INNER = '#BCD6BE';
 const RED = '#E11D2E';
@@ -88,29 +99,32 @@ function Photo({ person = {}, size = 60 }) {
 }
 
 /** Round blue button with a label under it (Contact / Safety). */
-function CircleAction({ label, onPress, children }) {
+function CircleAction({ label, onPress, badge = 0, children }) {
   return (
     <View style={{ alignItems: 'center', width: 92 }}>
-      <TouchableOpacity
-        accessibilityRole="button"
-        accessibilityLabel={label}
-        onPress={onPress}
-        style={{
-          height: 60,
-          width: 60,
-          borderRadius: 30,
-          backgroundColor: C.blue,
-          alignItems: 'center',
-          justifyContent: 'center',
-          shadowColor: '#1646B4',
-          shadowOpacity: 0.45,
-          shadowOffset: { width: 0, height: 3 },
-          shadowRadius: 0,
-          elevation: 3,
-        }}
-      >
-        {children}
-      </TouchableOpacity>
+      <View style={{ height: 60, width: 60 }}>
+        <TouchableOpacity
+          accessibilityRole="button"
+          accessibilityLabel={label}
+          onPress={onPress}
+          style={{
+            height: 60,
+            width: 60,
+            borderRadius: 30,
+            backgroundColor: C.blue,
+            alignItems: 'center',
+            justifyContent: 'center',
+            shadowColor: '#1646B4',
+            shadowOpacity: 0.45,
+            shadowOffset: { width: 0, height: 3 },
+            shadowRadius: 0,
+            elevation: 3,
+          }}
+        >
+          {children}
+        </TouchableOpacity>
+        <NotificationBadge count={badge} style={{ top: -2, right: -4 }} />
+      </View>
       <Text style={{ fontSize: 12, color: C.ink, marginTop: 8 }}>{label}</Text>
     </View>
   );
@@ -234,9 +248,15 @@ function TrackingHomeActive({ errand = {}, pal = {}, onProfile, onChat, onConfir
   const person = errand.pal || pal || {};
   const status = errand.status;
   const running = status === 'ACCEPTED' || status === 'ACTIVE';
+  const unread = useUnreadMessages(errand.id, 'user', running || status === 'PAL_COMPLETED');
   const palPosition = usePalLocation(errand.id, running);
   const destination = useGeocoded(running ? errand.location : '');
-  const live = palPosition && isFresh(palPosition.updated_at) ? palPosition : null;
+  // Keep showing the last known position and estimate: a Pal in a hold-up has not moved.
+  const live = palPosition;
+  const staleMinutes =
+    live && Date.now() - new Date(live.updated_at).getTime() > STALE_MS
+      ? Math.round((Date.now() - new Date(live.updated_at).getTime()) / 60000)
+      : 0;
   const eta = describeEta(distanceKm(live, destination));
   const headline = eta
     ? eta.arrived
@@ -258,9 +278,10 @@ function TrackingHomeActive({ errand = {}, pal = {}, onProfile, onChat, onConfir
         ACTIVE: 'In progress',
         PAL_COMPLETED: 'Waiting for your confirmation',
       }[status] || 'Active';
+  // You are blue, the other person is green.
   const markers = [
-    live && { id: 'pal', ...live, title: 'Your Pal', color: C.blue },
-    destination && { id: 'dest', ...destination, title: 'Errand location', color: '#16A34A' },
+    live && { id: 'pal', ...live, title: 'Your Pal', color: PEER_GREEN },
+    destination && { id: 'dest', ...destination, title: 'You (errand location)', color: C.blue },
   ].filter(Boolean);
   const safety = () =>
     Alert.alert(
@@ -292,7 +313,7 @@ function TrackingHomeActive({ errand = {}, pal = {}, onProfile, onChat, onConfir
             alignItems: 'flex-start',
           }}
         >
-          <CircleAction label="Contact Pal" onPress={onChat}>
+          <CircleAction label="Contact Pal" onPress={onChat} badge={unread}>
             <PhoneChatIcon size={36} color={C.white} />
           </CircleAction>
           <View style={{ alignItems: 'center' }}>
@@ -307,6 +328,12 @@ function TrackingHomeActive({ errand = {}, pal = {}, onProfile, onChat, onConfir
           <>
             <View style={{ marginTop: 22 }}>
               <StatusLine text={line} />
+              {staleMinutes > 0 && (
+                <Text style={{ fontSize: 11, color: C.muted, marginTop: 6, marginLeft: 32 }}>
+                  Last location update {staleMinutes} min ago. Your Pal may be in traffic or have a
+                  weak network.
+                </Text>
+              )}
             </View>
             <View style={{ marginTop: 20 }}>
               <ServiceDetails errand={errand} />
@@ -350,6 +377,7 @@ function PalTrackingHomeLatest({ errand, onProfile, onChat, onStart, onComplete,
   const status = item.status;
   const first = String(person.name || 'the User').split(' ')[0];
   const running = status === 'ACCEPTED' || status === 'ACTIVE';
+  const unread = useUnreadMessages(item.id, 'pal', running || status === 'PAL_COMPLETED');
   const own = useLatestPosition();
   const destination = useGeocoded(running ? item.location : '');
   const eta = describeEta(distanceKm(own, destination));
@@ -371,8 +399,9 @@ function PalTrackingHomeLatest({ errand, onProfile, onChat, onStart, onComplete,
         ACTIVE: 'Errand in progress',
         PAL_COMPLETED: 'Waiting for User confirmation',
       }[status] || 'Active errand';
+  // You are the blue dot (the phone's own location); the User's address is the green pin.
   const markers = destination
-    ? [{ id: 'dest', ...destination, title: 'Errand location', color: '#16A34A' }]
+    ? [{ id: 'dest', ...destination, title: 'Errand location', color: PEER_GREEN }]
     : undefined;
   return (
     <ActiveScreen onProfile={onProfile} markers={markers} showUser={running}>
@@ -402,26 +431,29 @@ function PalTrackingHomeLatest({ errand, onProfile, onChat, onStart, onComplete,
               <RatingPill person={person} />
             </View>
           </View>
-          <TouchableOpacity
-            accessibilityRole="button"
-            accessibilityLabel="Contact the User"
-            onPress={onChat}
-            style={{
-              height: 60,
-              width: 60,
-              borderRadius: 30,
-              backgroundColor: C.mint,
-              alignItems: 'center',
-              justifyContent: 'center',
-              shadowColor: '#087A59',
-              shadowOpacity: 0.45,
-              shadowOffset: { width: 0, height: 3 },
-              shadowRadius: 0,
-              elevation: 3,
-            }}
-          >
-            <PhoneChatIcon size={36} color={C.white} />
-          </TouchableOpacity>
+          <View style={{ height: 60, width: 60 }}>
+            <TouchableOpacity
+              accessibilityRole="button"
+              accessibilityLabel="Contact the User"
+              onPress={onChat}
+              style={{
+                height: 60,
+                width: 60,
+                borderRadius: 30,
+                backgroundColor: C.mint,
+                alignItems: 'center',
+                justifyContent: 'center',
+                shadowColor: '#087A59',
+                shadowOpacity: 0.45,
+                shadowOffset: { width: 0, height: 3 },
+                shadowRadius: 0,
+                elevation: 3,
+              }}
+            >
+              <PhoneChatIcon size={36} color={C.white} />
+            </TouchableOpacity>
+            <NotificationBadge count={unread} style={{ top: -2, right: -4 }} />
+          </View>
         </View>
         {expanded && (
           <>
