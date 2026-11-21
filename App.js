@@ -7,8 +7,9 @@ import { setLanguage } from './src/i18n';
 import { isAuthScreen, resolveRoute, TAB_SCREENS, tabFor } from './src/navigation';
 import { REMEMBERED_EMAIL_KEY, useAccount } from './src/state/useAccount';
 import { preferences as storedPreferences } from './src/lib/secureStorage';
+import { supabase } from './src/lib/supabase';
 import { useErrands } from './src/state/useErrands';
-import { usePreferences } from './src/state/usePreferences';
+import { THEME_MODES, usePreferences } from './src/state/usePreferences';
 import { useRouter } from './src/state/useRouter';
 import { useWithdrawalPin } from './src/state/useWithdrawalPin';
 
@@ -37,6 +38,24 @@ export default function App() {
     go,
     notify,
   });
+  // The theme choice belongs to the login, so it follows the person to any device and role.
+  const { setThemeMode } = preferences;
+  useEffect(() => {
+    if (!account.authUserId || !supabase) return;
+    supabase.auth
+      .getUser()
+      .then(({ data }) => {
+        const saved = data?.user?.user_metadata?.theme_mode;
+        if (THEME_MODES.includes(saved)) setThemeMode(saved);
+      })
+      .catch(() => {});
+  }, [account.authUserId]); // eslint-disable-line react-hooks/exhaustive-deps
+  const chooseTheme = (mode) => {
+    setThemeMode(mode);
+    if (account.authUserId && supabase) {
+      supabase.auth.updateUser({ data: { theme_mode: mode } }).catch(() => {});
+    }
+  };
   const pin = useWithdrawalPin(account.authUserId, account.role);
 
   const chooseAuthIntent = (intent) => {
@@ -48,6 +67,7 @@ export default function App() {
   // Everything a screen might need. Route files pick what they use.
   const context = {
     ...preferences,
+    setThemeMode: chooseTheme,
     ...account,
     ...errands,
     ...pin,

@@ -86,3 +86,7 @@ Unused chat, payment, receipt and counter-offer screens and the `commissionRate`
 - A Pal can answer a pending errand with their own price and note (`make_counter_offer`). The User sees each offer as a card with the Pal's photo, name, rating and amount, opens the details, and accepts or declines (`accept_counter_offer`, `decline_counter_offer`). Accepting assigns that Pal at the offered price and declines the other offers. Migration `202611200005_counter_offers.sql` (applied live).
 - Errand cards: larger amount, two equal buttons. View details (blue, left) plus Cancel (pending), Complete (active) or Accept (offer / Pal pending, green, right).
 - Pals see "Offer sent" on errands they offered on. New alerts go through the existing notification pipeline.
+
+## Dark mode and theme (21 Nov 2026)
+- Dark mode: errand cards use the navy card colour; selected chips/tiles are blue in dark mode (green in light mode).
+- The theme choice (light / dark / system) is saved on the device and on the login (`user_metadata.theme_mode`), so it survives logout/login and applies to both User and Pal.

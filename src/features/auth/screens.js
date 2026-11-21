@@ -604,7 +604,7 @@ function RegistrationFlow({ role, onBack, onContinue, onLogin, initialValues = {
                         height: 40,
                         flex: 1,
                         borderRadius: 20,
-                        backgroundColor: gender === item ? C.mint : C.paper,
+                        backgroundColor: gender === item ? C.selected() : C.paper,
                         alignItems: 'center',
                         justifyContent: 'center',
                       }}
@@ -1105,7 +1105,7 @@ function PalVerification({ onBack, onNext, initialValue = {} }) {
                     height: 40,
                     borderRadius: 20,
                     paddingHorizontal: 13,
-                    backgroundColor: id === item ? C.mint : C.paper,
+                    backgroundColor: id === item ? C.selected() : C.paper,
                     justifyContent: 'center',
                   }}
                 >

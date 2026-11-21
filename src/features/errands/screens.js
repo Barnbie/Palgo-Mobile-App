@@ -511,12 +511,18 @@ function CardButtons({ onView, actionLabel, onAction }) {
   );
 }
 
-const cardStyle = { backgroundColor: C.paper, borderRadius: 18, padding: 15, marginBottom: 12 };
-const amountStyle = { fontSize: 22, fontWeight: '800', color: C.blue };
+// Functions, not constants: the colours change when dark mode is switched on.
+const cardStyle = () => ({
+  backgroundColor: C.paper,
+  borderRadius: 18,
+  padding: 15,
+  marginBottom: 12,
+});
+const amountStyle = () => ({ fontSize: 22, fontWeight: '800', color: C.blue });
 
 function OfferCard({ offer, errand, onView, onAccept }) {
   return (
-    <View style={cardStyle}>
+    <View style={cardStyle()}>
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
         <ImagePlaceholder size={48} profile image={offer.pal?.image} />
         <View style={{ flex: 1, marginLeft: 12 }}>
@@ -526,7 +532,7 @@ function OfferCard({ offer, errand, onView, onAccept }) {
           <StarLine person={offer.pal} />
         </View>
         <View style={{ alignItems: 'flex-end' }}>
-          <Text style={amountStyle}>{money(offer.amount)}</Text>
+          <Text style={amountStyle()}>{money(offer.amount)}</Text>
           <Text style={{ fontSize: 10, color: C.muted, marginTop: 2 }}>
             Your offer {money(errand.fee)}
           </Text>
@@ -655,7 +661,7 @@ function ErrandsCardsUpdated({
           if (myOffer?.status === 'declined') stateLabel = 'Offer declined';
           return (
             <View key={item.id}>
-              <View style={cardStyle}>
+              <View style={cardStyle()}>
                 <View
                   style={{
                     flexDirection: 'row',
@@ -674,7 +680,7 @@ function ErrandsCardsUpdated({
                   >
                     {item.title}
                   </Text>
-                  <Text style={amountStyle}>{money(item.fee)}</Text>
+                  <Text style={amountStyle()}>{money(item.fee)}</Text>
                 </View>
                 <Text
                   numberOfLines={2}
@@ -747,7 +753,7 @@ function CounterOfferDetail({ offer = {}, errand = {}, onBack, onAccept, onDecli
       </View>
       <View style={{ backgroundColor: C.paper, borderRadius: 18, padding: 16, marginBottom: 16 }}>
         <Text style={{ fontSize: 12, color: C.muted }}>The Pal is asking for</Text>
-        <Text style={{ ...amountStyle, fontSize: 28, marginTop: 4 }}>{money(offer.amount)}</Text>
+        <Text style={{ ...amountStyle(), fontSize: 28, marginTop: 4 }}>{money(offer.amount)}</Text>
         <Text style={{ fontSize: 12, color: C.muted, marginTop: 4 }}>
           Your offer was {money(errand.fee)}
         </Text>

@@ -218,7 +218,7 @@ function DateFilter({ title, onBack }) {
                 paddingHorizontal: 14,
                 borderRadius: 18,
                 justifyContent: 'center',
-                backgroundColor: period === item ? C.mint : C.paper,
+                backgroundColor: period === item ? C.selected() : C.paper,
                 borderWidth: period === item ? 0 : 1,
                 borderColor: C.blue,
               }}
