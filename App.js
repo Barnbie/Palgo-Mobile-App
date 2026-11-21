@@ -159,6 +159,21 @@ function AppContent() {
           {account.role && TAB_SCREENS.includes(screen) && (
             <PalGoBottomTabs role={account.role} screen={tabFor(screen)} go={go} />
           )}
+          {(screen.startsWith('onboarding') || screen === 'entry') && (
+            // The artwork has rounded bottom corners: this strip covers the white showing there.
+            <View
+              pointerEvents="none"
+              style={{
+                position: 'absolute',
+                left: 0,
+                right: 0,
+                bottom: 0,
+                height: 36,
+                backgroundColor: '#2563EB',
+                zIndex: 2,
+              }}
+            />
+          )}
           {toast ? (
             <View style={s.toast}>
               <Text style={s.toastText}>{toast}</Text>
