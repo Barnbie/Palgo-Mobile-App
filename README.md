@@ -187,3 +187,9 @@ Unused chat, payment, receipt and counter-offer screens and the `commissionRate`
 - The map follows the app's light/dark setting (not the phone's): `userInterfaceStyle` + a dark `customMapStyle`.
 - Address lookup uses the area (e.g. Amuwo Odofin, Lagos) as an anchor; a match more than 15 km from it is ignored, so a pin can no longer land in another part of the city. If nothing exact is found the pin sits on the area.
 - User tracking screen: top line (dot + "On the way" / "Accepted…" / "Arrived"), then "Pal is about N min away from you", then the Pal's name — same order as the Pal screen.
+
+## Stage: errand started status, direct confirm, gradual stars
+
+- User screen: while the Pal travels it shows "On the way" + the ETA headline; once the Pal taps Start it changes to "Errand started" / "Your Pal has started your errand". The Pal gets a confirmation ("Start only when you have arrived and are beginning the work") before Start.
+- The completion pop-up's Confirm now completes the errand directly (no second confirm screen) and opens the completed-errand page with Rate. (The pop-up was also wrongly mounted on the Pal's home; it is now on the User home only.)
+- **Stars build gradually** (`202611210007_gradual_stars.sql`): shown rating = average × min(reviews, 50) / 50, so 10 five-star reviews = 1.0 and 50 = 5.0. Applies to Pals and Users everywhere.

@@ -144,9 +144,25 @@ export function useErrands({ role, authUserId, screen, screenRef, go, notify }) 
     }
   }
 
-  async function updateStatus() {
+  function updateStatus() {
     const next = nextPalStatus(current.status);
     if (!current.id || !next) return;
+    if (next === 'active') {
+      // "Start" means the work itself begins, not that the Pal has set off.
+      Alert.alert(
+        'Start the errand?',
+        'Tap Start only when you have arrived and are beginning the actual work. Your User will be told the errand has started.',
+        [
+          { text: 'Not yet', style: 'cancel' },
+          { text: 'Start errand', onPress: () => applyStatus(next) },
+        ],
+      );
+      return;
+    }
+    applyStatus(next);
+  }
+
+  async function applyStatus(next) {
     try {
       replaceWith(await updateErrandRecordStatus(current.id, next));
     } catch (error) {

@@ -217,7 +217,7 @@ export const errandRoutes = {
           c.go('chat');
         }}
         onCancel={() => c.go('cancel-errand')}
-        onConfirm={() => c.go('complete-confirm')}
+        onConfirm={c.confirmErrandCompletion}
       />
     ),
   }),

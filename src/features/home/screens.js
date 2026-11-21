@@ -314,7 +314,6 @@ function PalHomeFinal({
       }
     >
       <HomeMap />
-      <CompletionPrompt errand={errand} onConfirm={onComplete} />
       <View style={[s.homeTop, { top: 42, zIndex: 10 }]}>
         <HomeActionImage
           source={homeActionImages.profile}
@@ -433,6 +432,7 @@ function UserHomeLatest({
   onAccept,
   onCounterAvailable,
   onViewAvailable,
+  onConfirmCompletion,
 }) {
   const recent = errands[0];
   const isActive =
@@ -472,6 +472,7 @@ function UserHomeLatest({
       }
     >
       <HomeMap />
+      <CompletionPrompt errand={errand} onConfirm={onConfirmCompletion || onComplete} />
       <View style={[s.homeTop, { top: 42, zIndex: 10 }]}>
         <HomeActionImage
           source={homeActionImages.profile}

@@ -322,14 +322,15 @@ function TrackingHomeActive({ errand = {}, pal = {}, onProfile, onChat, onConfir
     live && Date.now() - new Date(live.updated_at).getTime() > STALE_MS
       ? Math.round((Date.now() - new Date(live.updated_at).getTime()) / 60000)
       : 0;
-  const eta = describeEta(distanceKm(live, destination));
+  // The estimate is only for the trip; once the Pal starts the errand they have arrived.
+  const eta = status === 'ACCEPTED' ? describeEta(distanceKm(live, destination)) : null;
   const headline = eta
     ? eta.arrived
       ? 'Your Pal is nearby'
       : `Pal is about ${eta.minutes} min away from you`
     : {
         ACCEPTED: 'Your Pal has accepted your errand',
-        ACTIVE: 'Your errand is in progress',
+        ACTIVE: 'Your Pal has started your errand',
         PAL_COMPLETED: 'Your Pal marked this errand complete',
       }[status] || 'Active errand';
   const line = eta
@@ -340,7 +341,7 @@ function TrackingHomeActive({ errand = {}, pal = {}, onProfile, onChat, onConfir
         ACCEPTED: running
           ? 'Accepted. Waiting for your Pal’s live location. You can chat to agree when to start.'
           : 'Accepted.',
-        ACTIVE: 'In progress',
+        ACTIVE: 'Errand started',
         PAL_COMPLETED: 'Waiting for your confirmation',
       }[status] || 'Active';
   // You are blue, the other person is green.
@@ -534,12 +535,22 @@ function PalTrackingHomeLatest({ errand, onProfile, onChat, onStart, onComplete,
                 Waiting for the User to confirm.
               </Text>
             ) : (
-              <View style={{ marginVertical: 8 }}>
-                <Button
-                  title={status === 'ACCEPTED' ? 'Start errand' : 'Mark errand complete'}
-                  onPress={status === 'ACCEPTED' ? onStart : onComplete}
-                />
-              </View>
+              <>
+                <View style={{ marginVertical: 8 }}>
+                  <Button
+                    title={status === 'ACCEPTED' ? 'Start errand' : 'Mark errand complete'}
+                    onPress={status === 'ACCEPTED' ? onStart : onComplete}
+                  />
+                </View>
+                {status === 'ACCEPTED' && (
+                  <Text
+                    style={{ fontSize: 11, color: C.muted, textAlign: 'center', lineHeight: 17 }}
+                  >
+                    Tap “Start errand” only when you have arrived and are beginning the actual work.
+                    Your User is told the errand has started.
+                  </Text>
+                )}
+              </>
             )}
             <View style={{ marginTop: 10 }}>
               <ActionRow

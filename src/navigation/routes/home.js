@@ -38,6 +38,7 @@ export function homeRoute(c) {
         onWallet={() => c.go('profile-personal')}
         onStart={c.updateStatus}
         onComplete={c.role === 'pal' ? c.finishErrandAsPal : c.requestUserCompletion}
+        onConfirmCompletion={c.confirmErrandCompletion}
         onCounterAvailable={(item) => {
           c.setFocusedErrand(item);
           c.go('counter-offer');
