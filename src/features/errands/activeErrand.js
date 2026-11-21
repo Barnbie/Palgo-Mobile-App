@@ -29,6 +29,9 @@ import * as Shared from '../../AppComponents';
 import { RaisedField } from '../../components/Input3D';
 import { colors as C } from '../../theme';
 import { homeActionImages } from '../../assets';
+import { describeEta, distanceKm, isFresh } from '../../lib/eta';
+import { useLatestPosition } from '../../lib/liveLocation';
+import { useGeocoded, usePalLocation } from '../../state/useLiveLocation';
 
 const { s, Button, DetailRow, HomeActionImage, HomeMap, ImagePlaceholder, money } = Shared;
 
@@ -177,11 +180,11 @@ function ServiceDetails({ errand }) {
 }
 
 /** The map with the profile and alert buttons, and the sheet that slides over it. */
-function ActiveScreen({ onProfile, children }) {
+function ActiveScreen({ onProfile, markers, showUser, children }) {
   const { height } = useWindowDimensions();
   return (
     <View style={s.homeScreen}>
-      <HomeMap />
+      <HomeMap markers={markers} showUser={showUser} />
       <View style={[s.homeTop, { top: 42 }]}>
         <HomeActionImage
           source={homeActionImages.profile}
@@ -230,18 +233,35 @@ function TrackingHomeActive({ errand = {}, pal = {}, onProfile, onChat, onConfir
   const [expanded, setExpanded] = useState(true);
   const person = errand.pal || pal || {};
   const status = errand.status;
-  const headline =
-    {
-      ACCEPTED: 'Your Pal has accepted your errand',
-      ACTIVE: 'Your errand is in progress',
-      PAL_COMPLETED: 'Your Pal marked this errand complete',
-    }[status] || 'Active errand';
-  const line =
-    {
-      ACCEPTED: 'Accepted. Chat with your Pal to agree when to start.',
-      ACTIVE: 'In progress',
-      PAL_COMPLETED: 'Waiting for your confirmation',
-    }[status] || 'Active';
+  const running = status === 'ACCEPTED' || status === 'ACTIVE';
+  const palPosition = usePalLocation(errand.id, running);
+  const destination = useGeocoded(running ? errand.location : '');
+  const live = palPosition && isFresh(palPosition.updated_at) ? palPosition : null;
+  const eta = describeEta(distanceKm(live, destination));
+  const headline = eta
+    ? eta.arrived
+      ? 'Your Pal is nearby'
+      : `Pal is about ${eta.minutes} min away from you`
+    : {
+        ACCEPTED: 'Your Pal has accepted your errand',
+        ACTIVE: 'Your errand is in progress',
+        PAL_COMPLETED: 'Your Pal marked this errand complete',
+      }[status] || 'Active errand';
+  const line = eta
+    ? eta.arrived
+      ? 'Your Pal has arrived at the errand location'
+      : `Your Pal is on the way. Estimated arrival: about ${eta.minutes} min`
+    : {
+        ACCEPTED: running
+          ? 'Accepted. Waiting for your Pal’s live location. You can chat to agree when to start.'
+          : 'Accepted.',
+        ACTIVE: 'In progress',
+        PAL_COMPLETED: 'Waiting for your confirmation',
+      }[status] || 'Active';
+  const markers = [
+    live && { id: 'pal', ...live, title: 'Your Pal', color: C.blue },
+    destination && { id: 'dest', ...destination, title: 'Errand location', color: '#16A34A' },
+  ].filter(Boolean);
   const safety = () =>
     Alert.alert(
       'Safety',
@@ -253,7 +273,7 @@ function TrackingHomeActive({ errand = {}, pal = {}, onProfile, onChat, onConfir
       ],
     );
   return (
-    <ActiveScreen onProfile={onProfile}>
+    <ActiveScreen onProfile={onProfile} markers={markers.length ? markers : undefined}>
       <Handle onPress={() => setExpanded((v) => !v)} />
       <ScrollView
         style={{ flexGrow: 0 }}
@@ -329,20 +349,33 @@ function PalTrackingHomeLatest({ errand, onProfile, onChat, onStart, onComplete,
   const person = item.person || {};
   const status = item.status;
   const first = String(person.name || 'the User').split(' ')[0];
-  const line =
-    {
-      ACCEPTED: 'Accepted',
-      ACTIVE: 'In progress',
-      PAL_COMPLETED: 'Waiting for the User to confirm',
-    }[status] || 'Active';
-  const headline =
-    {
-      ACCEPTED: `Start when you and ${first} are ready`,
-      ACTIVE: 'Errand in progress',
-      PAL_COMPLETED: 'Waiting for User confirmation',
-    }[status] || 'Active errand';
+  const running = status === 'ACCEPTED' || status === 'ACTIVE';
+  const own = useLatestPosition();
+  const destination = useGeocoded(running ? item.location : '');
+  const eta = describeEta(distanceKm(own, destination));
+  const line = eta
+    ? eta.arrived
+      ? 'You are at the errand location'
+      : `On the way. Estimated arrival: about ${eta.minutes} min`
+    : {
+        ACCEPTED: 'Accepted',
+        ACTIVE: 'In progress',
+        PAL_COMPLETED: 'Waiting for the User to confirm',
+      }[status] || 'Active';
+  const headline = eta
+    ? eta.arrived
+      ? `You are near ${first}`
+      : `You are about ${eta.minutes} min from ${first}`
+    : {
+        ACCEPTED: `Start when you and ${first} are ready`,
+        ACTIVE: 'Errand in progress',
+        PAL_COMPLETED: 'Waiting for User confirmation',
+      }[status] || 'Active errand';
+  const markers = destination
+    ? [{ id: 'dest', ...destination, title: 'Errand location', color: '#16A34A' }]
+    : undefined;
   return (
-    <ActiveScreen onProfile={onProfile}>
+    <ActiveScreen onProfile={onProfile} markers={markers} showUser={running}>
       <Handle onPress={() => setExpanded((v) => !v)} />
       <ScrollView
         style={{ flexGrow: 0 }}
@@ -353,6 +386,11 @@ function PalTrackingHomeLatest({ errand, onProfile, onChat, onStart, onComplete,
         <Text style={{ fontSize: 17, fontWeight: '800', color: C.ink, marginTop: 14 }}>
           {headline}
         </Text>
+        {running && (
+          <Text style={{ fontSize: 11, color: C.muted, marginTop: 6 }}>
+            Your live location is shared with {first} while this errand runs.
+          </Text>
+        )}
         <Divider margin={16} />
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <Photo person={person} size={60} />

@@ -13,6 +13,7 @@ import { supabase } from './src/lib/supabase';
 import { useErrands } from './src/state/useErrands';
 import { THEME_MODES, usePreferences } from './src/state/usePreferences';
 import { UnreadContext, useUnreadCount } from './src/state/useUnreadCount';
+import { usePalLocationSharing } from './src/state/useLiveLocation';
 import { useRouter } from './src/state/useRouter';
 import { useWithdrawalPin } from './src/state/useWithdrawalPin';
 
@@ -47,6 +48,11 @@ export default function App() {
     screenRef,
     go,
     notify,
+  });
+  usePalLocationSharing({
+    role: account.role,
+    authUserId: account.authUserId,
+    errands: errands.accountErrands,
   });
   // The theme choice belongs to the login, so it follows the person to any device and role.
   const { setThemeMode } = preferences;

@@ -141,3 +141,11 @@ Unused chat, payment, receipt and counter-offer screens and the `commissionRate`
 - **Cancel with a reason** (`src/features/errands/cancel.js`, RPC `cancel_errand`): User cancelling sets the errand to cancelled; a Pal cancelling puts it back to pending for other Pals. Reasons are recorded in `errand_cancellations`. If the errand had already started and the reason is not "We agreed to cancel together", `penalty_flag` is recorded. **Nothing is charged**; the fee amount and rules are decided when payments are built.
 - Migration `202611210002_chat_and_cancel.sql` must be applied to Supabase.
 - Not built yet: estimated arrival (needs live location).
+
+## Stage: live location and estimated arrival
+
+- **Pal side:** while the Pal has an accepted or running errand and the app is open, the phone's position is sent every ~7 s (`usePalLocationSharing`, RPC `share_pal_location`). The Pal sees a line saying their location is shared. The position is deleted when the errand is no longer accepted or running.
+- **User side:** the Pal's latest position is read every 6 s (`get_pal_location`) and shown on the map with the errand's location. A position older than 3 minutes is treated as "not live".
+- **Estimated arrival:** `src/lib/eta.js`: straight-line distance × 1.3 road factor at 20 km/h city speed, always shown as "about N min". The errand address is turned into a map point with the phone's geocoder. For real road times connect a routing service (Google Directions) later.
+- Foreground only: the position stops sending when the app is closed. Background tracking needs extra permissions and a new build, planned for later.
+- Migration `live_location` (applied). Also applied: `chat_and_cancel`.

@@ -401,8 +401,28 @@ function MapAttribution({ home = false }) {
     </View>
   ) : null;
 }
-function HomeMap() {
+function HomeMap({ markers, showUser = false }) {
   const { width, height } = useWindowDimensions();
+  const mapRef = React.useRef(null);
+  const markerKey = (markers || [])
+    .map((m) => `${m.id}:${m.latitude.toFixed(3)},${m.longitude.toFixed(3)}`)
+    .join('|');
+  React.useEffect(() => {
+    if (!markers?.length || !mapRef.current) return;
+    const coordinates = markers.map(({ latitude, longitude }) => ({ latitude, longitude }));
+    if (coordinates.length === 1) {
+      mapRef.current.animateToRegion(
+        { ...coordinates[0], latitudeDelta: 0.02, longitudeDelta: 0.02 },
+        500,
+      );
+    } else {
+      mapRef.current.fitToCoordinates(coordinates, {
+        edgePadding: { top: 130, right: 70, bottom: Math.round(height * 0.55), left: 70 },
+        animated: true,
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [markerKey]);
   const initialRegion = {
     latitude: 6.5244,
     longitude: 3.3792,
@@ -427,6 +447,8 @@ function HomeMap() {
       }}
     >
       <MapView
+        ref={mapRef}
+        showsUserLocation={showUser}
         style={{ width, height }}
         provider={mapProvider}
         googleRenderer={renderer}
@@ -445,11 +467,22 @@ function HomeMap() {
         {useDevelopmentMapTiles && (
           <UrlTile urlTemplate={developmentMapTiles} maximumZ={19} zIndex={-1} />
         )}
-        <Marker
-          coordinate={{ latitude: 6.5244, longitude: 3.3792 }}
-          pinColor={C.blue}
-          title="Your location"
-        />
+        {markers ? (
+          markers.map((m) => (
+            <Marker
+              key={m.id}
+              coordinate={{ latitude: m.latitude, longitude: m.longitude }}
+              pinColor={m.color || C.blue}
+              title={m.title}
+            />
+          ))
+        ) : (
+          <Marker
+            coordinate={{ latitude: 6.5244, longitude: 3.3792 }}
+            pinColor={C.blue}
+            title="Your location"
+          />
+        )}
       </MapView>
       <MapAttribution home />
     </View>

@@ -53,3 +53,48 @@ export async function getCurrentPlace() {
     state,
   };
 }
+
+/**
+ * Starts reading the phone's position every few seconds. Calls onPosition({ latitude, longitude,
+ * accuracy }). Resolves to a function that stops it. Throws an Error with a message that is
+ * safe to show when permission or GPS is missing.
+ */
+export async function watchPosition(onPosition) {
+  const Location = loadLocation();
+  if (!Location) throw new Error('Live location needs the latest PalGo app build.');
+  const permission = await Location.requestForegroundPermissionsAsync();
+  if (permission.status !== 'granted') {
+    throw new Error('Allow location access so your User can see you on the way.');
+  }
+  if (!(await Location.hasServicesEnabledAsync())) {
+    throw new Error('Turn on your phone location (GPS) so your User can see you on the way.');
+  }
+  const subscription = await Location.watchPositionAsync(
+    { accuracy: Location.Accuracy.Balanced, timeInterval: 8000, distanceInterval: 10 },
+    (position) =>
+      onPosition({
+        latitude: position.coords.latitude,
+        longitude: position.coords.longitude,
+        accuracy: position.coords.accuracy,
+      }),
+  );
+  return () => subscription.remove();
+}
+
+const geocodeCache = new Map();
+/** Turns an address into { latitude, longitude }, or null if it cannot be found. */
+export async function geocodeAddress(address) {
+  const key = clean(address).toLowerCase();
+  if (!key) return null;
+  if (geocodeCache.has(key)) return geocodeCache.get(key);
+  const Location = loadLocation();
+  if (!Location) return null;
+  try {
+    const [hit] = await Location.geocodeAsync(clean(address));
+    const result = hit ? { latitude: hit.latitude, longitude: hit.longitude } : null;
+    geocodeCache.set(key, result);
+    return result;
+  } catch {
+    return null;
+  }
+}

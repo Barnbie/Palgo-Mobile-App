@@ -8,7 +8,10 @@ export default ({ config }) => {
     'expo-notifications',
     [
       'expo-location',
-      { locationWhenInUsePermission: 'PalGo uses your location to fill in where your errand is.' },
+      {
+        locationWhenInUsePermission:
+          'PalGo uses your location to fill in where your errand is, and to show your User where you are while you run their errand.',
+      },
     ],
   ];
 

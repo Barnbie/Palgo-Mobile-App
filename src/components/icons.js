@@ -330,10 +330,12 @@ export function PhoneChatIcon(props) {
             d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.02-.24c1.12.37 2.33.57 3.57.57a1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1.02z"
             {...paint}
           />
-          <Path
-            d="M16.2 3.2h3.6a1.7 1.7 0 0 1 1.7 1.7v2.9a1.7 1.7 0 0 1-1.7 1.7h-1.3l-1.9 1.8v-1.8h-.4a1.7 1.7 0 0 1-1.7-1.7V4.9a1.7 1.7 0 0 1 1.7-1.7z"
-            {...paint}
-          />
+          <G transform="translate(-2.6 2.4)">
+            <Path
+              d="M16.2 3.2h3.6a1.7 1.7 0 0 1 1.7 1.7v2.9a1.7 1.7 0 0 1-1.7 1.7h-1.3l-1.9 1.8v-1.8h-.4a1.7 1.7 0 0 1-1.7-1.7V4.9a1.7 1.7 0 0 1 1.7-1.7z"
+              {...paint}
+            />
+          </G>
         </>
       )}
     </Glyph>
@@ -351,10 +353,10 @@ export function SafetyIcon({ cutout = '#2563EB', ...props }) {
             transform="translate(-1.5 -1.5) scale(.82)"
             {...paint}
           />
-          <Circle cx={17.2} cy={17.2} r={6} fill={cutout} />
-          <Circle cx={17.2} cy={17.2} r={4.6} fill={paint.fill === 'none' ? color : paint.fill} />
-          <Circle cx={17.2} cy={15.6} r={1.35} fill={cutout} />
-          <Path d="M14.6 19.9c0-1.4 1.8-2 2.6-2s2.6.6 2.6 2z" fill={cutout} />
+          <Circle cx={15.2} cy={15.4} r={4.4} fill={cutout} />
+          <Circle cx={15.2} cy={15.4} r={3.4} fill={paint.fill === 'none' ? color : paint.fill} />
+          <Circle cx={15.2} cy={14.3} r={1} fill={cutout} />
+          <Path d="M13.3 17.2c0-1 1.3-1.5 1.9-1.5s1.9.5 1.9 1.5z" fill={cutout} />
         </>
       )}
     </Glyph>
