@@ -1,4 +1,5 @@
 import { explainMissingAuthUser, requireClient } from '../supabase';
+import { prefetchImage } from '../preloadAssets';
 import { normalizeAccountErrand, normalizeErrand } from '../mappers';
 
 const PHOTO_BUCKET = 'pal-profile-photos';
@@ -46,6 +47,7 @@ export async function getAccountErrands(role) {
           .createSignedUrl(profile.profilePhotoPath, 60 * 30)
           .catch(() => ({ data: null }));
         profile.image = signed?.signedUrl || null;
+        prefetchImage(profile.image);
       }
       return result;
     }),
@@ -104,6 +106,7 @@ export async function getCounterOffers() {
           .createSignedUrl(pal.profilePhotoPath, 60 * 30)
           .catch(() => ({ data: null }));
         pal.image = signed?.signedUrl || null;
+        prefetchImage(pal.image);
       }
       return { ...offer, amount: Number(offer.amount), pal };
     }),

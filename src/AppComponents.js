@@ -1,6 +1,7 @@
 import { GradientButton } from './components/GradientButton';
 import React from 'react';
 import {
+  Animated,
   Image,
   ImageBackground,
   ScrollView,
@@ -1237,6 +1238,25 @@ function DetailRow({ Icon, label, value, accent, size = 20 }) {
   );
 }
 
+/** A picture that fades in once it has loaded, over whatever is behind it. */
+function FadeImage({ source, style, resizeMode = 'cover' }) {
+  const opacity = React.useRef(new Animated.Value(0)).current;
+  const resolved = typeof source === 'string' ? { uri: source } : source;
+  const key = resolved?.uri || resolved;
+  React.useEffect(() => {
+    opacity.setValue(0);
+  }, [key, opacity]);
+  return (
+    <Animated.Image
+      source={resolved}
+      resizeMode={resizeMode}
+      onLoad={() =>
+        Animated.timing(opacity, { toValue: 1, duration: 180, useNativeDriver: true }).start()
+      }
+      style={[style, { opacity }]}
+    />
+  );
+}
 function ImagePlaceholder({ size = 58, label = 'IMAGE', profile = false, image }) {
   return (
     <View
@@ -1253,7 +1273,15 @@ function ImagePlaceholder({ size = 58, label = 'IMAGE', profile = false, image }
       }}
     >
       {image ? (
-        <Image source={image} resizeMode="cover" style={{ height: '100%', width: '100%' }} />
+        <>
+          {/* While the picture loads, show the quiet user icon: no words, no flash. */}
+          {profile && (
+            <View style={{ position: 'absolute' }}>
+              <UserRound size={Math.round(size * 0.42)} color={C.blue} strokeWidth={2} />
+            </View>
+          )}
+          <FadeImage source={image} style={{ height: '100%', width: '100%' }} />
+        </>
       ) : profile ? (
         <UserRound size={Math.round(size * 0.42)} color={C.blue} strokeWidth={2} />
       ) : (
@@ -1639,6 +1667,7 @@ export {
   PalGoBottomTabs,
   DetailRow,
   ImagePlaceholder,
+  FadeImage,
   PersonErrandCard,
   CompletionConfirm,
 };

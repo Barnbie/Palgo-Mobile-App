@@ -112,3 +112,7 @@ Unused chat, payment, receipt and counter-offer screens and the `commissionRate`
 - The errand form has a single required location field: typed by hand, or filled by Use current location (street, area, local government area, city, state). Area and State inputs were removed.
 - Matching uses the location text: its parts are compared (with spelling tolerance) with the Pal's sign-up address, city and listed areas. The state is worked out from the text (`infer_state`). Pals see the address without its first (street) line. Migration `202611200009`.
 - `expo-location` is loaded only when the button is tapped, so older builds still start.
+
+## Speed: pictures (21 Nov 2026)
+- The splash stays up until the app's pictures are loaded (`src/lib/preloadAssets.js`), so backgrounds and illustrations are ready when a screen opens. Profile photos are prefetched and fade in; while loading, only the quiet user icon shows (no placeholder words). Placeholder labels remain only for artwork that has not been added yet.
+- In development, pictures are fetched from the computer over wifi, so first loads are slower than in an installed release build.

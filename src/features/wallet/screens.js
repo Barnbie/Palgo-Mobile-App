@@ -1,7 +1,6 @@
 import { useContext, useState } from 'react';
 import {
   Alert,
-  Image,
   Modal,
   Platform,
   ScrollView,
@@ -337,14 +336,11 @@ function PalWalletLatest({
           }}
         >
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-            {profileDetails.photoUrl ? (
-              <Image
-                source={{ uri: profileDetails.photoUrl }}
-                style={{ height: 38, width: 38, borderRadius: 19 }}
-              />
-            ) : (
-              <ImagePlaceholder size={38} profile />
-            )}
+            <ImagePlaceholder
+              size={38}
+              profile
+              image={profileDetails.photoUrl ? { uri: profileDetails.photoUrl } : undefined}
+            />
             <Text style={{ color: C.white, fontSize: 13, fontWeight: '800', flex: 1 }}>
               {profileDetails.name ? `Hello ${profileDetails.name}` : 'Your wallet'}
             </Text>

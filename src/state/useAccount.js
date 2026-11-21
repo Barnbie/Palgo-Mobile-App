@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AppState } from 'react-native';
+import { prefetchImage } from '../lib/preloadAssets';
 import { mergeCustomSkills } from '../config/skills';
 import { supabase } from '../lib/supabase';
 import { preferences } from '../lib/secureStorage';
@@ -88,6 +89,7 @@ export function useAccount({ go, notify, screen, screenRef }) {
       [preferredRole, storedRole].find((item) => item && roles.includes(item)) || roles[0];
     const row = await fetchProfile(activeRole, user.id);
     const photoUrl = await getProfilePhotoUrl(row?.profile_photo_path).catch(() => null);
+    prefetchImage(photoUrl);
 
     preferences.set(activeRoleKey(user.id), activeRole);
     authUserIdRef.current = user.id;

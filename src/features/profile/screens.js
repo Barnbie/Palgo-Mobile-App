@@ -116,21 +116,16 @@ function ProfileHeader({ compact = false, editable = false, photoUrl, onPickPhot
         <Image source={background} resizeMode="cover" style={frame} />
       ) : (
         <View style={frame}>
-          <Text style={{ fontSize: 7, fontWeight: '800', textAlign: 'center', color: C.blue }}>
-            PROFILE BACKGROUND{`\n`}PLACEHOLDER
-          </Text>
+          {/* Label for the artwork that has not been added yet; hidden once a photo is there. */}
+          {!photoUrl && (
+            <Text style={{ fontSize: 7, fontWeight: '800', textAlign: 'center', color: C.blue }}>
+              PROFILE BACKGROUND{`\n`}PLACEHOLDER
+            </Text>
+          )}
         </View>
       )}
       <View style={{ alignItems: 'center' }}>
-        {photoUrl ? (
-          <Image
-            source={{ uri: photoUrl }}
-            resizeMode="cover"
-            style={{ width: 72, height: 72, borderRadius: 36, borderWidth: 2, borderColor: C.blue }}
-          />
-        ) : (
-          <ImagePlaceholder size={72} profile />
-        )}
+        <ImagePlaceholder size={72} profile image={photoUrl ? { uri: photoUrl } : undefined} />
         {editable && (
           <TouchableOpacity
             accessibilityRole="button"

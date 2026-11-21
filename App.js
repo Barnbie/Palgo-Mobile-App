@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { BackHandler, Text, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
+import * as SplashScreen from 'expo-splash-screen';
+import { preloadAssets } from './src/lib/preloadAssets';
 import { PalGoBottomTabs, rebuildStyles, s } from './src/AppComponents';
 import { applyColorScheme, colors } from './src/theme';
 import { setLanguage } from './src/i18n';
@@ -24,6 +26,13 @@ export default function App() {
   const [toast, setToast] = useState('');
   const activeScheme = useRef('light');
   const [selectedTransaction, setSelectedTransaction] = useState(null);
+
+  // Load the app's pictures first, then drop the splash, so screens never show blank art.
+  useEffect(() => {
+    preloadAssets()
+      .catch(() => {})
+      .finally(() => SplashScreen.hideAsync().catch(() => {}));
+  }, []);
 
   const notify = useCallback((text) => {
     setToast(text);
