@@ -131,3 +131,13 @@ Unused chat, payment, receipt and counter-offer screens and the `commissionRate`
 - Active errand screens follow the Figma frames "Active Errand" (User) and "Active errand pal" (Pal): handle, headline, Contact / photo + rating / Safety (User), status line, "Your current service" rows, Payment, Share / Call emergency / Cancel. Code: `src/features/errands/activeErrand.js`. New icons: phone+chat, safety shield, siren, share, cancel.
 - Not connected yet (shown honestly in the app): chat/calling (messaging stage), cancelling an accepted errand, and payment method (the "Transfer" line follows the design).
 - Toast (bottom notification) is dark in dark mode.
+
+## Stage: active errand polish, chat, cancel with reason
+
+- Contact button is one icon: a big white phone with a small chat bubble in its hollow. Safety is a shield with a person badge. Rating pill is raised (3D) and shows an empty star and `0.0` when there are no reviews. Status dot has a lighter inner circle. Profile photos are 60px with a single border.
+- Login button says "Logging in…" while it works.
+- Profile photos no longer blink: signed photo links are reused for 25 minutes and images fade in only the first time.
+- **Chat** (`src/features/chat`, `src/lib/api/chat.js`): messages table with RLS (only the User and Pal on the errand, only while accepted/active/pal_completed), realtime updates plus an 8 s backup poll, one notification for the first unread message. The phone icon in the chat opens the phone's dialer with the other person's number (`get_errand_contact_phone`). No in-app calling.
+- **Cancel with a reason** (`src/features/errands/cancel.js`, RPC `cancel_errand`): User cancelling sets the errand to cancelled; a Pal cancelling puts it back to pending for other Pals. Reasons are recorded in `errand_cancellations`. If the errand had already started and the reason is not "We agreed to cancel together", `penalty_flag` is recorded. **Nothing is charged**; the fee amount and rules are decided when payments are built.
+- Migration `202611210002_chat_and_cancel.sql` must be applied to Supabase.
+- Not built yet: estimated arrival (needs live location).

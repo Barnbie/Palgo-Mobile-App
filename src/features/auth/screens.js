@@ -254,7 +254,7 @@ function Login({ role, onBack, onLogin, initialEmail = '' }) {
               style={[a.pillPrimary, { height: 40, borderRadius: 20, opacity: busy ? 0.65 : 1 }]}
               onPress={submit}
             >
-              <Text style={a.pillPrimaryText}>{busy ? 'Checking…' : 'Login'}</Text>
+              <Text style={a.pillPrimaryText}>{busy ? 'Logging in…' : 'Login'}</Text>
             </GradientButton>
           </ScrollView>
         </View>

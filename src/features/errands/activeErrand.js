@@ -26,19 +26,15 @@ import {
   UserRound,
 } from '../../components/glyphs';
 import * as Shared from '../../AppComponents';
+import { RaisedField } from '../../components/Input3D';
 import { colors as C } from '../../theme';
 import { homeActionImages } from '../../assets';
 
 const { s, Button, DetailRow, HomeActionImage, HomeMap, ImagePlaceholder, money } = Shared;
 
-const GREEN_DOT = '#8FB38F';
+const GREEN_DOT = '#7FA882';
+const GREEN_DOT_INNER = '#BCD6BE';
 const RED = '#E11D2E';
-
-const askCancel = () =>
-  Alert.alert(
-    'Cancel errand',
-    'Cancelling an errand that has already been accepted is not connected yet. For now, please agree any change with the other person in chat.',
-  );
 
 const callEmergency = () =>
   Alert.alert('Call emergency services?', 'This opens your phone dialer with 112.', [
@@ -61,49 +57,31 @@ function requestedTime(e = {}) {
 function RatingPill({ person = {} }) {
   const count = person.reviewCount || 0;
   return (
-    <View
+    <RaisedField
+      height={24}
       style={{
+        width: 'auto',
         alignSelf: 'center',
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: C.paper,
-        borderRadius: 11,
-        paddingHorizontal: 10,
-        paddingVertical: 3,
+        marginBottom: 0,
         marginTop: 7,
+        paddingHorizontal: 12,
       }}
     >
-      {count ? (
-        <>
-          <Star size={11} color="#F2C400" />
-          <Text style={{ fontSize: 10, color: C.muted, marginLeft: 4 }}>
-            {Number(person.rating || 0).toFixed(2)}
-          </Text>
-        </>
-      ) : (
-        <Text style={{ fontSize: 10, color: C.muted }}>No reviews yet</Text>
-      )}
-    </View>
+      <Star
+        size={12}
+        color="#F2C400"
+        variant={count ? 'filled' : 'outline'}
+        fill={count ? '#F2C400' : 'transparent'}
+      />
+      <Text style={{ fontSize: 11, color: C.muted, marginLeft: 5 }}>
+        {Number(count ? person.rating || 0 : 0).toFixed(1)}
+      </Text>
+    </RaisedField>
   );
 }
 
-function Photo({ person = {}, size }) {
-  return (
-    <View
-      style={{
-        height: size + 6,
-        width: size + 6,
-        borderRadius: (size + 6) / 2,
-        borderWidth: 2,
-        borderColor: C.blue,
-        alignItems: 'center',
-        justifyContent: 'center',
-        overflow: 'hidden',
-      }}
-    >
-      <ImagePlaceholder size={size} profile image={person.image} />
-    </View>
-  );
+function Photo({ person = {}, size = 60 }) {
+  return <ImagePlaceholder size={size} profile image={person.image} />;
 }
 
 /** Round blue button with a label under it (Contact / Safety). */
@@ -144,9 +122,14 @@ function StatusLine({ text }) {
           width: 20,
           borderRadius: 10,
           backgroundColor: GREEN_DOT,
-          opacity: 0.85,
+          alignItems: 'center',
+          justifyContent: 'center',
         }}
-      />
+      >
+        <View
+          style={{ height: 10, width: 10, borderRadius: 5, backgroundColor: GREEN_DOT_INNER }}
+        />
+      </View>
       <Text style={{ fontSize: 14, color: C.ink, marginLeft: 12, flex: 1 }}>{text}</Text>
     </View>
   );
@@ -243,7 +226,7 @@ function Handle({ onPress }) {
 }
 
 /** Active errand as the User sees it. */
-function TrackingHomeActive({ errand = {}, pal = {}, onProfile, onChat, onConfirm }) {
+function TrackingHomeActive({ errand = {}, pal = {}, onProfile, onChat, onConfirm, onCancel }) {
   const [expanded, setExpanded] = useState(true);
   const person = errand.pal || pal || {};
   const status = errand.status;
@@ -290,14 +273,14 @@ function TrackingHomeActive({ errand = {}, pal = {}, onProfile, onChat, onConfir
           }}
         >
           <CircleAction label="Contact Pal" onPress={onChat}>
-            <PhoneChatIcon size={28} color={C.white} cutout={C.blue} />
+            <PhoneChatIcon size={36} color={C.white} />
           </CircleAction>
           <View style={{ alignItems: 'center' }}>
-            <Photo person={person} size={64} />
+            <Photo person={person} size={60} />
             <RatingPill person={person} />
           </View>
           <CircleAction label="Safety" onPress={safety}>
-            <SafetyIcon size={28} color={C.white} cutout={C.blue} />
+            <SafetyIcon size={36} color={C.white} cutout={C.blue} />
           </CircleAction>
         </View>
         {expanded && (
@@ -329,7 +312,7 @@ function TrackingHomeActive({ errand = {}, pal = {}, onProfile, onChat, onConfir
                 Icon={CancelCircleIcon}
                 label="Cancel errand"
                 color={RED}
-                onPress={askCancel}
+                onPress={onCancel}
               />
             </View>
           </>
@@ -340,7 +323,7 @@ function TrackingHomeActive({ errand = {}, pal = {}, onProfile, onChat, onConfir
 }
 
 /** Active errand as the Pal sees it. */
-function PalTrackingHomeLatest({ errand, onProfile, onChat, onStart, onComplete }) {
+function PalTrackingHomeLatest({ errand, onProfile, onChat, onStart, onComplete, onCancel }) {
   const [expanded, setExpanded] = useState(true);
   const item = errand || {};
   const person = item.person || {};
@@ -372,7 +355,7 @@ function PalTrackingHomeLatest({ errand, onProfile, onChat, onStart, onComplete 
         </Text>
         <Divider margin={16} />
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <Photo person={person} size={56} />
+          <Photo person={person} size={60} />
           <View style={{ marginLeft: 12, flex: 1 }}>
             <Text style={{ fontSize: 13, fontWeight: '800', color: C.ink }}>
               {person.name || 'User'}
@@ -399,7 +382,7 @@ function PalTrackingHomeLatest({ errand, onProfile, onChat, onStart, onComplete 
               elevation: 3,
             }}
           >
-            <PhoneChatIcon size={28} color={C.white} cutout={C.mint} />
+            <PhoneChatIcon size={36} color={C.white} />
           </TouchableOpacity>
         </View>
         {expanded && (
@@ -426,7 +409,7 @@ function PalTrackingHomeLatest({ errand, onProfile, onChat, onStart, onComplete 
                 Icon={CancelCircleIcon}
                 label="Cancel errand"
                 color={RED}
-                onPress={askCancel}
+                onPress={onCancel}
               />
             </View>
           </>

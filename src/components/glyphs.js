@@ -39,4 +39,5 @@ export {
   SirenIcon,
   ShareIcon,
   CancelCircleIcon,
+  SendIcon as Send,
 } from './icons';

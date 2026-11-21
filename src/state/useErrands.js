@@ -12,6 +12,7 @@ import {
   submitErrandReview,
   updateErrandRecordStatus,
 } from '../lib/api/errands';
+import { cancelErrandWithReason } from '../lib/api/chat';
 import { ERRAND_STATUS, nextPalStatus, pickAssignedErrand } from '../lib/mappers';
 
 /** How often the errand list refreshes while the app is open. */
@@ -204,6 +205,26 @@ export function useErrands({ role, authUserId, screen, screenRef, go, notify }) 
     }
   }
 
+  /** Cancels an accepted or running errand with a reason, then returns to Home. */
+  async function cancelWithReason(item, reason, note) {
+    try {
+      const result = await cancelErrandWithReason(item.id, role, reason, note);
+      setErrand(null);
+      setFocusedErrand(null);
+      await refresh();
+      go('home');
+      notify(
+        result.penalty
+          ? 'Errand cancelled. Because it had started, a cancellation fee may apply later.'
+          : role === 'pal'
+            ? 'Errand cancelled. It is open for other Pals again.'
+            : 'Errand cancelled.',
+      );
+    } catch (error) {
+      Alert.alert('Could not cancel errand', error?.message || 'Please try again.');
+    }
+  }
+
   async function submitCounterOffer(item, amount, message) {
     try {
       await sendCounterOffer(item.id, amount, message);
@@ -284,6 +305,7 @@ export function useErrands({ role, authUserId, screen, screenRef, go, notify }) 
     requestUserCompletion,
     confirmErrandCompletion,
     cancelErrand,
+    cancelWithReason,
     saveErrandReview,
   };
 }

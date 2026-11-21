@@ -256,7 +256,8 @@ function StarLine({ person = {} }) {
   const count = person.reviewCount || 0;
   return (
     <Text style={{ fontSize: 11, color: C.muted, marginTop: 4 }}>
-      {count ? `★ ${Number(person.rating || 0).toFixed(1)} · ${count} reviews` : 'No reviews yet'}
+      {count ? '★' : '☆'} {Number(count ? person.rating || 0 : 0).toFixed(1)}
+      {count ? ` · ${count} review${count > 1 ? 's' : ''}` : ''}
     </Text>
   );
 }

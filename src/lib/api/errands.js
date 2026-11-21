@@ -4,6 +4,21 @@ import { normalizeAccountErrand, normalizeErrand } from '../mappers';
 
 const PHOTO_BUCKET = 'pal-profile-photos';
 
+// A signed link per photo, reused for 25 of its 30 minutes. A new link on every refresh
+// made the same picture reload and blink.
+const photoUrlCache = new Map();
+async function cachedPhotoUrl(client, path) {
+  const hit = photoUrlCache.get(path);
+  if (hit && hit.expires > Date.now()) return hit.url;
+  const { data } = await client.storage
+    .from(PHOTO_BUCKET)
+    .createSignedUrl(path, 60 * 30)
+    .catch(() => ({ data: null }));
+  const url = data?.signedUrl || null;
+  if (url) photoUrlCache.set(path, { url, expires: Date.now() + 25 * 60 * 1000 });
+  return url;
+}
+
 export async function createErrandRecord(values) {
   const client = requireClient();
   const {
@@ -42,11 +57,7 @@ export async function getAccountErrands(role) {
       const result = normalizeAccountErrand(item);
       const profile = result.pal || result.person;
       if (profile?.profilePhotoPath) {
-        const { data: signed } = await client.storage
-          .from(PHOTO_BUCKET)
-          .createSignedUrl(profile.profilePhotoPath, 60 * 30)
-          .catch(() => ({ data: null }));
-        profile.image = signed?.signedUrl || null;
+        profile.image = await cachedPhotoUrl(client, profile.profilePhotoPath);
         prefetchImage(profile.image);
       }
       return result;
@@ -101,11 +112,7 @@ export async function getCounterOffers() {
       const pal = { ...offer.pal };
       if (Array.isArray(pal.skills)) pal.skills = pal.skills.join(' · ');
       if (pal.profilePhotoPath) {
-        const { data: signed } = await client.storage
-          .from(PHOTO_BUCKET)
-          .createSignedUrl(pal.profilePhotoPath, 60 * 30)
-          .catch(() => ({ data: null }));
-        pal.image = signed?.signedUrl || null;
+        pal.image = await cachedPhotoUrl(client, pal.profilePhotoPath);
         prefetchImage(pal.image);
       }
       return { ...offer, amount: Number(offer.amount), pal };

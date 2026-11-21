@@ -320,34 +320,41 @@ export function SuccessBadge({ size = 92, color = '#10B981' }) {
 }
 
 // ---- Active errand icons --------------------------------------------------------
-/** Chat bubble with a phone handset cut into it: the "contact" button. */
-export function PhoneChatIcon({ cutout = '#2563EB', ...props }) {
+/** A big phone with a small chat bubble in the hollow of the handset: the "contact" button. */
+export function PhoneChatIcon(props) {
   return (
     <Glyph {...props}>
       {(paint) => (
         <>
-          <Path d="M20 3H4a2 2 0 0 0-2 2v13.5l4-3h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2z" {...paint} />
-          <G transform="translate(6.2 5.2) scale(0.5)">
-            <Path
-              d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.02-.24c1.12.37 2.33.57 3.57.57a1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1.02z"
-              fill={cutout}
-            />
-          </G>
+          <Path
+            d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.02-.24c1.12.37 2.33.57 3.57.57a1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1.02z"
+            {...paint}
+          />
+          <Path
+            d="M16.2 3.2h3.6a1.7 1.7 0 0 1 1.7 1.7v2.9a1.7 1.7 0 0 1-1.7 1.7h-1.3l-1.9 1.8v-1.8h-.4a1.7 1.7 0 0 1-1.7-1.7V4.9a1.7 1.7 0 0 1 1.7-1.7z"
+            {...paint}
+          />
         </>
       )}
     </Glyph>
   );
 }
 
-/** Shield with a person inside: the "safety" button. */
+/** Shield with a small person badge at the bottom corner: the "safety" button. */
 export function SafetyIcon({ cutout = '#2563EB', ...props }) {
   return (
     <Glyph {...props}>
-      {(paint) => (
+      {(paint, color) => (
         <>
-          <Path d="M12 2 4 5v6c0 5 3.4 9.7 8 11 4.6-1.3 8-6 8-11V5z" {...paint} />
-          <Circle cx={12} cy={9.6} r={2.1} fill={cutout} />
-          <Path d="M7.9 15.6c0-2 2.7-2.9 4.1-2.9s4.1.9 4.1 2.9z" fill={cutout} />
+          <Path
+            d="M12 2 4 5v6c0 5 3.4 9.7 8 11 4.6-1.3 8-6 8-11V5z"
+            transform="translate(-1.5 -1.5) scale(.82)"
+            {...paint}
+          />
+          <Circle cx={17.2} cy={17.2} r={6} fill={cutout} />
+          <Circle cx={17.2} cy={17.2} r={4.6} fill={paint.fill === 'none' ? color : paint.fill} />
+          <Circle cx={17.2} cy={15.6} r={1.35} fill={cutout} />
+          <Path d="M14.6 19.9c0-1.4 1.8-2 2.6-2s2.6.6 2.6 2z" fill={cutout} />
         </>
       )}
     </Glyph>
@@ -361,3 +368,5 @@ export const ShareIcon = shape('M14 4l8 8-8 8v-5c-5.5 0-9 1.8-11 5.5.6-6.5 4.7-1
 export const CancelCircleIcon = shape(
   'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm5 13.6L15.6 17 12 13.4 8.4 17 7 15.6 10.6 12 7 8.4 8.4 7 12 10.6 15.6 7 17 8.4 13.4 12z',
 );
+
+export const SendIcon = shape('M3 20.5v-6.7l9-1.8-9-1.8V3.5L22 12z');

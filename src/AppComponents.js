@@ -1243,22 +1243,23 @@ function DetailRow({ Icon, label, value, accent, size = 20 }) {
 /** A picture that fades in once it has loaded, over whatever is behind it. */
 function FadeImage({ source, style, resizeMode = 'cover' }) {
   const opacity = React.useRef(new Animated.Value(0)).current;
+  const shown = React.useRef(false);
   const resolved = typeof source === 'string' ? { uri: source } : source;
-  const key = resolved?.uri || resolved;
-  React.useEffect(() => {
-    opacity.setValue(0);
-  }, [key, opacity]);
   return (
     <Animated.Image
       source={resolved}
       resizeMode={resizeMode}
-      onLoad={() =>
-        Animated.timing(opacity, { toValue: 1, duration: 180, useNativeDriver: true }).start()
-      }
+      onLoad={() => {
+        // Fade in only the first time. A refreshed link to the same picture must not blink.
+        if (shown.current) return;
+        shown.current = true;
+        Animated.timing(opacity, { toValue: 1, duration: 180, useNativeDriver: true }).start();
+      }}
       style={[style, { opacity }]}
     />
   );
 }
+
 function ImagePlaceholder({ size = 58, label = 'IMAGE', profile = false, image }) {
   return (
     <View

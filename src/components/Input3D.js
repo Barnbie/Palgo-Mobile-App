@@ -92,10 +92,16 @@ function Stops({ id, stops }) {
  * rim on the other give it depth. Children (icon, field, eye) sit on top in a row.
  * Pass `glass` on screens that sit on the uploaded artwork.
  */
-export function RaisedField({ children, style, multiline = false, glass = false }) {
+export function RaisedField({
+  children,
+  style,
+  multiline = false,
+  glass = false,
+  height: fixedHeight,
+}) {
   const [width, setWidth] = useState(0);
   const look = currentLook(glass);
-  const height = multiline ? MULTI_LINE : SINGLE_LINE;
+  const height = fixedHeight || (multiline ? MULTI_LINE : SINGLE_LINE);
   const radius = multiline ? 24 : height / 2;
   return (
     <View

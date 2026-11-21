@@ -21,7 +21,11 @@ import {
   TrackingHomeActive,
 } from '../../features/errands/screens';
 import { DateFilter } from '../../features/wallet/screens';
-import { showMessagingNotice } from '../notices';
+import { ChatScreen } from '../../features/chat/screens';
+import { CancelErrandScreen } from '../../features/errands/cancel';
+
+// Where the chat's back arrow returns to.
+let chatReturn = 'tracking';
 
 export const errandRoutes = {
   'create-category': (c) => {
@@ -192,7 +196,10 @@ export const errandRoutes = {
           pal={c.activePal}
           role={c.role}
           onBack={back}
-          onChat={showMessagingNotice}
+          onChat={() => {
+            chatReturn = 'completed-detail';
+            c.go('chat');
+          }}
           onRate={() => {
             c.setErrand(item);
             c.go(c.role === 'pal' ? 'rating-customer' : 'rating');
@@ -209,7 +216,11 @@ export const errandRoutes = {
         errand={c.focusedErrand || c.current}
         pal={c.activePal}
         onProfile={() => c.go('profile')}
-        onChat={showMessagingNotice}
+        onChat={() => {
+          chatReturn = 'tracking';
+          c.go('chat');
+        }}
+        onCancel={() => c.go('cancel-errand')}
         onConfirm={() => c.go('complete-confirm')}
       />
     ),
@@ -284,12 +295,40 @@ export const errandRoutes = {
       <PalTrackingHomeLatest
         errand={c.current}
         onProfile={() => c.go('profile')}
-        onChat={showMessagingNotice}
+        onChat={() => {
+          chatReturn = 'pal-active';
+          c.go('chat');
+        }}
+        onCancel={() => c.go('cancel-errand')}
         onStart={c.updateStatus}
         onComplete={c.finishErrandAsPal}
       />
     ),
   }),
+
+  chat: (c) => {
+    const back = () => c.go(chatReturn);
+    return {
+      back,
+      view: <ChatScreen errand={c.focusedErrand || c.current} role={c.role} onBack={back} />,
+    };
+  },
+
+  'cancel-errand': (c) => {
+    const item = c.focusedErrand || c.current;
+    const back = () => c.go(c.role === 'pal' ? 'pal-active' : 'tracking');
+    return {
+      back,
+      view: (
+        <CancelErrandScreen
+          errand={item}
+          role={c.role}
+          onBack={back}
+          onConfirm={(reason, note) => c.cancelWithReason(item, reason, note)}
+        />
+      ),
+    };
+  },
 
   'pal-complete': (c) => {
     const back = () => c.go('pal-active');
