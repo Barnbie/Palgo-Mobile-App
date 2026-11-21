@@ -662,7 +662,7 @@ const buildStyles = () =>
     handle: { height: 4, width: 42, borderRadius: 4, backgroundColor: '#B9C4E0', marginBottom: 2 },
     homeRequestButton: {
       height: 44,
-      width: 258,
+      width: '100%',
       alignSelf: 'center',
       borderRadius: 24,
       backgroundColor: '#2563EB',
@@ -1574,7 +1574,7 @@ const a = StyleSheet.create({
   onboardBackText: { fontSize: 14, fontWeight: '700', color: C.blue },
   pillPrimary: {
     height: 44,
-    width: 258,
+    width: '100%',
     alignSelf: 'center',
     borderRadius: 24,
     backgroundColor: '#2563EB',
@@ -1588,13 +1588,13 @@ const a = StyleSheet.create({
     shadowRadius: 0,
     elevation: 4,
   },
-  pillOnboardChoice: { width: 149, height: 40 },
+  pillOnboardChoice: { flex: 1, width: undefined, height: 40 },
   pillPrimaryText: { fontSize: 14, fontWeight: '700', color: C.white },
   skipButton: { position: 'absolute', bottom: 90, alignSelf: 'center', zIndex: 4, padding: 8 },
   skip: { color: C.blue, fontSize: 12, fontWeight: '700' },
   entryContent: { alignItems: 'center', paddingTop: 48, zIndex: 3 },
   entryTitle: { fontSize: 16, fontWeight: '700', color: '#101522', textAlign: 'center' },
-  entryButtons: { zIndex: 4, flexDirection: 'row', gap: 15, width: 313, alignSelf: 'center' },
+  entryButtons: { zIndex: 4, flexDirection: 'row', gap: 15, width: '100%', alignSelf: 'center' },
   pillGhost: {
     height: 44,
     flex: 1,

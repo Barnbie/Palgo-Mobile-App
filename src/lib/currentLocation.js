@@ -82,19 +82,45 @@ export async function watchPosition(onPosition) {
 }
 
 const geocodeCache = new Map();
-/** Turns an address into { latitude, longitude }, or null if it cannot be found. */
+/**
+ * Turns an address into { latitude, longitude }, or null if it cannot be found. Pass a list of
+ * addresses (most exact first) and the first one that is found is used, so a house in an estate
+ * that the map does not know still falls back to its street, area or city.
+ */
 export async function geocodeAddress(address) {
-  const key = clean(address).toLowerCase();
+  const candidates = (Array.isArray(address) ? address : [address]).map(clean).filter(Boolean);
+  const key = candidates.join('|').toLowerCase();
   if (!key) return null;
   if (geocodeCache.has(key)) return geocodeCache.get(key);
   const Location = loadLocation();
   if (!Location) return null;
-  try {
-    const [hit] = await Location.geocodeAsync(clean(address));
-    const result = hit ? { latitude: hit.latitude, longitude: hit.longitude } : null;
-    geocodeCache.set(key, result);
-    return result;
-  } catch {
-    return null;
+  for (const candidate of candidates) {
+    try {
+      const [hit] = await Location.geocodeAsync(candidate);
+      if (hit) {
+        const result = { latitude: hit.latitude, longitude: hit.longitude };
+        geocodeCache.set(key, result);
+        return result;
+      }
+    } catch {
+      // try the next, less exact, address
+    }
   }
+  return null; // not remembered, so a later try (better network) can succeed
+}
+
+/** The addresses to try for an errand, most exact first. */
+export function errandAddressCandidates(errand) {
+  if (!errand?.location) return [];
+  const full = clean(errand.location);
+  const tail = [errand.area, errand.city, errand.state].map(clean).filter(Boolean);
+  const parts = full.split(',').map(clean).filter(Boolean);
+  const list = [
+    [full, ...tail].join(', '),
+    full,
+    parts.slice(1).join(', '),
+    parts.slice(-3).join(', '),
+    tail.join(', '),
+  ];
+  return list.filter((item, index) => item && list.indexOf(item) === index);
 }

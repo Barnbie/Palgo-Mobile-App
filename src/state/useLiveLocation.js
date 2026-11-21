@@ -104,13 +104,25 @@ export function usePalLocation(errandId, enabled) {
 /** The map point for an address (looked up once, then remembered). */
 export function useGeocoded(address) {
   const [point, setPoint] = useState(null);
+  const key = JSON.stringify(address || '');
   useEffect(() => {
     let alive = true;
+    let timer;
     setPoint(null);
-    geocodeAddress(address).then((result) => alive && setPoint(result));
+    // Try again a few times: the first lookup can fail on a weak network.
+    const attempt = (left) =>
+      geocodeAddress(address).then((result) => {
+        if (!alive) return;
+        if (result) setPoint(result);
+        else if (left > 0 && address && address.length)
+          timer = setTimeout(() => attempt(left - 1), 6000);
+      });
+    attempt(3);
     return () => {
       alive = false;
+      clearTimeout(timer);
     };
-  }, [address]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key]);
   return point;
 }

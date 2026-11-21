@@ -175,3 +175,9 @@ Unused chat, payment, receipt and counter-offer screens and the `commissionRate`
 - **Android navigation bar:** the app is wrapped in `SafeAreaProvider` (`react-native-safe-area-context`) and the root leaves room for the system navigation bar, so it no longer covers the tab bar or bottom buttons. **Needs a new EAS development build** (new native package).
 - 3D inputs (and the auth fields, terms and remember rows) now use the full available width instead of a fixed 367px. The date-of-birth field uses the same 3D look.
 - Pal setup: "Full address" (house number, street, estate) plus city and state; About me and at least one preferred errand type are required; occupation is optional.
+
+## Stage: onboarding on tablets, map pins from the errand address
+
+- Onboarding, entry and role screens get a blue strip under the app (under the Android nav bar). On tablets the logo sits lower and the image, title and dots are centred together. Primary buttons (Next, Sign Up, Login, User, Pal, Request an errand) stretch to the available width.
+- Map: the pin for the User is the address typed on the errand (not the User's phone location). The address is looked up with fallbacks (full address, then street, area, city) and retried; the Pal's own blue pin is drawn from their live position.
+- "On the way, estimated arrival" is shown on the User's screen only; the Pal sees their status.

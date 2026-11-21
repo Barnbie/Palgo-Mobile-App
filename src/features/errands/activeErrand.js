@@ -32,6 +32,7 @@ import { colors as C } from '../../theme';
 import { homeActionImages } from '../../assets';
 import { describeEta, distanceKm, STALE_MS } from '../../lib/eta';
 import { useLatestPosition } from '../../lib/liveLocation';
+import { errandAddressCandidates } from '../../lib/currentLocation';
 import { useGeocoded, usePalLocation } from '../../state/useLiveLocation';
 import { useUnreadMessages } from '../../state/useUnreadMessages';
 
@@ -314,7 +315,7 @@ function TrackingHomeActive({ errand = {}, pal = {}, onProfile, onChat, onConfir
   const running = status === 'ACCEPTED' || status === 'ACTIVE';
   const unread = useUnreadMessages(errand.id, 'user', running || status === 'PAL_COMPLETED');
   const palPosition = usePalLocation(errand.id, running);
-  const destination = useGeocoded(running ? errand.location : '');
+  const destination = useGeocoded(running ? errandAddressCandidates(errand) : '');
   // Keep showing the last known position and estimate: a Pal in a hold-up has not moved.
   const live = palPosition;
   const staleMinutes =
@@ -444,12 +445,11 @@ function PalTrackingHomeLatest({ errand, onProfile, onChat, onStart, onComplete,
   const running = status === 'ACCEPTED' || status === 'ACTIVE';
   const unread = useUnreadMessages(item.id, 'pal', running || status === 'PAL_COMPLETED');
   const own = useLatestPosition();
-  const destination = useGeocoded(running ? item.location : '');
+  const destination = useGeocoded(running ? errandAddressCandidates(item) : '');
   const eta = describeEta(distanceKm(own, destination));
-  const line = eta
-    ? eta.arrived
-      ? 'You are at the errand location'
-      : `On the way. Estimated arrival: about ${eta.minutes} min`
+  // The "on the way, estimated arrival" line is for the User only.
+  const line = eta?.arrived
+    ? 'You are at the errand location'
     : {
         ACCEPTED: 'Accepted',
         ACTIVE: 'In progress',
@@ -465,11 +465,12 @@ function PalTrackingHomeLatest({ errand, onProfile, onChat, onStart, onComplete,
         PAL_COMPLETED: 'Waiting for User confirmation',
       }[status] || 'Active errand';
   // You are the blue dot (the phone's own location); the User's address is the green pin.
-  const markers = destination
-    ? [{ id: 'dest', ...destination, title: 'Errand location', color: PEER_GREEN }]
-    : undefined;
+  const markers = [
+    own && running && { id: 'me', ...own, title: 'You', color: C.blue },
+    destination && { id: 'dest', ...destination, title: 'Errand location', color: PEER_GREEN },
+  ].filter(Boolean);
   return (
-    <ActiveScreen onProfile={onProfile} markers={markers} showUser={running}>
+    <ActiveScreen onProfile={onProfile} markers={markers.length ? markers : undefined}>
       <Handle onPress={() => setExpanded((v) => !v)} />
       <ScrollView
         style={{ flexGrow: 0 }}

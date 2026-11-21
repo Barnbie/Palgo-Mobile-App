@@ -144,7 +144,13 @@ function AppContent() {
         style={{
           flex: 1,
           paddingBottom: insets.bottom,
-          backgroundColor: account.role && TAB_SCREENS.includes(screen) ? '#2563EB' : colors.canvas,
+          backgroundColor:
+            (account.role && TAB_SCREENS.includes(screen)) ||
+            screen.startsWith('onboarding') ||
+            screen === 'entry' ||
+            screen === 'role'
+              ? '#2563EB'
+              : colors.canvas,
         }}
       >
         <View style={[s.safe, { backgroundColor: colors.canvas }]}>

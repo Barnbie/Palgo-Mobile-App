@@ -1279,6 +1279,8 @@ function PalOccupation({ onBack, onNext, initialValue = {} }) {
   );
 }
 function OnboardingFlowFinal({ page, onNext, onBack, onChoose }) {
+  const { width: screenWidth } = useWindowDimensions();
+  const wide = screenWidth >= 600;
   const titles = [
     'Payments Are Safe.',
     'All Runners Are Verified.',
@@ -1307,9 +1309,9 @@ function OnboardingFlowFinal({ page, onNext, onBack, onChoose }) {
   const lightButtonText = [a.pillPrimaryText, { color: C.blue }];
   return (
     <AuthBackground variant="onboarding">
-      <View style={[a.onboardContent, { paddingTop: 70 }]}>
+      <View style={[a.onboardContent, { flex: 1, paddingTop: wide ? 120 : 70 }]}>
         <Logo />
-        <View style={[a.onboardMiddle, { marginTop: 82 }]}>
+        <View style={[a.onboardMiddle, { flex: 1, justifyContent: 'center', paddingBottom: 150 }]}>
           <View
             style={[
               a.imagePlaceholder,
