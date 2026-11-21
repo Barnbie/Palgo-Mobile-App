@@ -101,7 +101,7 @@ export const errandRoutes = {
         onFilter={() => c.go('errand-filter')}
         onOpen={(kind, item) => {
           if (item) {
-            c.setFocusedErrand(item);
+            c.setFocusedErrand({ ...item, _from: 'errands' });
             if (['active', 'completed', 'complete'].includes(kind)) c.setErrand(item);
           }
           if (kind === 'active') c.go(c.role === 'pal' ? 'pal-active' : 'tracking');
@@ -117,6 +117,7 @@ export const errandRoutes = {
                 'Your Pal needs to mark the errand complete before you can confirm it.',
               );
           } else if (kind === 'accept') c.acceptAvailableErrand(item);
+          else if (kind === 'counter') c.go('counter-offer');
           else if (kind === 'cancel')
             Alert.alert('Cancel this errand?', 'Pals will no longer see it.', [
               { text: 'Keep it', style: 'cancel' },
@@ -202,7 +203,7 @@ export const errandRoutes = {
   },
 
   tracking: (c) => ({
-    back: () => c.go('home'),
+    back: () => c.go(c.focusedErrand?._from || 'home'),
     view: (
       <TrackingHomeActive
         errand={c.focusedErrand || c.current}
@@ -259,9 +260,10 @@ export const errandRoutes = {
   }),
 
   'pal-detail': (c) => {
+    const from = c.focusedErrand?._from || 'home';
     const back = () => {
-      c.setFocusedErrand(null);
-      c.go('home');
+      if (from === 'home') c.setFocusedErrand(null);
+      c.go(from);
     };
     return {
       back,
@@ -277,7 +279,7 @@ export const errandRoutes = {
   },
 
   'pal-active': (c) => ({
-    back: () => c.go('home'),
+    back: () => c.go(c.focusedErrand?._from || 'home'),
     view: (
       <PalTrackingHomeLatest
         errand={c.current}

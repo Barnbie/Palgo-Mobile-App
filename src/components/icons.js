@@ -318,3 +318,46 @@ export function SuccessBadge({ size = 92, color = '#10B981' }) {
     </Svg>
   );
 }
+
+// ---- Active errand icons --------------------------------------------------------
+/** Chat bubble with a phone handset cut into it: the "contact" button. */
+export function PhoneChatIcon({ cutout = '#2563EB', ...props }) {
+  return (
+    <Glyph {...props}>
+      {(paint) => (
+        <>
+          <Path d="M20 3H4a2 2 0 0 0-2 2v13.5l4-3h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2z" {...paint} />
+          <G transform="translate(6.2 5.2) scale(0.5)">
+            <Path
+              d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.02-.24c1.12.37 2.33.57 3.57.57a1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1.02z"
+              fill={cutout}
+            />
+          </G>
+        </>
+      )}
+    </Glyph>
+  );
+}
+
+/** Shield with a person inside: the "safety" button. */
+export function SafetyIcon({ cutout = '#2563EB', ...props }) {
+  return (
+    <Glyph {...props}>
+      {(paint) => (
+        <>
+          <Path d="M12 2 4 5v6c0 5 3.4 9.7 8 11 4.6-1.3 8-6 8-11V5z" {...paint} />
+          <Circle cx={12} cy={9.6} r={2.1} fill={cutout} />
+          <Path d="M7.9 15.6c0-2 2.7-2.9 4.1-2.9s4.1.9 4.1 2.9z" fill={cutout} />
+        </>
+      )}
+    </Glyph>
+  );
+}
+
+export const SirenIcon = shape(
+  'M12 3a6 6 0 0 0-6 6v5H4v3h16v-3h-2V9a6 6 0 0 0-6-6zm-1 3h2v4h-2zM3 19h18v2H3zM2 8l2-1 1 2-2 1zm20 0-2-1-1 2 2 1z',
+);
+export const ShareIcon = shape('M14 4l8 8-8 8v-5c-5.5 0-9 1.8-11 5.5.6-6.5 4.7-10.7 11-11.4z');
+export const CancelCircleIcon = shape(
+  'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm5 13.6L15.6 17 12 13.4 8.4 17 7 15.6 10.6 12 7 8.4 8.4 7 12 10.6 15.6 7 17 8.4 13.4 12z',
+);

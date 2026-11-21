@@ -1070,12 +1070,14 @@ const buildStyles = () =>
       position: 'absolute',
       bottom: 88,
       alignSelf: 'center',
-      backgroundColor: C.ink,
+      backgroundColor: C.scheme === 'dark' ? '#1E293B' : C.ink,
+      borderWidth: C.scheme === 'dark' ? 1 : 0,
+      borderColor: C.line,
       paddingHorizontal: 16,
       paddingVertical: 11,
       borderRadius: 10,
     },
-    toastText: { color: C.white, fontSize: 12, fontWeight: '700' },
+    toastText: { color: '#FFFFFF', fontSize: 12, fontWeight: '700' },
   });
 let styleSheet = buildStyles();
 

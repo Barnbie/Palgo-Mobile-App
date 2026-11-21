@@ -30,12 +30,18 @@ export function homeRoute(c) {
         onResumeVerification={() => c.go('pal-verification')}
         onCreate={c.startErrand}
         onErrands={() => c.go('errands')}
-        onTrack={() => c.go(c.role === 'pal' ? 'pal-active' : 'tracking')}
+        onTrack={() => {
+          c.setFocusedErrand(null);
+          c.go(c.role === 'pal' ? 'pal-active' : 'tracking');
+        }}
         onNotify={() => c.go('notifications')}
         onWallet={() => c.go('profile-personal')}
         onStart={c.updateStatus}
         onComplete={c.role === 'pal' ? c.finishErrandAsPal : c.requestUserCompletion}
-        onAccept={c.acceptAvailableErrand}
+        onCounterAvailable={(item) => {
+          c.setFocusedErrand(item);
+          c.go('counter-offer');
+        }}
         onViewAvailable={(item) => {
           c.setFocusedErrand(item);
           c.go('pal-detail');

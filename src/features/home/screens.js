@@ -18,6 +18,7 @@ import {
   X,
 } from '../../components/glyphs';
 import * as Shared from '../../AppComponents';
+import { ErrandSummaryCard } from '../errands/screens';
 import { colors as C } from '../../theme';
 import { homeActionImages } from '../../assets';
 
@@ -29,8 +30,6 @@ const {
   HomeMap,
 
   HomeActionImage,
-
-  PersonErrandCard,
 } = Shared;
 
 function HomePanel({
@@ -83,66 +82,41 @@ function HomePanel({
   );
 }
 
-function PalHomeErrandCard({
-  item,
-  status,
-  available = false,
-  onAccept,
-  onCounter,
-  onStart,
-  onComplete,
-  onView,
-}) {
-  const person = item.person ||
-    item.requester ||
-    item.user || {
-      name: available ? 'User' : 'Pal',
-      userId: available ? item.requesterUserId : item.palUserId,
-    };
+function PalHomeErrandCard({ item, available = false, onCounter, onStart, onComplete, onView }) {
+  const person = item.person || item.requester || item.user || { name: 'User' };
+  if (available)
+    return (
+      <ErrandSummaryCard
+        errand={item}
+        state="Pending"
+        actionLabel="Counter offer"
+        onView={onView}
+        onAction={onCounter}
+      />
+    );
   const start = item.status === 'ACCEPTED';
   return (
-    <PersonErrandCard
+    <ErrandSummaryCard
+      errand={item}
       person={person}
-      offer={item.fee}
-      rating={person.rating || '0.0'}
-      jobs={person.reviewCount || 0}
-      phoneVerified={person.phoneVerified === true}
-      idVerified={person.idVerified === true}
-      distance={person.distance || item.distance || item.location}
-      services={available ? item.title : item.services || item.title}
-      status={status}
-      primaryTitle={available ? 'Accept' : start ? 'Start' : 'Complete'}
-      onPrimary={available ? onAccept : start ? onStart : onComplete}
-      secondaryTitle="View details"
-      onSecondary={onView}
+      state="Active"
+      actionLabel={start ? 'Start' : 'Complete'}
+      onView={onView}
+      onAction={start ? onStart : onComplete}
     />
   );
 }
 
 function UserActiveErrandCard({ errand, onComplete, onView }) {
-  const pal = errand.pal || {
-    name: 'PalGo member',
-    userId: errand.palUserId,
-    rating: 0,
-    reviewCount: 0,
-    phoneVerified: false,
-    idVerified: false,
-  };
+  const pal = errand.pal || { name: 'PalGo member', rating: 0, reviewCount: 0 };
   return (
-    <PersonErrandCard
+    <ErrandSummaryCard
+      errand={errand}
       person={pal}
-      offer={errand.fee}
-      rating={pal.rating || '0.0'}
-      jobs={pal.reviewCount || 0}
-      phoneVerified={pal.phoneVerified === true}
-      idVerified={pal.idVerified === true}
-      distance={pal.distance || errand.location}
-      services={pal.skills || errand.title}
-      status={errand.status}
-      primaryTitle="Complete"
-      onPrimary={onComplete}
-      secondaryTitle="View details"
-      onSecondary={onView}
+      state="Active"
+      actionLabel="Complete"
+      onView={onView}
+      onAction={onComplete}
     />
   );
 }
@@ -311,7 +285,7 @@ function PalHomeFinal({
   onWallet,
   onStart,
   onComplete,
-  onAccept,
+  onCounterAvailable,
   onViewAvailable,
   verification,
   verificationDismissed,
@@ -411,7 +385,7 @@ function PalHomeFinal({
               key={item.id}
               item={item}
               available
-              onAccept={() => onAccept(item)}
+              onCounter={() => onCounterAvailable(item)}
               onView={() => onViewAvailable(item)}
             />
           ))
@@ -468,7 +442,7 @@ function UserHomeLatest({
         onWallet={onWallet}
         onStart={onStart}
         onComplete={onComplete}
-        onAccept={onAccept}
+        onCounterAvailable={onCounterAvailable}
         onViewAvailable={onViewAvailable}
         verification={verification}
         verificationDismissed={verificationDismissed}

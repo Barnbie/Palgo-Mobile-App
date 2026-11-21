@@ -34,4 +34,9 @@ export {
   PhoneIcon as Phone,
   WalletIcon as CreditCard,
   HomeIcon as House,
+  PhoneChatIcon,
+  SafetyIcon,
+  SirenIcon,
+  ShareIcon,
+  CancelCircleIcon,
 } from './icons';

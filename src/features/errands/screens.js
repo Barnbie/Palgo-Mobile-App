@@ -1,23 +1,18 @@
 import { useState } from 'react';
-import { Alert, Image, TouchableOpacity, View } from 'react-native';
+import { Alert, TouchableOpacity, View } from 'react-native';
 import { Text } from '../../components/ThemedText';
 import { GradientButton } from '../../components/GradientButton';
 import {
   Banknote,
-  Bell,
   CalendarDays,
-  CheckCircle2,
   ClipboardList,
   Clock3,
   MapPinned,
-  MessageCircle,
   Search,
   Star,
-  UserRound,
 } from '../../components/glyphs';
 import * as Shared from '../../AppComponents';
 import { colors as C } from '../../theme';
-import { homeActionImages } from '../../assets';
 import { RaisedField, RaisedTextInput } from '../../components/Input3D';
 
 const {
@@ -33,10 +28,6 @@ const {
   Input,
 
   Avatar,
-
-  HomeMap,
-
-  HomeActionImage,
 
   DetailRow,
 
@@ -215,237 +206,6 @@ function PendingErrandDetail({ errand = {}, role = 'user', onBack, onAccept }) {
     </Shell>
   );
 }
-function TrackingHomeActive({ errand = {}, pal = {}, onProfile, onChat, onConfirm }) {
-  const [expanded, setExpanded] = useState(false);
-  const person = errand.pal || pal || {};
-  const stateLabel =
-    { ACCEPTED: 'Accepted', ACTIVE: 'In progress', PAL_COMPLETED: 'Awaiting your confirmation' }[
-      errand.status
-    ] || 'Active errand';
-  return (
-    <View style={s.homeScreen}>
-      <HomeMap />
-      <View style={[s.homeTop, { top: 42 }]}>
-        <HomeActionImage
-          source={homeActionImages.profile}
-          label="PROFILE"
-          Icon={UserRound}
-          onPress={onProfile}
-        />
-        <HomeActionImage
-          source={homeActionImages.notifications}
-          label="ALERT"
-          Icon={Bell}
-          onPress={() => Alert.alert('Notifications', 'You have no new notifications.')}
-        />
-      </View>
-      <View
-        style={[
-          s.homePanel,
-          {
-            bottom: 75,
-            minHeight: expanded ? 510 : 260,
-            shadowColor: '#38466A',
-            shadowOpacity: 0.23,
-            shadowRadius: 16,
-            shadowOffset: { width: 0, height: -5 },
-            elevation: 12,
-          },
-        ]}
-      >
-        <TouchableOpacity style={s.panelHandle} onPress={() => setExpanded((v) => !v)}>
-          <View style={s.handle} />
-        </TouchableOpacity>
-        <Text style={{ fontSize: 17, fontWeight: '800' }}>{stateLabel}</Text>
-        <Text style={{ fontSize: 13, color: C.blue, marginTop: 7 }}>
-          {errand.title || 'Your errand'}
-        </Text>
-        <View style={{ height: 1, backgroundColor: C.line, marginVertical: 16 }} />
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          {person.image ? (
-            <Image
-              source={{ uri: person.image }}
-              resizeMode="cover"
-              style={{
-                height: 58,
-                width: 58,
-                borderRadius: 29,
-                borderWidth: 2,
-                borderColor: C.blue,
-              }}
-            />
-          ) : (
-            <ImagePlaceholder size={58} profile />
-          )}
-          <View style={{ marginLeft: 12, flex: 1 }}>
-            <Text style={{ fontSize: 14, fontWeight: '800' }}>{person.name || 'Your Pal'}</Text>
-            <Text style={{ fontSize: 11, color: C.muted, marginTop: 5 }}>
-              ★ {Number(person.rating || 0).toFixed(1)} · {person.reviewCount || 0} reviews
-            </Text>
-          </View>
-          <TouchableOpacity
-            onPress={onChat}
-            style={{
-              height: 44,
-              width: 44,
-              borderRadius: 22,
-              backgroundColor: C.blue,
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <MessageCircle size={20} color={C.white} />
-          </TouchableOpacity>
-        </View>
-        {expanded && (
-          <>
-            <View style={{ height: 1, backgroundColor: C.line, marginVertical: 17 }} />
-            <Text style={{ fontSize: 14, color: C.muted, marginBottom: 12 }}>Errand details</Text>
-            <DetailRow Icon={CheckCircle2} label={errand.title || '—'} accent="#89A9ED" />
-            <DetailRow Icon={MapPinned} label={errand.location || '—'} />
-            <DetailRow Icon={Banknote} label={money(errand.fee)} />
-            <DetailRow
-              Icon={Clock3}
-              label={
-                errand.scheduled_for
-                  ? new Date(errand.scheduled_for).toLocaleString()
-                  : 'Time not specified'
-              }
-            />
-            <DetailRow Icon={Clock3} label={errand.estimated_time || 'Duration not specified'} />
-            <Text style={{ fontSize: 14, color: C.muted, marginTop: 5, marginBottom: 10 }}>
-              Special notes
-            </Text>
-            <Text style={{ fontSize: 13, lineHeight: 20, marginBottom: 16 }}>
-              {errand.special_notes || 'No special notes provided.'}
-            </Text>
-            {errand.status === 'PAL_COMPLETED' && (
-              <Button title="Confirm completion" onPress={onConfirm} />
-            )}
-          </>
-        )}
-      </View>
-    </View>
-  );
-}
-function PalTrackingHomeLatest({ errand, onProfile, onChat, onStart, onComplete }) {
-  const [expanded, setExpanded] = useState(false);
-  const item = errand || {};
-  const person = item.person || {};
-  const accepted = item.status === 'ACCEPTED';
-  const completedByPal = item.status === 'PAL_COMPLETED';
-  return (
-    <View style={s.homeScreen}>
-      <HomeMap />
-      <View style={[s.homeTop, { top: 42 }]}>
-        <HomeActionImage
-          source={homeActionImages.profile}
-          label="PROFILE"
-          Icon={UserRound}
-          onPress={onProfile}
-        />
-        <HomeActionImage
-          source={homeActionImages.notifications}
-          label="ALERT"
-          Icon={Bell}
-          onPress={() => Alert.alert('Notifications', 'No new notifications.')}
-        />
-      </View>
-      <View
-        style={[
-          s.homePanel,
-          {
-            bottom: 75,
-            minHeight: expanded ? 555 : 250,
-            shadowColor: '#38466A',
-            shadowOpacity: 0.23,
-            shadowRadius: 16,
-            shadowOffset: { width: 0, height: -5 },
-            elevation: 12,
-          },
-        ]}
-      >
-        <TouchableOpacity style={s.panelHandle} onPress={() => setExpanded((v) => !v)}>
-          <View style={s.handle} />
-        </TouchableOpacity>
-        <Text style={{ fontSize: 17, fontWeight: '800' }}>
-          {completedByPal
-            ? 'Waiting for User confirmation'
-            : accepted
-              ? 'Errand accepted'
-              : 'On my way'}
-        </Text>
-        <Text style={{ fontSize: 13, color: C.blue, marginTop: 6 }}>{item.location || ''}</Text>
-        <View style={{ height: 1, backgroundColor: C.line, marginVertical: 14 }} />
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          {person.image ? (
-            <Image
-              source={{ uri: person.image }}
-              resizeMode="cover"
-              style={{ height: 56, width: 56, borderRadius: 28 }}
-            />
-          ) : (
-            <ImagePlaceholder size={56} profile />
-          )}
-          <View style={{ marginLeft: 11, flex: 1 }}>
-            <Text style={{ fontSize: 14, fontWeight: '800' }}>{person.name || 'User'}</Text>
-            <Text style={{ fontSize: 11, color: C.muted, marginTop: 5 }}>
-              {Number(person.rating || 0).toFixed(1)} · {person.reviewCount || 0} reviews
-            </Text>
-          </View>
-          <TouchableOpacity
-            onPress={onChat}
-            style={{
-              height: 56,
-              width: 56,
-              borderRadius: 28,
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: C.mint,
-            }}
-          >
-            <MessageCircle size={25} color={C.white} />
-          </TouchableOpacity>
-        </View>
-        {expanded && (
-          <>
-            <View style={{ height: 1, backgroundColor: C.line, marginVertical: 17 }} />
-            <Text style={{ fontSize: 14, color: C.muted, marginBottom: 13 }}>Errand details</Text>
-            <DetailRow Icon={CheckCircle2} label={item.title} accent="#89A9ED" />
-            <DetailRow Icon={MapPinned} label={item.location} />
-            <DetailRow Icon={Banknote} label={money(item.fee)} />
-            <DetailRow
-              Icon={Clock3}
-              label={
-                item.requested_time ||
-                (item.scheduled_for
-                  ? new Date(item.scheduled_for).toLocaleString()
-                  : 'Time not specified')
-              }
-            />
-            <DetailRow Icon={Clock3} label={item.estimated_time || 'Duration not specified'} />
-            <Text style={{ fontSize: 14, color: C.muted, marginTop: 5, marginBottom: 12 }}>
-              Special notes
-            </Text>
-            <Text style={{ fontSize: 13, lineHeight: 20, marginBottom: 16 }}>
-              {item.special_notes || 'No special notes provided.'}
-            </Text>
-            {completedByPal ? (
-              <Text style={{ fontSize: 13, color: C.muted, textAlign: 'center' }}>
-                Waiting for the User to confirm.
-              </Text>
-            ) : (
-              <Button
-                title={accepted ? 'Start errand' : 'Mark errand complete'}
-                onPress={accepted ? onStart : onComplete}
-              />
-            )}
-          </>
-        )}
-      </View>
-    </View>
-  );
-}
 function PalDetailFinal({ errand, onBack, onAccept, onCounter }) {
   return (
     <Shell back={onBack}>
@@ -540,6 +300,68 @@ const statusColor = (state) =>
         : C.scheme === 'dark'
           ? '#60A5FA'
           : C.blue;
+
+/**
+ * The card used for errands on Home and in the Errands list.
+ * Optional `person` adds the photo, name and stars at the top (active errands).
+ */
+function ErrandSummaryCard({ errand, person, state, label, actionLabel, onView, onAction }) {
+  const place = [errand.location, errand.city, errand.state].filter(Boolean).join(', ');
+  const time = requestedTimeText(errand);
+  return (
+    <View style={cardStyle()}>
+      {person ? (
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+          <ImagePlaceholder size={44} profile image={person.image} />
+          <View style={{ flex: 1, marginLeft: 12 }}>
+            <Text style={{ fontSize: 14, fontWeight: '800', color: C.ink }}>
+              {person.name || 'PalGo member'}
+            </Text>
+            <StarLine person={person} />
+          </View>
+        </View>
+      ) : null}
+      <View
+        style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}
+      >
+        <Text style={{ fontSize: 15, fontWeight: '800', color: C.ink, flex: 1, marginRight: 10 }}>
+          {errand.title}
+        </Text>
+        <Text style={amountStyle()}>{money(errand.fee)}</Text>
+      </View>
+      {!!errand.description && (
+        <Text
+          numberOfLines={2}
+          style={{ fontSize: 11, color: C.muted, lineHeight: 17, marginTop: 7 }}
+        >
+          {errand.description}
+        </Text>
+      )}
+      {!!place && <Text style={{ fontSize: 11, color: C.muted, marginTop: 8 }}>{place}</Text>}
+      <View
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginTop: 8,
+        }}
+      >
+        <Text style={{ fontSize: 11, fontWeight: '800', color: statusColor(state), flexShrink: 1 }}>
+          {label || state}
+        </Text>
+        {!!time && (
+          <Text
+            numberOfLines={1}
+            style={{ fontSize: 11, color: C.muted, marginLeft: 10, flexShrink: 1 }}
+          >
+            {time}
+          </Text>
+        )}
+      </View>
+      <CardButtons onView={onView} actionLabel={actionLabel} onAction={onAction} />
+    </View>
+  );
+}
 
 function OfferCard({ offer, errand, onView, onAccept }) {
   return (
@@ -668,8 +490,12 @@ function ErrandsCardsUpdated({
           let actionLabel = null;
           let actionKind = null;
           if (pending) {
-            actionLabel = isPal ? (myOffer?.status === 'pending' ? null : 'Accept') : 'Cancel';
-            actionKind = isPal ? 'accept' : 'cancel';
+            actionLabel = isPal
+              ? myOffer?.status === 'pending'
+                ? null
+                : 'Counter offer'
+              : 'Cancel';
+            actionKind = isPal ? 'counter' : 'cancel';
           } else if (state === 'Active') {
             actionLabel = 'Complete';
             actionKind = isPal ? 'active' : 'complete';
@@ -872,14 +698,14 @@ function CounterOfferForm({ errand = {}, onBack, onSubmit }) {
   );
 }
 
+export { TrackingHomeActive, PalTrackingHomeLatest } from './activeErrand';
 export {
   Rating,
   CompletedErrandDetail,
   PendingErrandDetail,
-  TrackingHomeActive,
-  PalTrackingHomeLatest,
   PalDetailFinal,
   ErrandsCardsUpdated as ErrandsUpdated,
   CounterOfferDetail,
   CounterOfferForm,
+  ErrandSummaryCard,
 };

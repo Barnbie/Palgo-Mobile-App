@@ -122,3 +122,12 @@ Unused chat, payment, receipt and counter-offer screens and the `commissionRate`
 - Errand cards show the requested time (for example "12pm") on the right, opposite the status. The duration shows in the details pages.
 - **Testing switch:** while one account is both the User and the Pal, the Pal feed would hide your own errands. `public.app_flags.allow_self_errands` (now `true`) lets an account see, accept and counter-offer its own errands, and notifies it. **Before launch run:** `update public.app_flags set allow_self_errands = false;`
 - Pal ID verification is not required (`require_verified_pals()` is false); it will be switched on when ID verification is built.
+
+## Stage: errand cards, active errand screens (from Figma)
+
+- Pal Home: available errands use the same card as the Errands list: **View details** (blue) and **Counter offer** (green). Accept lives inside the details page, next to Counter offer.
+- Active errand cards on Home (User and Pal) use the same card with the other person's photo, name and stars, and the 3D buttons. No ID / phone verification badges.
+- Back from View details now returns to where you came from (Errands or Home).
+- Active errand screens follow the Figma frames "Active Errand" (User) and "Active errand pal" (Pal): handle, headline, Contact / photo + rating / Safety (User), status line, "Your current service" rows, Payment, Share / Call emergency / Cancel. Code: `src/features/errands/activeErrand.js`. New icons: phone+chat, safety shield, siren, share, cancel.
+- Not connected yet (shown honestly in the app): chat/calling (messaging stage), cancelling an accepted errand, and payment method (the "Transfer" line follows the design).
+- Toast (bottom notification) is dark in dark mode.
