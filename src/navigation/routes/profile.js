@@ -62,6 +62,18 @@ export const profileRoutes = {
           c.notify(error?.message || 'That setting could not be saved.');
         }
       },
+      onReceiveAll: async (value) => {
+        try {
+          await c.saveReceiveAll(value);
+          c.notify(
+            value
+              ? 'You will receive every errand.'
+              : 'You will only receive errands that match your skills.',
+          );
+        } catch (error) {
+          c.notify(error?.message || 'That setting could not be saved.');
+        }
+      },
       onAvailability: async (value) => {
         try {
           await c.saveAvailability(value);

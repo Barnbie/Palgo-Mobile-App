@@ -474,6 +474,17 @@ export function useAccount({ go, notify, screen, screenRef }) {
     }
   }
 
+  async function saveReceiveAll(value) {
+    const previous = profileDetails.receiveAll;
+    setProfileDetails((details) => ({ ...details, receiveAll: value }));
+    try {
+      await updateRoleProfileFields(authUserId, 'pal', { receive_all_errands: value });
+    } catch (error) {
+      setProfileDetails((details) => ({ ...details, receiveAll: previous }));
+      throw error;
+    }
+  }
+
   async function saveProfilePhoto(asset) {
     const { path, url } = await uploadProfilePhoto(asset, {
       roles: accountRoles,
@@ -529,6 +540,7 @@ export function useAccount({ go, notify, screen, screenRef }) {
       changePassword({ email: profileDetails.email, current, next }),
     saveProfilePhone,
     saveNotificationSetting,
+    saveReceiveAll,
     saveAvailability,
     saveProfilePhoto,
     savePalIdentity,

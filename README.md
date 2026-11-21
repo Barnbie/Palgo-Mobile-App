@@ -90,3 +90,8 @@ Unused chat, payment, receipt and counter-offer screens and the `commissionRate`
 ## Dark mode and theme (21 Nov 2026)
 - Dark mode: errand cards use the navy card colour; selected chips/tiles are blue in dark mode (green in light mode).
 - The theme choice (light / dark / system) is saved on the device and on the login (`user_metadata.theme_mode`), so it survives logout/login and applies to both User and Pal.
+
+## Pal errand feed and notification bell (21 Nov 2026)
+- Pals choose what they receive: by default only errands that match the skills they signed up with; the "Receive all errands" switch in Pal settings turns on every errand (`pal_profiles.receive_all_errands`, migration `202611200006`). Matching, available Pals get a "New errand available" notification when an errand is posted. Category-to-skill matching lives in `skills_for_category()`; location is not used yet.
+- Home and Pal wallet show a plain bell with a red unread count (nothing when there are none). The notifications page has an icon and text when empty.
+- Errand cards: pending amber, active blue, completed green, cancelled red; amount is green in dark mode. Errand and date filter chips stay green in dark mode.

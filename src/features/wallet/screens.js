@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import {
   Alert,
   Image,
@@ -33,8 +33,10 @@ import {
   RowText,
   ImagePlaceholder,
   AssetBackground,
+  NotificationBadge,
   s,
 } from '../../AppComponents';
+import { UnreadContext } from '../../state/useUnreadCount';
 
 function WalletTransactions({ onBack, onFilter, onOpen, transactions = [] }) {
   const [query, setQuery] = useState('');
@@ -218,7 +220,7 @@ function DateFilter({ title, onBack }) {
                 paddingHorizontal: 14,
                 borderRadius: 18,
                 justifyContent: 'center',
-                backgroundColor: period === item ? C.selected() : C.paper,
+                backgroundColor: period === item ? C.mint : C.paper,
                 borderWidth: period === item ? 0 : 1,
                 borderColor: C.blue,
               }}
@@ -321,6 +323,7 @@ function PalWalletLatest({
   onBack,
 }) {
   const [visible, setVisible] = useState(true);
+  const unread = useContext(UnreadContext);
   return (
     <Shell back={onBack}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 18 }}>
@@ -357,7 +360,8 @@ function PalWalletLatest({
               justifyContent: 'center',
             }}
           >
-            <Bell size={23} color={C.white} />
+            <Bell size={25} color={C.white} />
+            <NotificationBadge count={unread} />
           </Raised3D>
         </TouchableOpacity>
       </View>

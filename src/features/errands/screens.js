@@ -518,7 +518,20 @@ const cardStyle = () => ({
   padding: 15,
   marginBottom: 12,
 });
-const amountStyle = () => ({ fontSize: 22, fontWeight: '800', color: C.blue });
+const amountStyle = () => ({ fontSize: 22, fontWeight: '800', color: C.icon() });
+
+// Status colours: pending amber, active blue, completed green, cancelled red.
+const STATUS_AMBER = '#F2C400';
+const statusColor = (state) =>
+  state === 'Completed'
+    ? C.mint
+    : state === 'Canceled'
+      ? C.red
+      : state === 'Pending'
+        ? STATUS_AMBER
+        : C.scheme === 'dark'
+          ? '#60A5FA'
+          : C.blue;
 
 function OfferCard({ offer, errand, onView, onAccept }) {
   return (
@@ -597,7 +610,7 @@ function ErrandsCardsUpdated({
                 height: 35,
                 flex: 1,
                 borderRadius: 18,
-                backgroundColor: selected ? C.selected() : C.paper,
+                backgroundColor: selected ? C.mint : C.paper,
                 borderWidth: selected ? 0 : 1,
                 borderColor: C.blue,
                 alignItems: 'center',
@@ -638,7 +651,6 @@ function ErrandsCardsUpdated({
           const state = stateOf(item),
             isPal = role === 'pal',
             pending = item.status === 'PENDING',
-            cancelled = item.status === 'CANCELLED',
             itemOffers = offers.filter((o) => o.errandId === item.id),
             userOffers = !isPal && pending ? itemOffers.filter((o) => o.status === 'pending') : [],
             myOffer = isPal && pending ? itemOffers[0] : null;
@@ -697,12 +709,7 @@ function ErrandsCardsUpdated({
                   style={{
                     fontSize: 11,
                     fontWeight: '800',
-                    color:
-                      cancelled || myOffer?.status === 'declined'
-                        ? C.red
-                        : state === 'Completed'
-                          ? C.mint
-                          : C.blue,
+                    color: myOffer?.status === 'declined' ? C.red : statusColor(state),
                     marginTop: 8,
                   }}
                 >

@@ -884,6 +884,7 @@ function PalProfileLatest({
   onBecomeRole,
   onSetting,
   onAvailability,
+  onReceiveAll,
 }) {
   const available = profileDetails.available !== false;
   const row = (label, target, toggle = false, onToggle, value) => (
@@ -924,7 +925,19 @@ function PalProfileLatest({
         {row('ID Verification', 'profile-id')}
         {row('Occupation / Skills', 'profile-skills')}
         {row('Availability', null, true, () => onAvailability?.(!available), available)}
+        {row(
+          'Receive all errands',
+          null,
+          true,
+          () => onReceiveAll?.(!profileDetails.receiveAll),
+          Boolean(profileDetails.receiveAll),
+        )}
       </View>
+      <Text
+        style={{ fontSize: 11, color: C.muted, lineHeight: 16, marginTop: 8, marginHorizontal: 6 }}
+      >
+        Off: you only receive errands that match the skills you chose. On: you receive every errand.
+      </Text>
       <View style={{ height: 17 }} />
       <View style={{ backgroundColor: C.paper, borderRadius: 16, paddingVertical: 3 }}>
         {row('Language', 'profile-language')}

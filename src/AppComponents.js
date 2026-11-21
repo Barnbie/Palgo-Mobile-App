@@ -14,6 +14,7 @@ import { Text } from './components/ThemedText';
 import Constants from 'expo-constants';
 import MapView, { Marker, PROVIDER_GOOGLE, UrlTile } from 'react-native-maps';
 import {
+  BellDot,
   CheckCircle2,
   ChevronLeft,
   ClipboardList,
@@ -26,6 +27,7 @@ import { colors as C } from './theme';
 import { ArtBackground } from './components/art';
 import { RaisedField, RaisedTextInput } from './components/Input3D';
 import { homeProfileImage, palgoLogos, profileAssets } from './assets';
+import { UnreadContext } from './state/useUnreadCount';
 
 const money = (value) => `₦${Number(value || 0).toLocaleString('en-NG')}`;
 
@@ -240,9 +242,34 @@ function Notifications({ onBack, load, onSeen }) {
           </View>
         ))
       ) : (
-        <Text style={{ textAlign: 'center', color: C.muted, marginTop: 32 }}>
-          You have no notifications yet.
-        </Text>
+        <View style={{ alignItems: 'center', marginTop: 56, paddingHorizontal: 24 }}>
+          <View
+            style={{
+              height: 92,
+              width: 92,
+              borderRadius: 46,
+              backgroundColor: C.paper,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <BellDot size={44} />
+          </View>
+          <Text style={{ fontSize: 16, fontWeight: '800', color: C.ink, marginTop: 20 }}>
+            No notifications yet
+          </Text>
+          <Text
+            style={{
+              fontSize: 13,
+              color: C.muted,
+              textAlign: 'center',
+              lineHeight: 20,
+              marginTop: 8,
+            }}
+          >
+            When you get an update about an errand, an offer or your account, it will show up here.
+          </Text>
+        </View>
       )}
     </Shell>
   );
@@ -1056,8 +1083,39 @@ function rebuildStyles() {
   styleSheet = buildStyles();
 }
 
+/** Red count bubble that sits on a bell. Shows nothing when there is nothing unread. */
+function NotificationBadge({ count, style }) {
+  if (!count) return null;
+  return (
+    <View
+      pointerEvents="none"
+      style={[
+        {
+          position: 'absolute',
+          top: 4,
+          right: 2,
+          minWidth: 20,
+          height: 20,
+          borderRadius: 10,
+          paddingHorizontal: 5,
+          backgroundColor: '#F15959',
+          borderWidth: 2,
+          borderColor: C.canvas,
+          alignItems: 'center',
+          justifyContent: 'center',
+        },
+        style,
+      ]}
+    >
+      <Text style={{ color: '#FFFFFF', fontSize: 10, fontWeight: '800' }}>
+        {count > 9 ? '9+' : count}
+      </Text>
+    </View>
+  );
+}
 function HomeActionImage({ source, label, Icon, onPress }) {
   const isProfile = label === 'PROFILE';
+  const unread = React.useContext(UnreadContext);
   const profileImage = homeProfileImage || profileAssets.profileImage;
   return (
     <TouchableOpacity
@@ -1091,8 +1149,9 @@ function HomeActionImage({ source, label, Icon, onPress }) {
       ) : isProfile ? (
         <UserRound size={22} color={C.white} fill={C.white} strokeWidth={2.5} />
       ) : (
-        <Icon size={20} color={C.white} fill={C.white} strokeWidth={2.5} />
+        <Icon size={22} color={C.white} fill={C.white} strokeWidth={2.5} />
       )}
+      {!isProfile && <NotificationBadge count={unread} />}
     </TouchableOpacity>
   );
 }
@@ -1558,6 +1617,7 @@ export {
   Choice,
   RowText,
   HomeActionImage,
+  NotificationBadge,
   PalGoBottomTabs,
   DetailRow,
   ImagePlaceholder,

@@ -1,7 +1,8 @@
 // Drop-in replacements for the lucide icons this app used. Every icon is drawn in
 // code (see icons.js), filled by default, and accepts `size` and `color`.
 export {
-  NotificationIcon as Bell,
+  BellOnlyIcon as Bell,
+  NotificationIcon as BellDot,
   ChevronDownIcon as ChevronDown,
   ChevronRightIcon as ChevronRight,
   ChevronLeftIcon as ChevronLeft,

@@ -72,6 +72,7 @@ export function profileDetailsFromRow(row, user) {
     pushEnabled: row?.push_enabled !== false,
     emailNotifications: row?.email_notifications !== false,
     available: row?.available !== false,
+    receiveAll: row?.receive_all_errands === true,
   };
 }
 

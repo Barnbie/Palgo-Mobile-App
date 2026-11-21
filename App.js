@@ -10,6 +10,7 @@ import { preferences as storedPreferences } from './src/lib/secureStorage';
 import { supabase } from './src/lib/supabase';
 import { useErrands } from './src/state/useErrands';
 import { THEME_MODES, usePreferences } from './src/state/usePreferences';
+import { UnreadContext, useUnreadCount } from './src/state/useUnreadCount';
 import { useRouter } from './src/state/useRouter';
 import { useWithdrawalPin } from './src/state/useWithdrawalPin';
 
@@ -56,6 +57,11 @@ export default function App() {
       supabase.auth.updateUser({ data: { theme_mode: mode } }).catch(() => {});
     }
   };
+  const unreadCount = useUnreadCount({
+    role: account.role,
+    authUserId: account.authUserId,
+    screen,
+  });
   const pin = useWithdrawalPin(account.authUserId, account.role);
 
   const chooseAuthIntent = (intent) => {
@@ -107,17 +113,19 @@ export default function App() {
   }, []);
 
   return (
-    <View style={[s.safe, { backgroundColor: colors.canvas }]}>
-      <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
-      {route.view}
-      {account.role && TAB_SCREENS.includes(screen) && (
-        <PalGoBottomTabs role={account.role} screen={tabFor(screen)} go={go} />
-      )}
-      {toast ? (
-        <View style={s.toast}>
-          <Text style={s.toastText}>{toast}</Text>
-        </View>
-      ) : null}
-    </View>
+    <UnreadContext.Provider value={unreadCount}>
+      <View style={[s.safe, { backgroundColor: colors.canvas }]}>
+        <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
+        {route.view}
+        {account.role && TAB_SCREENS.includes(screen) && (
+          <PalGoBottomTabs role={account.role} screen={tabFor(screen)} go={go} />
+        )}
+        {toast ? (
+          <View style={s.toast}>
+            <Text style={s.toastText}>{toast}</Text>
+          </View>
+        ) : null}
+      </View>
+    </UnreadContext.Provider>
   );
 }

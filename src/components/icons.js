@@ -186,17 +186,40 @@ export function PasswordIcon(props) {
   );
 }
 
+const BELL_BODY =
+  'M12 2.8a1.6 1.6 0 0 1 1.6 1.6v.5A6 6 0 0 1 18 10.7v3.2l1.7 2.5c.4.6 0 1.4-.8 1.4H5.1c-.8 0-1.2-.8-.8-1.4L6 13.9v-3.2A6 6 0 0 1 10.4 4.9v-.5A1.6 1.6 0 0 1 12 2.8z';
+const BELL_CLAPPER = 'M9.6 19.4a2.4 2.4 0 0 0 4.8 0z';
+
+/** A plain bell. The home and wallet headers draw their own red count badge on top of it. */
+export function BellOnlyIcon(props) {
+  return (
+    <Glyph {...props}>
+      {(paint) => (
+        <G>
+          <Path {...paint} d={BELL_BODY} />
+          <Path {...paint} d={BELL_CLAPPER} />
+        </G>
+      )}
+    </Glyph>
+  );
+}
+
+/** A bell with a small dot, used where the screen is about notifications. */
 export function NotificationIcon(props) {
   return (
     <Glyph {...props}>
       {(paint, color) => (
         <G>
-          <Path
-            {...paint}
-            d="M10 21a2 2 0 0 0 4 0zM5.5 17v-1.2l1.5-1.5V10c0-2.5 1.4-4.5 3.6-5.2V4a1.4 1.4 0 0 1 2.8 0v.8c.9.3 1.7.8 2.3 1.5A4.2 4.2 0 0 0 15 11a4.3 4.3 0 0 0 2 3.6v1.2l1.5 1.2V17z"
+          <Path {...paint} d={BELL_BODY} />
+          <Path {...paint} d={BELL_CLAPPER} />
+          <Circle
+            cx={18.6}
+            cy={5.4}
+            r={3.3}
+            fill="#F15959"
+            stroke={color === '#FFFFFF' ? '#2563EB' : '#FFFFFF'}
+            strokeWidth={1.2}
           />
-          <Circle cx={19} cy={7} r={2.6} fill="none" stroke={color} strokeWidth={1.6} />
-          <Circle cx={19} cy={7} r={0.8} fill={color} />
         </G>
       )}
     </Glyph>
