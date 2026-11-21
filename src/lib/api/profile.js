@@ -1,5 +1,6 @@
 import { explainMissingAuthUser, requireClient } from '../supabase';
 import { imageExtension, palDetailsToPayload } from '../mappers';
+import { mergeCustomSkills } from '../../config/skills';
 
 const ID_BUCKET = 'pal-identity-documents';
 const PHOTO_BUCKET = 'pal-profile-photos';
@@ -36,16 +37,17 @@ export async function updateRoleProfileFields(userId, role, patch) {
   if (error) throw error;
 }
 
-export async function updatePalServices(userId, selected, otherService) {
+export async function updatePalServices(userId, selected, otherService, serviceAreas) {
   const client = requireClient();
-  const { error } = await client
-    .from('pal_profiles')
-    .update({ services: selected, other_service: otherService || null })
-    .eq('id', userId);
+  const patch = {
+    services: mergeCustomSkills(selected, otherService),
+    other_service: otherService || null,
+  };
+  if (serviceAreas) patch.service_areas = serviceAreas;
+  const { error } = await client.from('pal_profiles').update(patch).eq('id', userId);
   if (error) throw error;
 }
 
-/** Creates/updates the Pal profile through the server-side function. */
 export async function savePalProfile(details) {
   const client = requireClient();
   const { data, error } = await client.rpc('save_pal_profile', {

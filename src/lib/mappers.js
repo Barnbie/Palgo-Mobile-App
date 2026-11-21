@@ -1,3 +1,5 @@
+import { mergeCustomSkills } from '../config/skills';
+
 // Pure helpers that translate database rows into the shapes the screens use.
 // Keeping them free of React/Supabase makes them easy to unit test.
 
@@ -91,6 +93,7 @@ export function palProfileFromRow(row) {
       occupation: row.occupation || '',
       selected: Array.isArray(row.services) ? row.services : [],
       otherService: row.other_service || '',
+      serviceAreas: Array.isArray(row.service_areas) ? row.service_areas : [],
       experience: row.experience || '',
       about: row.about || '',
     },
@@ -117,7 +120,7 @@ export function palDetailsToPayload({ verification, occupation } = {}) {
   }
   if (occupation) {
     payload.occupation = occupation.occupation;
-    payload.services = occupation.selected || [];
+    payload.services = mergeCustomSkills(occupation.selected || [], occupation.otherService);
     payload.other_service = occupation.otherService || '';
     payload.experience = occupation.experience || '';
     payload.about = occupation.about || '';

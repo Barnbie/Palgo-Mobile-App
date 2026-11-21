@@ -95,3 +95,10 @@ Unused chat, payment, receipt and counter-offer screens and the `commissionRate`
 - Pals choose what they receive: by default only errands that match the skills they signed up with; the "Receive all errands" switch in Pal settings turns on every errand (`pal_profiles.receive_all_errands`, migration `202611200006`). Matching, available Pals get a "New errand available" notification when an errand is posted. Category-to-skill matching lives in `skills_for_category()`; location is not used yet.
 - Home and Pal wallet show a plain bell with a red unread count (nothing when there are none). The notifications page has an icon and text when empty.
 - Errand cards: pending amber, active blue, completed green, cancelled red; amount is green in dark mode. Errand and date filter chips stay green in dark mode.
+
+## Area matching, custom skills, detail icons (21 Nov 2026)
+- Errands now have an Area (neighbourhood) and State; Pals list the areas they work in (sign-up and Occupation / Skills settings). Migration `202611200007`.
+- Local errands (shopping, pickup, delivery, cleaning, repairs, others) go to Pals whose areas match; Styling and Cooking are wide, matched by state. Pals with no areas fall back to state matching. "Receive all errands" lifts the skill filter only, not the location filter.
+- New categories Styling and Cooking; new Pal skills Makeup artist and Caterer.
+- Whatever a Pal types under "Others" becomes one of their skills and is collected in `skill_suggestions` for the team.
+- Errand detail icons sit in a very light circle of their own colour.

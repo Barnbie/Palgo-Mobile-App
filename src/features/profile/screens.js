@@ -1,6 +1,7 @@
 import { GradientButton } from '../../components/GradientButton';
 import { useEffect, useState } from 'react';
 import { Alert, Image, Linking, Modal, TouchableOpacity, View } from 'react-native';
+import { customSkillsOf, parseList } from '../../config/skills';
 import { Text } from '../../components/ThemedText';
 import {
   CheckCircle2,
@@ -1258,22 +1259,32 @@ function PalMultiSelect({
   onSave,
   initialSelected = [],
   initialOther = '',
+  initialAreas = [],
 }) {
   const [selected, setSelected] = useState(initialSelected),
     [other, setOther] = useState(initialOther),
+    [areas, setAreas] = useState(initialAreas.join(', ')),
     [busy, setBusy] = useState(false);
   const initialKey = JSON.stringify(initialSelected);
+  const areasKey = initialAreas.join(', ');
   useEffect(() => {
     setSelected(JSON.parse(initialKey));
     setOther(initialOther);
+    setAreas(areasKey);
     // Keyed by content so a fresh empty array on every render cannot re-trigger it.
-  }, [initialKey, initialOther]);
+  }, [initialKey, initialOther, areasKey]);
+  // Skills the Pal typed earlier show up in the list too, so they can be switched off.
+  const allOptions = [
+    ...options,
+    ...customSkillsOf(initialSelected),
+    ...customSkillsOf(selected),
+  ].filter((item, index, list) => list.indexOf(item) === index);
   const hasOthers = options.includes('Others') && selected.includes('Others');
   const save = async () => {
     if (busy) return;
     setBusy(true);
     try {
-      await onSave?.(selected, other);
+      await onSave?.(selected, other, parseList(areas));
       if (!onSave) onBack?.();
     } catch (error) {
       Alert.alert('Could not save', error?.message || 'Please try again.');
@@ -1285,7 +1296,7 @@ function PalMultiSelect({
     <Shell back={onBack}>
       <Header title={title} />
       <View style={{ backgroundColor: C.paper, borderRadius: 16, paddingVertical: 4 }}>
-        {options.map((item) => {
+        {allOptions.map((item) => {
           const on = selected.includes(item);
           return (
             <TouchableOpacity
@@ -1323,6 +1334,18 @@ function PalMultiSelect({
           />
         </View>
       )}
+      <View style={{ marginTop: 16 }}>
+        <Input
+          label="Areas you work in"
+          value={areas}
+          onChangeText={setAreas}
+          placeholder="e.g. Amuwo Odofin, Festac"
+        />
+        <Text style={{ fontSize: 11, color: C.muted, lineHeight: 16 }}>
+          Separate areas with commas. Local errands (shopping, pickups, cleaning, repairs) are sent
+          to Pals in the same area.
+        </Text>
+      </View>
       <View style={{ marginTop: 30 }}>
         <Button title={busy ? 'Saving…' : 'Save'} onPress={save} />
       </View>

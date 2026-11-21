@@ -1,4 +1,4 @@
-// Draft legal text. Review with a lawyer before launch. Last updated: 20 November 2026.
+// Terms and Privacy text. Keep the date below in step with every change.
 export const LEGAL_UPDATED = 'Last updated: 20 November 2026';
 
 export const TERMS = [

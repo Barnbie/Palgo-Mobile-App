@@ -1,3 +1,4 @@
+import { PAL_SKILL_OPTIONS } from '../../config/skills';
 import React from 'react';
 import { Alert } from 'react-native';
 import { submitSupportRequest } from '../../lib/api/support';
@@ -19,23 +20,6 @@ import {
   ProfileTheme,
   ReportProblem,
 } from '../../features/profile/screens';
-
-const PAL_SKILL_OPTIONS = [
-  'Errand',
-  'Delivery',
-  'Car wash',
-  'Plumbing',
-  'Electrician',
-  'House chores',
-  'Mechanic',
-  'Chef',
-  'Nanny',
-  'Security',
-  'Hairstylist',
-  'Barber',
-  'Tailor',
-  'Others',
-];
 
 const toProfile = (c) => () => c.go('profile');
 
@@ -191,9 +175,10 @@ export const profileRoutes = {
           options={PAL_SKILL_OPTIONS}
           initialSelected={c.palProfile.occupation?.selected || []}
           initialOther={c.palProfile.occupation?.otherService || ''}
+          initialAreas={c.palProfile.occupation?.serviceAreas || []}
           onBack={back}
-          onSave={async (selected, other) => {
-            await c.savePalSkills(selected, selected.includes('Others') ? other : '');
+          onSave={async (selected, other, areas) => {
+            await c.savePalSkills(selected, selected.includes('Others') ? other : '', areas);
             c.go('profile');
           }}
         />

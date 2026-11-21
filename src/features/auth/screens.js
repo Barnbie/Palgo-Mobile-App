@@ -13,6 +13,8 @@ import {
   View,
 } from 'react-native';
 import { GradientButton } from '../../components/GradientButton';
+import { PAL_SKILL_OPTIONS, parseList } from '../../config/skills';
+import { PotIcon } from '../../components/icons';
 import { Text } from '../../components/ThemedText';
 import {
   Bike,
@@ -27,6 +29,7 @@ import {
   Package,
   ShoppingBasket,
   Sparkles,
+  Star,
   Trash2,
   Wrench,
   X,
@@ -266,6 +269,8 @@ function CreateCategoryFinal({ form, setForm, onBack, onContinue }) {
     ['General errand', ClipboardPenLine],
     ['Cleaning', Sparkles],
     ['Repairs', Wrench],
+    ['Styling', Star],
+    ['Cooking', PotIcon],
     ['Others', MoreHorizontal],
   ];
   return (
@@ -310,6 +315,8 @@ function CreateErrandFormFinal({ form, setForm, onBack, onSubmit }) {
     !!form.title?.trim() &&
     !!form.description?.trim() &&
     !!form.location?.trim() &&
+    !!form.area?.trim() &&
+    !!form.state?.trim() &&
     Number(form.fee) >= 2000;
   return (
     <KeyboardAvoidingView
@@ -340,6 +347,18 @@ function CreateErrandFormFinal({ form, setForm, onBack, onSubmit }) {
           placeholder="Enter your pickup/delivery location"
           value={form.location}
           onChangeText={(location) => setForm({ ...form, location })}
+        />
+        <Input
+          label="Area / neighbourhood *"
+          placeholder="e.g. Amuwo Odofin"
+          value={form.area || ''}
+          onChangeText={(area) => setForm({ ...form, area })}
+        />
+        <Input
+          label="State *"
+          placeholder="e.g. Lagos"
+          value={form.state || ''}
+          onChangeText={(state) => setForm({ ...form, state })}
         />
         <Button
           kind="outline"
@@ -388,7 +407,7 @@ function CreateErrandFormFinal({ form, setForm, onBack, onSubmit }) {
               : () =>
                   Alert.alert(
                     'Complete the required details',
-                    'Add the errand name, details, location and a budget of at least ₦2,000.',
+                    'Add the errand name, details, location, area, state and a budget of at least ₦2,000.',
                   )
           }
         />
@@ -1150,22 +1169,8 @@ function PalOccupation({ onBack, onNext, initialValue = {} }) {
   const [selected, setSelected] = useState(initialValue.selected || []);
   const [otherService, setOtherService] = useState(initialValue.otherService || '');
   const [about, setAbout] = useState(initialValue.about || '');
-  const services = [
-    'Errand',
-    'Delivery',
-    'Car wash',
-    'Plumbing',
-    'Electrician',
-    'House chores',
-    'Mechanic',
-    'Chef',
-    'Nanny',
-    'Security',
-    'Hairstylist',
-    'Barber',
-    'Tailor',
-    'Others',
-  ];
+  const [areas, setAreas] = useState((initialValue.serviceAreas || []).join(', '));
+  const services = PAL_SKILL_OPTIONS;
   const toggle = (item) =>
     setSelected((value) =>
       value.includes(item) ? value.filter((x) => x !== item) : [...value, item],
@@ -1178,7 +1183,15 @@ function PalOccupation({ onBack, onNext, initialValue = {} }) {
       );
       return;
     }
-    onNext?.({ occupation, experience, otherServices, selected, otherService, about });
+    onNext?.({
+      occupation,
+      experience,
+      otherServices,
+      selected,
+      otherService,
+      about,
+      serviceAreas: parseList(areas),
+    });
   };
   return (
     <KeyboardAvoidingView
@@ -1251,6 +1264,12 @@ function PalOccupation({ onBack, onNext, initialValue = {} }) {
                 placeholder="Enter other service"
               />
             )}
+            <FlowField
+              label="Areas you work in"
+              value={areas}
+              onChange={setAreas}
+              placeholder="e.g. Amuwo Odofin, Festac"
+            />
             <FlowField
               label={`About me (${about.length}/1,000)`}
               value={about}

@@ -1205,10 +1205,28 @@ function PalGoBottomTabs({ role, screen, go }) {
   );
 }
 
+// A very light version of the icon colour, used behind each detail icon.
+function iconTint(accent) {
+  const hex = /^#[0-9A-Fa-f]{6}$/.test(accent || '') ? accent : null;
+  const base = hex || (C.scheme === 'dark' ? '#34D399' : '#2563EB');
+  const [r, g, b] = [1, 3, 5].map((i) => parseInt(base.slice(i, i + 2), 16));
+  return `rgba(${r},${g},${b},0.14)`;
+}
 function DetailRow({ Icon, label, value, accent, size = 20 }) {
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 13 }}>
-      <Icon size={size} color={accent || C.blue} strokeWidth={2.2} />
+      <View
+        style={{
+          height: 38,
+          width: 38,
+          borderRadius: 19,
+          backgroundColor: iconTint(accent),
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <Icon size={size} color={accent || C.blue} strokeWidth={2.2} />
+      </View>
       <View style={{ marginLeft: 13, flex: 1 }}>
         <Text style={{ fontSize: 14, color: C.ink }}>
           {label}

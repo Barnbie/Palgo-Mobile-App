@@ -153,6 +153,9 @@ export const CartIcon = shape(
 export const BoxIcon = shape(
   'M12 2 3 6.5v11L12 22l9-4.5v-11zm0 2.3 5.8 2.9L12 10 6.2 7.2zM5 8.8l6 3v7.4l-6-3zm8 10.4v-7.4l6-3v7.4z',
 );
+export const PotIcon = shape(
+  'M3 11h18v5a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4zM9.5 5.5h5a.9.9 0 0 1 0 1.8h-5a.9.9 0 0 1 0-1.8zM10.5 7.3h3V9.5h-3zM1.5 11.7h1.5v1.8H1.5a.9.9 0 0 1 0-1.8zM21 11.7h1.5a.9.9 0 0 1 0 1.8H21z',
+);
 export const SparkleIcon = shape('M12 2l2.4 7.6L22 12l-7.6 2.4L12 22l-2.4-7.6L2 12l7.6-2.4z');
 export const ChevronRightIcon = shape('M8 5l9 7-9 7z');
 export const ChevronLeftIcon = shape('M16 5l-9 7 9 7z');

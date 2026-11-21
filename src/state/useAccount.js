@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AppState } from 'react-native';
+import { mergeCustomSkills } from '../config/skills';
 import { supabase } from '../lib/supabase';
 import { preferences } from '../lib/secureStorage';
 import {
@@ -246,6 +247,15 @@ export function useAccount({ go, notify, screen, screenRef }) {
   const completePalProfile = useCallback(
     async (details) => {
       await savePalProfile(details);
+      // Areas the Pal works in (used to match local errands) are saved on their own.
+      const areas = details.occupation?.serviceAreas;
+      if (areas?.length && supabase) {
+        const { data } = await supabase.auth.getUser();
+        if (data?.user)
+          await updateRoleProfileFields(data.user.id, 'pal', { service_areas: areas }).catch(
+            () => {},
+          );
+      }
       const roles = await getAccountRoles();
       const { idPhoto, profilePhoto } = details.verification || {};
       if (idPhoto) {
@@ -502,11 +512,18 @@ export function useAccount({ go, notify, screen, screenRef }) {
     await refreshAccount('pal');
   }
 
-  async function savePalSkills(selected, otherService) {
-    await updatePalServices(authUserId, selected, otherService);
+  async function savePalSkills(selected, otherService, serviceAreas) {
+    await updatePalServices(authUserId, selected, otherService, serviceAreas);
+    // Skills typed under "Others" are now real skills of their own.
+    const merged = mergeCustomSkills(selected, otherService);
     setPalProfile((value) => ({
       ...value,
-      occupation: { ...(value.occupation || {}), selected, otherService },
+      occupation: {
+        ...(value.occupation || {}),
+        selected: merged,
+        otherService,
+        ...(serviceAreas ? { serviceAreas } : {}),
+      },
     }));
   }
 
